@@ -1,13 +1,13 @@
-package no.nav.dagpenger.soknad.mottak.db
+package no.nav.hjelpemidler.soknad.mottak.db
 
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import mu.KotlinLogging
-import no.nav.dagpenger.soknad.mottak.metrics.Prometheus
-import no.nav.dagpenger.soknad.mottak.service.JournalPost
-import no.nav.dagpenger.soknad.mottak.service.SoknadData
-import no.nav.dagpenger.soknad.mottak.service.SoknadJournalpostMapping
+import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import no.nav.hjelpemidler.soknad.mottak.service.JournalPost
+import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
+import no.nav.hjelpemidler.soknad.mottak.service.SoknadJournalpostMapping
 import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
 import javax.sql.DataSource

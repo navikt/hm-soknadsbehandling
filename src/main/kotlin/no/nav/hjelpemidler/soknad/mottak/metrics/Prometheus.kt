@@ -1,4 +1,4 @@
-package no.nav.dagpenger.soknad.mottak.metrics
+package no.nav.hjelpemidler.soknad.mottak.metrics
 
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.Counter

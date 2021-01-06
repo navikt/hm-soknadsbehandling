@@ -1,12 +1,7 @@
-package no.nav.dagpenger.soknad.mottak
+package no.nav.hjelpemidler.soknad.mottak
 
-import com.natpryce.konfig.ConfigurationMap
+import com.natpryce.konfig.*
 import com.natpryce.konfig.ConfigurationProperties.Companion.systemProperties
-import com.natpryce.konfig.EnvironmentVariables
-import com.natpryce.konfig.Key
-import com.natpryce.konfig.intType
-import com.natpryce.konfig.overriding
-import com.natpryce.konfig.stringType
 import java.io.File
 import java.net.InetAddress
 import java.net.UnknownHostException

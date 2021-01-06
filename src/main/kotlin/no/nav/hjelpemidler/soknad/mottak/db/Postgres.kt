@@ -1,9 +1,9 @@
-package no.nav.dagpenger.soknad.mottak.db
+package no.nav.hjelpemidler.soknad.mottak.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import no.nav.dagpenger.soknad.mottak.Configuration
-import no.nav.dagpenger.soknad.mottak.Profile
+import no.nav.hjelpemidler.soknad.mottak.Configuration
+import no.nav.hjelpemidler.soknad.mottak.Profile
 import no.nav.vault.jdbc.hikaricp.HikariCPVaultUtil
 import org.flywaydb.core.Flyway
 

@@ -1,17 +1,12 @@
-package no.nav.dagpenger.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.service
 
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.mockk.Called
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.verify
-import no.nav.dagpenger.soknad.mottak.db.SoknadStore
-import no.nav.dagpenger.soknad.mottak.oppslag.PDLClient
+import io.mockk.*
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
+import no.nav.hjelpemidler.soknad.mottak.oppslag.PDLClient
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

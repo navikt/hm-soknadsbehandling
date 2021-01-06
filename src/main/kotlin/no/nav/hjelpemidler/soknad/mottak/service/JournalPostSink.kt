@@ -1,14 +1,14 @@
-package no.nav.dagpenger.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.service
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import mu.KotlinLogging
-import no.nav.dagpenger.soknad.mottak.db.SoknadStore
-import no.nav.dagpenger.soknad.mottak.metrics.Prometheus
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.isMissingOrNull
+import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
+import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}

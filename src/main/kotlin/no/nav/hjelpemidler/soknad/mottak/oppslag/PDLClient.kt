@@ -1,4 +1,4 @@
-package no.nav.dagpenger.soknad.mottak.oppslag
+package no.nav.hjelpemidler.soknad.mottak.oppslag
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.github.kittinunf.fuel.core.ResponseDeserializable
@@ -8,7 +8,7 @@ import com.github.kittinunf.fuel.httpPost
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import no.nav.dagpenger.soknad.mottak.serder.ObjectMapper
+import no.nav.hjelpemidler.soknad.mottak.serder.ObjectMapper
 
 private val logger = KotlinLogging.logger {}
 

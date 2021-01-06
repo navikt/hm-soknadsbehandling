@@ -1,14 +1,14 @@
-package no.nav.dagpenger.soknad.mottak.db
+package no.nav.hjelpemidler.soknad.mottak.db
 
 import com.zaxxer.hikari.HikariDataSource
 import io.kotest.matchers.shouldBe
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
-import no.nav.dagpenger.soknad.mottak.Configuration
-import no.nav.dagpenger.soknad.mottak.service.JournalPost
-import no.nav.dagpenger.soknad.mottak.service.SoknadData
-import no.nav.dagpenger.soknad.mottak.service.SoknadJournalpostMapping
+import no.nav.hjelpemidler.soknad.mottak.Configuration
+import no.nav.hjelpemidler.soknad.mottak.service.JournalPost
+import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
+import no.nav.hjelpemidler.soknad.mottak.service.SoknadJournalpostMapping
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDateTime

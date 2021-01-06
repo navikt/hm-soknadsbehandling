@@ -1,14 +1,13 @@
-package no.nav.dagpenger.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.service
 
 import io.kotest.matchers.shouldBe
+import io.ktor.http.*
 import io.ktor.http.HttpMethod.Companion.Get
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.withTestApplication
+import io.ktor.server.testing.*
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.dagpenger.soknad.mottak.api
-import no.nav.dagpenger.soknad.mottak.db.SoknadStore
+import no.nav.hjelpemidler.soknad.mottak.api
+import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
 import org.junit.jupiter.api.Test
 
 internal class SøknadMetadataFinderTest {

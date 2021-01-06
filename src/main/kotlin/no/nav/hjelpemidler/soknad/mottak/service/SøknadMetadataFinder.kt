@@ -1,15 +1,12 @@
-package no.nav.dagpenger.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.service
 
-import io.ktor.application.ApplicationCall
-import io.ktor.application.call
-import io.ktor.http.HttpStatusCode
-import io.ktor.response.respond
-import io.ktor.response.respondText
-import io.ktor.routing.Route
-import io.ktor.routing.get
-import io.ktor.util.pipeline.PipelineContext
+import io.ktor.application.*
+import io.ktor.http.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.util.pipeline.*
 import mu.KotlinLogging
-import no.nav.dagpenger.soknad.mottak.db.SoknadStore
+import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
 
 private val logger = KotlinLogging.logger {}
 

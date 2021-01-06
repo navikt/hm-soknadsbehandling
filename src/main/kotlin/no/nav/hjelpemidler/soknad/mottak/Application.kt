@@ -1,22 +1,20 @@
-package no.nav.dagpenger.soknad.mottak
+package no.nav.hjelpemidler.soknad.mottak
 
-import io.ktor.application.Application
-import io.ktor.application.install
-import io.ktor.features.CallLogging
-import io.ktor.request.path
-import io.ktor.routing.route
-import io.ktor.routing.routing
-import no.nav.dagpenger.soknad.mottak.db.SoknadStore
-import no.nav.dagpenger.soknad.mottak.db.SoknadStorePostgres
-import no.nav.dagpenger.soknad.mottak.db.dataSourceFrom
-import no.nav.dagpenger.soknad.mottak.db.migrate
-import no.nav.dagpenger.soknad.mottak.oppslag.PDLClient
-import no.nav.dagpenger.soknad.mottak.oppslag.StsClient
-import no.nav.dagpenger.soknad.mottak.service.JournalPostSink
-import no.nav.dagpenger.soknad.mottak.service.SoknadDataSink
-import no.nav.dagpenger.soknad.mottak.service.getFagsakId
+import io.ktor.application.*
+import io.ktor.features.*
+import io.ktor.request.*
+import io.ktor.routing.*
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
+import no.nav.hjelpemidler.soknad.mottak.db.SoknadStorePostgres
+import no.nav.hjelpemidler.soknad.mottak.db.dataSourceFrom
+import no.nav.hjelpemidler.soknad.mottak.db.migrate
+import no.nav.hjelpemidler.soknad.mottak.oppslag.PDLClient
+import no.nav.hjelpemidler.soknad.mottak.oppslag.StsClient
+import no.nav.hjelpemidler.soknad.mottak.service.JournalPostSink
+import no.nav.hjelpemidler.soknad.mottak.service.SoknadDataSink
+import no.nav.hjelpemidler.soknad.mottak.service.getFagsakId
 import org.slf4j.event.Level
 
 fun main() {

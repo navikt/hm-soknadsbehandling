@@ -1,4 +1,4 @@
-package no.nav.dagpenger.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -6,8 +6,8 @@ import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import no.nav.dagpenger.soknad.mottak.db.SoknadStore
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

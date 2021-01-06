@@ -1,4 +1,4 @@
-package no.nav.dagpenger.soknad.mottak.oppslag
+package no.nav.hjelpemidler.soknad.mottak.oppslag
 
 import com.github.kittinunf.fuel.core.ResponseDeserializable
 import com.github.kittinunf.fuel.core.extensions.authentication
@@ -9,7 +9,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import no.nav.dagpenger.soknad.mottak.serder.ObjectMapper
+import no.nav.hjelpemidler.soknad.mottak.serder.ObjectMapper
 import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
