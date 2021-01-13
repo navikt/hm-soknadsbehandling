@@ -9,13 +9,13 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
-import no.nav.hjelpemidler.soknad.mottak.oppslag.PDLClient
 import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val store: SoknadStore, private val pdlClient: PDLClient) : River.PacketListener {
+internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val store: SoknadStore) :
+    River.PacketListener {
 
     init {
         River(rapidsConnection).apply {
@@ -39,14 +39,6 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
                     save(soknadData)
                     forward(soknadData, context)
                 }
-                launch {
-                    save(
-                        SoknadJournalpostMapping(
-                            søknadsId = packet.søknadsId,
-                            journalpostId = packet["journalpostId"].textValue()
-                        )
-                    )
-                }
             }
         }
     }
@@ -61,18 +53,9 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
             logger.error(it) { "Failed to save søknad: ${soknadData.søknadsId}" }
         }.getOrThrow()
 
-    private fun save(soknadJournalpostMapping: SoknadJournalpostMapping) =
-        kotlin.runCatching {
-            store.save(soknadJournalpostMapping)
-        }.onSuccess {
-            logger.info("Mapping saved: $soknadJournalpostMapping")
-        }.onFailure {
-            logger.error(it) { "Failed to save mapping: $soknadJournalpostMapping" }
-        }.getOrThrow()
-
     private fun CoroutineScope.forward(søknadData: SoknadData, context: RapidsConnection.MessageContext) {
         launch(Dispatchers.IO + SupervisorJob()) {
-            val aktørId = pdlClient.getAktorId(søknadData.fnr)
+            val aktørId = "aktorId" //todo, get from json? was pdl-call in copy-pasta
             context.send(søknadData.fnr, søknadData.toJson(aktørId))
         }.invokeOnCompletion {
             when (it) {

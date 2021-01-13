@@ -6,24 +6,18 @@ import io.kotest.matchers.shouldNotBe
 import io.mockk.*
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
-import no.nav.hjelpemidler.soknad.mottak.oppslag.PDLClient
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class SoknadDataSinkTest {
     private val capturedSoknadData = slot<SoknadData>()
-    private val capturedMapping = slot<SoknadJournalpostMapping>()
     private val mock = mockk<SoknadStore>().apply {
         every { save(capture(capturedSoknadData)) } returns 1
-        every { save(capture(capturedMapping)) } returns 1
     }
 
-    private val pdlClientMock = mockk<PDLClient>().also {
-        coEvery { it.getAktorId(any()) } returns "aktorId"
-    }
 
     private val rapid = TestRapid().apply {
-        SoknadDataSink(this, mock, pdlClientMock)
+        SoknadDataSink(this, mock)
     }
 
     @BeforeEach
@@ -48,9 +42,6 @@ internal class SoknadDataSinkTest {
 
         capturedSoknadData.captured.fnr shouldBe "fnr"
         capturedSoknadData.captured.søknadsId shouldBe "bid"
-
-        capturedMapping.captured.journalpostId shouldBe "jpid"
-        capturedMapping.captured.søknadsId shouldBe "bid"
     }
 
     @Test
