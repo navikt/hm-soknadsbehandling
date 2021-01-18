@@ -20,7 +20,6 @@ private val localProperties = ConfigurationMap(
         "db.password" to "postgres",
         "db.port" to "5432",
         "db.username" to "postgres",
-        "kafka.bootstrap.servers" to "localhost:9092",
         "kafka.extra.topic" to "hm-soknadsdata-v1",
         "kafka.reset.policy" to "earliest",
         "kafka.topic" to "hm-soknadsbehandling-v1",
@@ -28,7 +27,7 @@ private val localProperties = ConfigurationMap(
         "kafka.truststore.path" to "bla/bla",
         "kafka.credstore.password" to "foo",
         "kafka.keystore.path" to "bla/bla",
-
+        "kafka.brokers" to "localhost:9092",
     )
 )
 private val devProperties = ConfigurationMap(
@@ -64,7 +63,7 @@ internal object Configuration {
     val rapidApplication: Map<String, String> = mapOf(
         "RAPID_KAFKA_CLUSTER" to "gcp",
         "RAPID_APP_NAME" to "hm-soknadsbehandling",
-        "KAFKA_BOOTSTRAP_SERVERS" to config()[Key("kafka.bootstrap.servers", stringType)],
+        "KAFKA_BOOTSTRAP_SERVERS" to config()[Key("kafka.brokers", stringType)],
         "KAFKA_CONSUMER_GROUP_ID" to application.id,
         "KAFKA_RAPID_TOPIC" to config()[Key("kafka.topic", stringType)],
         "KAFKA_EXTRA_TOPIC" to config()[Key("kafka.extra.topic", stringType)],
