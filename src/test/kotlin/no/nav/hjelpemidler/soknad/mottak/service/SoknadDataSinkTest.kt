@@ -3,7 +3,11 @@ package no.nav.hjelpemidler.soknad.mottak.service
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.mockk.*
+import io.mockk.Called
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
 import org.junit.jupiter.api.BeforeEach
@@ -14,7 +18,6 @@ internal class SoknadDataSinkTest {
     private val mock = mockk<SoknadStore>().apply {
         every { save(capture(capturedSoknadData)) } returns 1
     }
-
 
     private val rapid = TestRapid().apply {
         SoknadDataSink(this, mock)

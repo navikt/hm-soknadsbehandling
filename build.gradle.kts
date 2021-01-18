@@ -4,6 +4,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 plugins {
     application
     kotlin("jvm") version Kotlin.version
+    id(Spotless.spotless) version Spotless.version
     id(Shadow.shadow) version Shadow.version
 }
 
@@ -11,6 +12,10 @@ buildscript {
     repositories {
         jcenter()
     }
+}
+
+apply {
+    plugin(Spotless.spotless)
 }
 
 repositories {
@@ -61,6 +66,16 @@ dependencies {
     testRuntimeOnly(Junit5.engine)
 }
 
+spotless {
+    kotlin {
+        ktlint(Ktlint.version)
+    }
+    kotlinGradle {
+        target("*.gradle.kts", "buildSrc/*.gradle.kts")
+        ktlint(Ktlint.version)
+    }
+}
+
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions.freeCompilerArgs = listOf()
     kotlinOptions.jvmTarget = "1.8"
@@ -89,5 +104,5 @@ tasks.named("jar") {
 }
 
 tasks.named("compileKotlin") {
-
+    dependsOn("spotlessCheck")
 }

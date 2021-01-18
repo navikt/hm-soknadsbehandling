@@ -9,7 +9,6 @@ import org.flywaydb.core.Flyway
 internal fun migrate(config: Configuration) =
     HikariDataSource(hikariConfigFrom(config)).use { migrate(it) }
 
-
 internal fun hikariConfigFrom(config: Configuration) =
     HikariConfig().apply {
         jdbcUrl = "jdbc:postgresql://${config.database.host}:${config.database.port}/${config.database.name}"

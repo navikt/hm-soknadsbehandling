@@ -43,7 +43,6 @@ internal class SoknadStoreTest {
             }
         }
     }
-
 }
 
 internal class PostgresTest {

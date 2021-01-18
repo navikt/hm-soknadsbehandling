@@ -1,7 +1,13 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
 import com.github.guepardoapps.kulid.ULID
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
@@ -55,7 +61,7 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
 
     private fun CoroutineScope.forward(søknadData: SoknadData, context: RapidsConnection.MessageContext) {
         launch(Dispatchers.IO + SupervisorJob()) {
-            val aktørId = "aktorId" //todo, get from json? was pdl-call in copy-pasta
+            val aktørId = "aktorId" // todo, get from json? was pdl-call in copy-pasta
             context.send(søknadData.fnr, søknadData.toJson(aktørId))
         }.invokeOnCompletion {
             when (it) {
