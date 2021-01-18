@@ -68,10 +68,10 @@ internal object Configuration {
         "KAFKA_RAPID_TOPIC" to config()[Key("kafka.topic", stringType)],
         "KAFKA_EXTRA_TOPIC" to config()[Key("kafka.extra.topic", stringType)],
         "KAFKA_RESET_POLICY" to config()[Key("kafka.reset.policy", stringType)],
-        "KAFKA_TRUSTSTORE_PATH" to config()[Key("kafka.truststore.path", stringType)],
-        "KAFKA_CREDSTORE_PASSWORD" to config()[Key("kafka.credstore.password", stringType)],
-        "KAFKA_KEYSTORE_PATH" to config()[Key("kafka.keystore.path", stringType)],
-        "KAFKA_KEYSTORE_PASSWORD" to config()[Key("kafka.credstore.password", stringType)],
+        "KAFKA_TRUSTSTORE_PATH" to config()[Key("KAFKA_TRUSTSTORE_PATH", stringType)],
+        "KAFKA_CREDSTORE_PASSWORD" to config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
+        "KAFKA_KEYSTORE_PATH" to config()[Key("KAFKA_KEYSTORE_PATH", stringType)],
+        "KAFKA_KEYSTORE_PASSWORD" to config()[Key("KAFKA_KEYSTORE_PASSWORD", stringType)],
         "IS_KAFKA_CLOUD" to "true"
 
     ) + System.getenv().filter { it.key.startsWith("NAIS_") }
