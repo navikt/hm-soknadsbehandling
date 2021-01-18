@@ -58,7 +58,7 @@ internal class PostgresTest {
     @Test
     fun `JDBC url is set correctly from  config values `() {
         with(hikariConfigFrom(Configuration)) {
-            jdbcUrl shouldBe "jdbc:postgresql://localhost:5432/soknadsbehandling"
+            jdbcUrl shouldBe "jdbc:postgresql://localhost:5434/soknadsbehandling"
         }
     }
 }

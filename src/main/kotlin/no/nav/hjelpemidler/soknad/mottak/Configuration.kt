@@ -18,7 +18,7 @@ private val localProperties = ConfigurationMap(
         "db.host" to "localhost",
         "db.database" to "soknadsbehandling",
         "db.password" to "postgres",
-        "db.port" to "5432",
+        "db.port" to "5434",
         "db.username" to "postgres",
         "kafka.extra.topic" to "hm-soknadsdata-v1",
         "kafka.reset.policy" to "earliest",
@@ -72,6 +72,7 @@ internal object Configuration {
         "KAFKA_CREDSTORE_PASSWORD" to config()[Key("kafka.credstore.password", stringType)],
         "KAFKA_KEYSTORE_PATH" to config()[Key("kafka.keystore.path", stringType)],
         "KAFKA_KEYSTORE_PASSWORD" to config()[Key("kafka.credstore.password", stringType)],
+        "IS_KAFKA_CLOUD" to "true"
 
     ) + System.getenv().filter { it.key.startsWith("NAIS_") }
 
