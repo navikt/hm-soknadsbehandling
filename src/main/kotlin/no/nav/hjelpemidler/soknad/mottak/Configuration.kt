@@ -29,7 +29,7 @@ private val localProperties = ConfigurationMap(
         "kafka.credstore.password" to "foo",
         "kafka.keystore.path" to "bla/bla",
 
-        )
+    )
 )
 private val devProperties = ConfigurationMap(
     mapOf(
