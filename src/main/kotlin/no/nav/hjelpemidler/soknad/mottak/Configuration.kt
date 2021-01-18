@@ -16,9 +16,9 @@ private val localProperties = ConfigurationMap(
         "db.port" to "5432",
         "db.username" to "postgres",
         "kafka.bootstrap.servers" to "localhost:9092",
-        "kafka.extra.topic" to "privat-dagpenger-journalpost-mottatt-v1, privat-dagpenger-soknadsdata-v1",
+        "kafka.extra.topic" to "hm-soknadsdata-v1",
         "kafka.reset.policy" to "earliest",
-        "kafka.topic" to "privat-dagpenger-behov-v2",
+        "kafka.topic" to "hm-soknadsbehandling-v1",
         "nav.truststore.password" to "foo",
         "nav.truststore.path" to "bla/bla",
     )
