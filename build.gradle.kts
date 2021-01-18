@@ -27,7 +27,7 @@ repositories {
 
 application {
     applicationName = "hm-soknadsbehandling"
-    mainClassName = "no.nav.dagpenger.soknad.mottak.ApplicationKt"
+    mainClassName = "no.nav.hjelpemidler.soknad.mottak.ApplicationKt"
 }
 
 java {
