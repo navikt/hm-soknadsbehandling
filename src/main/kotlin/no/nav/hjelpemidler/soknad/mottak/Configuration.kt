@@ -74,7 +74,7 @@ internal object Configuration {
         "KAFKA_KEYSTORE_PATH" to config()[Key("kafka.keystore.path", stringType)],
         "KAFKA_KEYSTORE_PASSWORD" to config()[Key("kafka.credstore.password", stringType)],
 
-        ) + System.getenv().filter { it.key.startsWith("NAIS_") }
+    ) + System.getenv().filter { it.key.startsWith("NAIS_") }
 
     data class Database(
         val host: String = config()[Key("db.host", stringType)],
