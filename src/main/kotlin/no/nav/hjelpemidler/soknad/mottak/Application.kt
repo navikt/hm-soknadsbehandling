@@ -10,6 +10,8 @@ import no.nav.hjelpemidler.soknad.mottak.service.SoknadDataSink
 fun main() {
     val store = SoknadStorePostgres(dataSourceFrom(Configuration))
 
+    println(Configuration.rapidApplication)
+
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .build().apply {
             SoknadDataSink(this, store)
