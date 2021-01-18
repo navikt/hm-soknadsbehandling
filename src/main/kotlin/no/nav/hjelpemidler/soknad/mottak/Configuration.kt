@@ -62,15 +62,19 @@ internal object Configuration {
     val database: Database = Database()
     val application: Application = Application()
     val rapidApplication: Map<String, String> = mapOf(
+        "RAPID_KAFKA_CLUSTER" to "gcp",
         "RAPID_APP_NAME" to "hm-soknadsbehandling",
         "KAFKA_BOOTSTRAP_SERVERS" to config()[Key("kafka.bootstrap.servers", stringType)],
         "KAFKA_CONSUMER_GROUP_ID" to application.id,
         "KAFKA_RAPID_TOPIC" to config()[Key("kafka.topic", stringType)],
         "KAFKA_EXTRA_TOPIC" to config()[Key("kafka.extra.topic", stringType)],
         "KAFKA_RESET_POLICY" to config()[Key("kafka.reset.policy", stringType)],
-        "NAV_TRUSTSTORE_PATH" to config()[Key("nav.truststore.path", stringType)],
-        "NAV_TRUSTSTORE_PASSWORD" to config()[Key("nav.truststore.password", stringType)]
-    ) + System.getenv().filter { it.key.startsWith("NAIS_") }
+        "KAFKA_TRUSTSTORE_PATH" to config()[Key("kafka.truststore.path", stringType)],
+        "KAFKA_CREDSTORE_PASSWORD" to config()[Key("kafka.credstore.password", stringType)],
+        "KAFKA_KEYSTORE_PATH" to config()[Key("kafka.keystore.path", stringType)],
+        "KAFKA_KEYSTORE_PASSWORD" to config()[Key("kafka.credstore.password", stringType)],
+
+        ) + System.getenv().filter { it.key.startsWith("NAIS_") }
 
     data class Database(
         val host: String = config()[Key("db.host", stringType)],
