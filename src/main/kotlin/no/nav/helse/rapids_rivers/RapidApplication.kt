@@ -8,7 +8,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.net.InetAddress
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 class RapidApplication internal constructor(
     private val ktor: ApplicationEngine,

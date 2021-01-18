@@ -7,7 +7,7 @@ import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.security.auth.SecurityProtocol
 import org.slf4j.LoggerFactory
 import java.time.Duration
-import java.util.*
+import java.util.Properties
 
 // Understands how to configure kafka from environment variables
 class KafkaConfig(

@@ -24,29 +24,29 @@ private val localProperties = ConfigurationMap(
         "kafka.extra.topic" to "hm-soknadsdata-v1",
         "kafka.reset.policy" to "earliest",
         "kafka.topic" to "hm-soknadsbehandling-v1",
-        "nav.truststore.password" to "foo",
-        "nav.truststore.path" to "bla/bla",
-    )
+        "kafka.truststore.password" to "foo",
+        "kafka.truststore.path" to "bla/bla",
+        "kafka.credstore.password" to "foo",
+        "kafka.keystore.path" to "bla/bla",
+
+        )
 )
 private val devProperties = ConfigurationMap(
     mapOf(
         "application.httpPort" to "8080",
         "application.profile" to "DEV",
-        "kafka.bootstrap.servers" to "b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443",
-        "kafka.extra.topic" to "privat-dagpenger-journalpost-mottatt-v1, privat-dagpenger-soknadsdata-v1",
+        "kafka.extra.topic" to "hm-soknadsdata-v1",
         "kafka.reset.policy" to "earliest",
-        "kafka.topic" to "privat-dagpenger-behov-v2",
-        "vault.mountpath" to "postgresql/preprod-fss/",
+        "kafka.topic" to "hm-soknadsbehandling-v1",
     )
 )
 private val prodProperties = ConfigurationMap(
     mapOf(
         "application.httpPort" to "8080",
         "application.profile" to "PROD",
-        "kafka.bootstrap.servers" to "a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443",
-        "kafka.extra.topic" to "privat-dagpenger-journalpost-mottatt-v1, privat-dagpenger-soknadsdata-v1",
+        "kafka.extra.topic" to "hm-soknadsdata-v1",
         "kafka.reset.policy" to "earliest",
-        "kafka.topic" to "privat-dagpenger-behov-v2",
+        "kafka.topic" to "hm-soknadsbehandling-v1",
     )
 )
 
