@@ -24,9 +24,9 @@ private val localProperties = ConfigurationMap(
         "kafka.reset.policy" to "earliest",
         "kafka.topic" to "hm-soknadsbehandling-v1",
         "kafka.truststore.password" to "foo",
-        "kafka.truststore.path" to "bla/bla",
-        "kafka.credstore.password" to "foo",
-        "kafka.keystore.path" to "bla/bla",
+        "KAFKA_TRUSTSTORE_PATH" to "bla/bla",
+        "KAFKA_CREDSTORE_PASSWORD" to "foo",
+        "KAFKA_KEYSTORE_PATH" to "bla/bla",
         "kafka.brokers" to "localhost:9092",
     )
 )
@@ -69,9 +69,9 @@ internal object Configuration {
         "KAFKA_EXTRA_TOPIC" to config()[Key("kafka.extra.topic", stringType)],
         "KAFKA_RESET_POLICY" to config()[Key("kafka.reset.policy", stringType)],
         "KAFKA_TRUSTSTORE_PATH" to config()[Key("KAFKA_TRUSTSTORE_PATH", stringType)],
-        "KAFKA_CREDSTORE_PASSWORD" to config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
+        "KAFKA_TRUSTSTORE_PASSWORD" to config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
         "KAFKA_KEYSTORE_PATH" to config()[Key("KAFKA_KEYSTORE_PATH", stringType)],
-        "KAFKA_KEYSTORE_PASSWORD" to config()[Key("KAFKA_KEYSTORE_PASSWORD", stringType)],
+        "KAFKA_KEYSTORE_PASSWORD" to config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
         "IS_KAFKA_CLOUD" to "true"
 
     ) + System.getenv().filter { it.key.startsWith("NAIS_") }
