@@ -20,9 +20,9 @@ private val localProperties = ConfigurationMap(
         "db.password" to "postgres",
         "db.port" to "5434",
         "db.username" to "postgres",
-        "kafka.extra.topic" to "hm-soknadsdata-v1",
+        "kafka.extra.topic" to "teamdigihot.hm-soknadsdata-v1",
         "kafka.reset.policy" to "earliest",
-        "kafka.topic" to "hm-soknadsbehandling-v1",
+        "kafka.topic" to "teamdigihot.hm-soknadsbehandling-v1",
         "kafka.truststore.password" to "foo",
         "KAFKA_TRUSTSTORE_PATH" to "bla/bla",
         "KAFKA_CREDSTORE_PASSWORD" to "foo",
@@ -34,18 +34,18 @@ private val devProperties = ConfigurationMap(
     mapOf(
         "application.httpPort" to "8080",
         "application.profile" to "DEV",
-        "kafka.extra.topic" to "hm-soknadsdata-v1",
+        "kafka.extra.topic" to "teamdigihot.hm-soknadsdata-v1",
         "kafka.reset.policy" to "earliest",
-        "kafka.topic" to "hm-soknadsbehandling-v1",
+        "kafka.topic" to "teamdigihot.hm-soknadsbehandling-v1",
     )
 )
 private val prodProperties = ConfigurationMap(
     mapOf(
         "application.httpPort" to "8080",
         "application.profile" to "PROD",
-        "kafka.extra.topic" to "hm-soknadsdata-v1",
+        "kafka.extra.topic" to "teamdigihot.hm-soknadsdata-v1",
         "kafka.reset.policy" to "earliest",
-        "kafka.topic" to "hm-soknadsbehandling-v1",
+        "kafka.topic" to "teamdigihot.hm-soknadsbehandling-v1",
     )
 )
 
