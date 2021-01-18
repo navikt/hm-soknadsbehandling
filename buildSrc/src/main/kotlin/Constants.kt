@@ -220,7 +220,7 @@ object Prometheus {
     }
 }
 
-const val RapidAndRivers = "com.github.navikt:hm-rapids-and-rivers:1.9c0c2dc"
+const val RapidAndRivers = "com.github.navikt:hm-rapids-and-rivers:1.520449a"
 
 object Slf4j {
     const val version = "1.7.25"
