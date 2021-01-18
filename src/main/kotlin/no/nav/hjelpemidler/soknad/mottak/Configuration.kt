@@ -63,7 +63,6 @@ internal object Configuration {
         "KAFKA_BOOTSTRAP_SERVERS" to config()[Key("kafka.brokers", stringType)],
         "KAFKA_CONSUMER_GROUP_ID" to application.id,
         "KAFKA_RAPID_TOPIC" to config()[Key("kafka.topic", stringType)],
-        "KAFKA_EXTRA_TOPIC" to config()[Key("kafka.extra.topic", stringType)],
         "KAFKA_RESET_POLICY" to config()[Key("kafka.reset.policy", stringType)],
         "KAFKA_TRUSTSTORE_PATH" to config()[Key("KAFKA_TRUSTSTORE_PATH", stringType)],
         "KAFKA_TRUSTSTORE_PASSWORD" to config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
