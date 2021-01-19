@@ -2,6 +2,8 @@ package no.nav.hjelpemidler.soknad.mottak.db
 
 import com.zaxxer.hikari.HikariDataSource
 import io.kotest.matchers.shouldBe
+import kotliquery.queryOf
+import kotliquery.sessionOf
 import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
 import org.junit.jupiter.api.Test
@@ -22,14 +24,17 @@ internal object DataSource {
             password = PostgresContainer.instance.password
             jdbcUrl = PostgresContainer.instance.jdbcUrl
             connectionTimeout = 1000L
-        }
+        }.also { sessionOf(it).run(queryOf("DROP ROLE IF EXISTS cloudsqliamuser").asExecute) }
+            .also { sessionOf(it).run(queryOf("CREATE ROLE cloudsqliamuser").asExecute) }
     }
 }
 
-internal fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }.run { test() }
+internal fun withCleanDb(test: () -> Unit) = DataSource.instance.also { clean(it) }
+    .run { test() }
 
 internal fun withMigratedDb(test: () -> Unit) =
-    DataSource.instance.also { clean(it) }.also { migrate(it) }.run { test() }
+    DataSource.instance.also { clean(it) }
+        .also { migrate(it) }.run { test() }
 
 internal class SoknadStoreTest {
 
@@ -51,7 +56,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            migrations shouldBe 1
+            migrations shouldBe 2
         }
     }
 
