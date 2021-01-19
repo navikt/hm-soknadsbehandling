@@ -63,6 +63,7 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
         launch(Dispatchers.IO + SupervisorJob()) {
             val aktørId = "aktorId" // todo, get from json? was pdl-call in copy-pasta
             context.send(søknadData.fnr, søknadData.toJson(aktørId))
+            Prometheus.soknadSendtCounter.inc()
         }.invokeOnCompletion {
             when (it) {
                 null -> {
@@ -90,4 +91,3 @@ internal data class SoknadData(val fnr: String, val søknadsId: String, val sokn
         }.toJson()
     }
 }
-internal data class SoknadJournalpostMapping(val søknadsId: String, val journalpostId: String)
