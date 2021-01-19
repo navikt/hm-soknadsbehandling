@@ -27,6 +27,7 @@ private val localProperties = ConfigurationMap(
         "KAFKA_CREDSTORE_PASSWORD" to "foo",
         "KAFKA_KEYSTORE_PATH" to "bla/bla",
         "kafka.brokers" to "localhost:9092",
+        "IS_KAFKA_CLOUD" to "false"
     )
 )
 private val devProperties = ConfigurationMap(
@@ -35,6 +36,7 @@ private val devProperties = ConfigurationMap(
         "application.profile" to "DEV",
         "kafka.reset.policy" to "earliest",
         "kafka.topic" to "teamdigihot.hm-soknadsbehandling-v1",
+        "IS_KAFKA_CLOUD" to "true"
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -43,6 +45,7 @@ private val prodProperties = ConfigurationMap(
         "application.profile" to "PROD",
         "kafka.reset.policy" to "earliest",
         "kafka.topic" to "teamdigihot.hm-soknadsbehandling-v1",
+        "IS_KAFKA_CLOUD" to "true"
     )
 )
 
@@ -68,8 +71,7 @@ internal object Configuration {
         "KAFKA_TRUSTSTORE_PASSWORD" to config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
         "KAFKA_KEYSTORE_PATH" to config()[Key("KAFKA_KEYSTORE_PATH", stringType)],
         "KAFKA_KEYSTORE_PASSWORD" to config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
-        "IS_KAFKA_CLOUD" to "true"
-
+        "IS_KAFKA_CLOUD" to config()[Key("IS_KAFKA_CLOUD", stringType)],
     ) + System.getenv().filter { it.key.startsWith("NAIS_") }
 
     data class Database(
