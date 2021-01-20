@@ -25,25 +25,28 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
 
     init {
         River(rapidsConnection).apply {
-            validate { it.forbid("@id") }
-            validate { it.requireKey("aktoerId", "brukerBehandlingId", "journalpostId") }
+            validate { it.forbid("@behandlingId") }
+            //validate { it.requireKey("aktoerId", "brukerBehandlingId", "journalpostId") }
         }.register(this)
     }
 
-    private val JsonMessage.fødselsnummer get() = this["aktoerId"].textValue()
-    private val JsonMessage.søknadsId get() = this["brukerBehandlingId"].textValue()
+    // private val JsonMessage.fødselsnummer get() = this["aktoerId"].textValue()
+    // private val JsonMessage.id get() = this["id"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
                     val soknadData = SoknadData(
-                        fnr = packet.fødselsnummer,
-                        søknadsId = packet.søknadsId,
+                        fnr = "packet.fødselsnummer",
+                        søknadsId = "packet.søknadsId",
                         soknad = packet.toJson()
                     )
-                    save(soknadData)
-                    forward(soknadData, context)
+
+                    logger.info { "Søknad mottat." }
+                    logger.info { "Søknad: ${soknadData.soknad}." }
+                    //save(soknadData)
+                    //forward(soknadData, context)
                 }
             }
         }
