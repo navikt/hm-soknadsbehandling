@@ -26,7 +26,7 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
     init {
         River(rapidsConnection).apply {
             validate { it.forbid("@behandlingId") }
-            //validate { it.requireKey("aktoerId", "brukerBehandlingId", "journalpostId") }
+            // validate { it.requireKey("aktoerId", "brukerBehandlingId", "journalpostId") }
         }.register(this)
     }
 
@@ -45,8 +45,8 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
 
                     logger.info { "Søknad mottat." }
                     logger.info { "Søknad: ${soknadData.soknad}." }
-                    //save(soknadData)
-                    //forward(soknadData, context)
+                    // save(soknadData)
+                    // forward(soknadData, context)
                 }
             }
         }
