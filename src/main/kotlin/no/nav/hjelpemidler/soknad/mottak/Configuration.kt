@@ -83,7 +83,7 @@ internal object Configuration {
     )
 
     data class Application(
-        val id: String = config().getOrElse(Key("", stringType), "hm-soknadsbehandling-v2"),
+        val id: String = config().getOrElse(Key("", stringType), "hm-soknadsbehandling-v1"),
         val profile: Profile = config()[Key("application.profile", stringType)].let { Profile.valueOf(it) },
         val httpPort: Int = config()[Key("application.httpPort", intType)]
     )
