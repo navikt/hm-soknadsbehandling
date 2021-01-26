@@ -13,9 +13,9 @@ import java.net.UnknownHostException
 
 private val localProperties = ConfigurationMap(
     mapOf(
-        "application.httpPort" to "8080",
+        "application.httpPort" to "8082",
         "application.profile" to "LOCAL",
-        "db.host" to "localhost",
+        "db.host" to "host.docker.internal",
         "db.database" to "soknadsbehandling",
         "db.password" to "postgres",
         "db.port" to "5434",
@@ -26,7 +26,7 @@ private val localProperties = ConfigurationMap(
         "KAFKA_TRUSTSTORE_PATH" to "bla/bla",
         "KAFKA_CREDSTORE_PASSWORD" to "foo",
         "KAFKA_KEYSTORE_PATH" to "bla/bla",
-        "kafka.brokers" to "localhost:9092",
+        "kafka.brokers" to "host.docker.internal:9092",
         "IS_KAFKA_CLOUD" to "false"
     )
 )
@@ -72,6 +72,7 @@ internal object Configuration {
         "KAFKA_KEYSTORE_PATH" to config()[Key("KAFKA_KEYSTORE_PATH", stringType)],
         "KAFKA_KEYSTORE_PASSWORD" to config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
         "IS_KAFKA_CLOUD" to config()[Key("IS_KAFKA_CLOUD", stringType)],
+        "HTTP_PORT" to config()[Key("application.httpPort", stringType)],
     ) + System.getenv().filter { it.key.startsWith("NAIS_") }
 
     data class Database(
