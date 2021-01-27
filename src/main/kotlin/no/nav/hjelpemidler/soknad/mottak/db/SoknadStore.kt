@@ -24,9 +24,10 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
-                        "INSERT INTO V1_SOKNAD (FNR, SOKNADS_ID, DATA ) VALUES (?,?,?) ON CONFLICT DO NOTHING",
-                        soknadData.fnr,
+                        "INSERT INTO V1_SOKNAD (FNR_BRUKER, FNR_INNSENDER, SOKNADS_ID, DATA ) VALUES (?,?,?,?) ON CONFLICT DO NOTHING",
+                        soknadData.fnrBruker,
                         soknadData.søknadsId,
+                        soknadData.fnrInnsender,
                         PGobject().apply {
                             type = "jsonb"
                             value = soknadData.soknad

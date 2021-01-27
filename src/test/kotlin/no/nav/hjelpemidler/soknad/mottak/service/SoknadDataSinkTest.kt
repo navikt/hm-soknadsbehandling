@@ -41,7 +41,7 @@ internal class SoknadDataSinkTest {
 
         rapid.sendTestMessage(okPacket)
 
-        capturedSoknadData.captured.fnr shouldBe "fnr"
+        capturedSoknadData.captured.fnrBruker shouldBe "fnr"
         capturedSoknadData.captured.søknadsId shouldBe "bid"
     }
 

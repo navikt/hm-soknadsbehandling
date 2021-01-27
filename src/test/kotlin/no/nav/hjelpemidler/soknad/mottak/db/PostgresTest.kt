@@ -42,7 +42,7 @@ internal class SoknadStoreTest {
     fun `Store soknad`() {
         withMigratedDb {
             SoknadStorePostgres(DataSource.instance).apply {
-                this.save(SoknadData("id", "00000000000", """ {"key": "value"} """)).also {
+                this.save(SoknadData("id", "id2", "00000000000", """ {"key": "value"} """)).also {
                     it shouldBe 1
                 }
             }
@@ -63,7 +63,7 @@ internal class PostgresTest {
     @Test
     fun `JDBC url is set correctly from  config values `() {
         with(hikariConfigFrom(Configuration)) {
-            jdbcUrl shouldBe "jdbc:postgresql://localhost:5434/soknadsbehandling"
+            jdbcUrl shouldBe "jdbc:postgresql://host.docker.internal:5434/soknadsbehandling"
         }
     }
 }

@@ -38,7 +38,8 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
             withContext(Dispatchers.IO) {
                 launch {
                     val soknadData = SoknadData(
-                        fnr = "packet.fødselsnummer",
+                        fnrBruker = "packet.fødselsnummer",
+                        fnrInnsender = "123",
                         søknadsId = "packet.søknadsId",
                         soknad = packet.toJson()
                     )
@@ -64,14 +65,13 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
 
     private fun CoroutineScope.forward(søknadData: SoknadData, context: RapidsConnection.MessageContext) {
         launch(Dispatchers.IO + SupervisorJob()) {
-            val aktørId = "aktorId" // todo, get from json? was pdl-call in copy-pasta
-            context.send(søknadData.fnr, søknadData.toJson(aktørId))
+            context.send(søknadData.fnrBruker, søknadData.toJson())
             Prometheus.soknadSendtCounter.inc()
         }.invokeOnCompletion {
             when (it) {
                 null -> {
                     logger.info("Søknad sent: ${søknadData.søknadsId}")
-                    sikkerlogg.info("Søknad sent med søknadsId: ${søknadData.søknadsId}, fnr: ${søknadData.fnr})")
+                    sikkerlogg.info("Søknad sent med søknadsId: ${søknadData.søknadsId}, fnr: ${søknadData.fnrBruker})")
                 }
                 is CancellationException -> logger.warn("Cancelled: ${it.message}. Soknad: ${søknadData.søknadsId}")
                 else -> {
@@ -82,14 +82,14 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
     }
 }
 
-internal data class SoknadData(val fnr: String, val søknadsId: String, val soknad: String) {
-    internal fun toJson(aktørId: String): String {
+internal data class SoknadData(val fnrBruker: String, val fnrInnsender: String, val søknadsId: String, val soknad: String) {
+    internal fun toJson(): String {
         return JsonMessage("{}", MessageProblems("")).also {
             it["@id"] = ULID.random()
             it["@event_name"] = "Søknad"
             it["@opprettet"] = LocalDateTime.now()
-            it["fnr"] = this.fnr
-            it["aktørId"] = aktørId
+            it["fnrBruker"] = this.fnrBruker
+            it["fnrInnsender"] = this.fnrInnsender
             it["søknadsId"] = this.søknadsId
         }.toJson()
     }
