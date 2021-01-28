@@ -1,6 +1,8 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
+import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
@@ -27,54 +29,101 @@ internal class SoknadDataSinkTest {
         capturedSoknadData.clear()
     }
 
-    // @Test
+    @Test
     fun `Save soknad and mapping if packet contains required keys`() {
 
         val okPacket =
             """
-            {
-                "aktoerId": "fnr",
-                "brukerBehandlingId": "bid",
-                "journalpostId": "jpid"
-            }
+                {
+                    "fodselNrBruker": "fnrBruker",
+                    "fodselNrInnsender": "fnrInnsender",
+                    "soknad": 
+                        {
+                            "soknad":
+                                {
+                                    "date": "2020-06-19",
+                                    "bruker": 
+                                        {
+                                            "fornavn": "fornavn",
+                                            "etternavn": "etternavn"
+                                        },
+                                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd9"
+                                }
+                        }
+                }
         """.trimMargin()
 
         rapid.sendTestMessage(okPacket)
 
-        capturedSoknadData.captured.fnrBruker shouldBe "fnr"
-        capturedSoknadData.captured.soknadId shouldBe "bid"
+        capturedSoknadData.captured.fnrBruker shouldBe "fnrBruker"
+        capturedSoknadData.captured.fnrInnsender shouldBe "fnrInnsender"
     }
 
     @Test
     fun `Handle soknad if packet contains required keys`() {
-        rapid.sendTestMessage("""{ "aktoerId": "fnr", "brukerBehandlingId": "id2", "journalpostId": "abc" }""".trimIndent())
+
+        val okPacket =
+            """
+                {
+                    "fodselNrBruker": "fnrBruker",
+                    "fodselNrInnsender": "fnrInnsender",
+                    "soknad": 
+                        {
+                            "soknad":
+                                {
+                                    "date": "2020-06-19",
+                                    "bruker": 
+                                        {
+                                            "fornavn": "fornavn",
+                                            "etternavn": "etternavn"
+                                        },
+                                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd9"
+                                }
+                        }
+                }
+        """.trimMargin()
+
+        rapid.sendTestMessage(okPacket)
 
         Thread.sleep(1000)
 
-/*
+        val inspektør = rapid.inspektør
+
         inspektør.size shouldBeExactly 1
 
-        inspektør.key(0) shouldBe "fnr"
+        inspektør.key(0) shouldBe "fnrBruker"
         val jsonNode = inspektør.message(0)
 
-        jsonNode["@id"].isNull shouldBe false
-        jsonNode["fnr"].textValue() shouldBe "fnr"
+        jsonNode["@soknadId"].isNull shouldBe false
+        jsonNode["fnrBruker"].textValue() shouldBe "fnrBruker"
         jsonNode["@event_name"].textValue() shouldBe "Søknad"
         jsonNode["@opprettet"].textValue() shouldNotBe null
-        jsonNode["aktørId"].textValue() shouldBe "aktorId"
-        jsonNode["søknadsId"].textValue() shouldBe "id2"*/
+        jsonNode["navnBruker"].textValue() shouldBe "etternavn fornavn"
     }
 
     @Test
-    fun `Does not handle packet with @id`() {
+    fun `Does not handle packet with @soknadId`() {
 
         val forbiddenPacket =
             """
-            {
-                "aktoerId": "fnr",
-                "brukerBehandlingId": "bid",
-                "@id": "id"
-            }
+                {
+                    "@soknadId": "id",
+                    "fodselNrBruker": "fnrBruker",
+                    "fodselNrInnsender": "fnrInnsender",
+                    "soknad": 
+                        {
+                            "soknad":
+                                {
+                                    "date": "2020-06-19",
+                                    "bruker": 
+                                        {
+                                            "fornavn": "fornavn",
+                                            "etternavn": "etternavn"
+                                        },
+                                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd9"
+                                }
+                        }
+                }
         """.trimMargin()
 
         rapid.sendTestMessage(forbiddenPacket)
