@@ -30,7 +30,7 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
                         soknadData.fnrInnsender,
                         PGobject().apply {
                             type = "jsonb"
-                            value = soknadData.soknad
+                            value = soknadData.soknadJson
                         }
                     ).asUpdate
                 )

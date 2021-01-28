@@ -1,5 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.db
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.zaxxer.hikari.HikariDataSource
 import io.kotest.matchers.shouldBe
 import kotliquery.queryOf
@@ -43,7 +44,7 @@ internal class SoknadStoreTest {
     fun `Store soknad`() {
         withMigratedDb {
             SoknadStorePostgres(DataSource.instance).apply {
-                this.save(SoknadData("id", "id2", "navn", UUID.randomUUID(), """ {"key": "value"} """)).also {
+                this.save(SoknadData("id", "id2", "navn", UUID.randomUUID(), """ {"key": "value"} """, ObjectMapper().readTree(""" {"key": "value"} """))).also {
                     it shouldBe 1
                 }
             }
