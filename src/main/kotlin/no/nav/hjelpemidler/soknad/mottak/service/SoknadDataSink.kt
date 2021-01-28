@@ -1,6 +1,10 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import com.github.guepardoapps.kulid.ULID
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +28,15 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val store: SoknadStore) :
     River.PacketListener {
 
+    companion object {
+        private val objectMapper = jacksonObjectMapper()
+            .registerModule(JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+    }
+
+    private fun soknadToJson(soknad: JsonNode): String = objectMapper.writeValueAsString(soknad)
+
     init {
         River(rapidsConnection).apply {
             validate { it.forbid("@behandlingId") }
@@ -34,6 +47,8 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
     private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
     private val JsonMessage.fnrInnsender get() = this["fodselNrInnsender"].textValue()
     private val JsonMessage.soknadId get() = this["soknad"]["soknad"]["id"].textValue()
+    private val JsonMessage.soknad get() = this["soknad"]
+    private val JsonMessage.navnBruker get() = this["soknad"]["soknad"]["bruker"]["etternavn"].textValue() + " " + this["soknad"]["soknad"]["bruker"]["fornavn"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
@@ -42,13 +57,14 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
                     val soknadData = SoknadData(
                         fnrBruker = packet.fnrBruker,
                         fnrInnsender = packet.fnrInnsender,
-                        soknad = packet.toJson(),
+                        navnBruker = packet.navnBruker,
+                        soknad = soknadToJson(packet.soknad),
                         soknadId = UUID.fromString(packet.soknadId)
                     )
 
                     logger.info { "Søknad mottatt: ${soknadData.soknadId}" }
                     save(soknadData)
-                    // forward(soknadData, context)
+                    forward(soknadData, context)
                 }
             }
         }
@@ -71,26 +87,33 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
         }.invokeOnCompletion {
             when (it) {
                 null -> {
-                    // logger.info("Søknad sent: ${søknadData.søknadsId}")
-                    // sikkerlogg.info("Søknad sent med søknadsId: ${søknadData.søknadsId}, fnr: ${søknadData.fnrBruker})")
+                    logger.info("Søknad sent: ${søknadData.soknadId}")
+                    sikkerlogg.info("Søknad sent med søknadsId: ${søknadData.soknadId}, fnr: ${søknadData.fnrBruker})")
                 }
                 is CancellationException -> logger.warn("Cancelled: ${it.message}")
                 else -> {
-                    // logger.error("Failed: ${it.message}. Soknad: ${søknadData.søknadsId}")
+                    logger.error("Failed: ${it.message}. Soknad: ${søknadData.soknadId}")
                 }
             }
         }
     }
 }
 
-internal data class SoknadData(val fnrBruker: String, val fnrInnsender: String, val soknadId: UUID, val soknad: String) {
+internal data class SoknadData(
+    val fnrBruker: String,
+    val fnrInnsender: String,
+    val navnBruker: String,
+    val soknadId: UUID,
+    val soknad: String
+) {
     internal fun toJson(): String {
         return JsonMessage("{}", MessageProblems("")).also {
-            it["@id"] = ULID.random()
+            it["@soknadId"] = this.soknadId
             it["@event_name"] = "Søknad"
             it["@opprettet"] = LocalDateTime.now()
             it["fnrBruker"] = this.fnrBruker
-            it["fnrInnsender"] = this.fnrInnsender
+            it["navnBruker"] = this.navnBruker
+            it["soknad"] = this.soknad
         }.toJson()
     }
 }

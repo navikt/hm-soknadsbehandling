@@ -43,7 +43,7 @@ internal class SoknadStoreTest {
     fun `Store soknad`() {
         withMigratedDb {
             SoknadStorePostgres(DataSource.instance).apply {
-                this.save(SoknadData("id", "id2", UUID.randomUUID(), """ {"key": "value"} """)).also {
+                this.save(SoknadData("id", "id2", "navn", UUID.randomUUID(), """ {"key": "value"} """)).also {
                     it shouldBe 1
                 }
             }
