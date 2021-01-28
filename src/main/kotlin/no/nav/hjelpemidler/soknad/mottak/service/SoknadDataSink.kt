@@ -16,6 +16,7 @@ import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.time.LocalDateTime
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
@@ -26,27 +27,27 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
     init {
         River(rapidsConnection).apply {
             validate { it.forbid("@behandlingId") }
-            // validate { it.requireKey("aktoerId", "brukerBehandlingId", "journalpostId") }
+            validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad") }
         }.register(this)
     }
 
-    // private val JsonMessage.fødselsnummer get() = this["aktoerId"].textValue()
-    // private val JsonMessage.id get() = this["id"].textValue()
+    private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
+    private val JsonMessage.fnrInnsender get() = this["fodselNrInnsender"].textValue()
+    private val JsonMessage.soknadId get() = this["soknad"]["soknad"]["id"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
                     val soknadData = SoknadData(
-                        fnrBruker = "packet.fødselsnummer",
-                        fnrInnsender = "123",
-                        søknadsId = "packet.søknadsId",
-                        soknad = packet.toJson()
+                        fnrBruker = packet.fnrBruker,
+                        fnrInnsender = packet.fnrInnsender,
+                        soknad = packet.toJson(),
+                        soknadId = UUID.fromString(packet.soknadId)
                     )
 
-                    logger.info { "Søknad mottat." }
-                    logger.info { "Søknad: ${soknadData.soknad}." }
-                    // save(soknadData)
+                    logger.info { "Søknad mottatt: ${soknadData.soknadId}" }
+                    save(soknadData)
                     // forward(soknadData, context)
                 }
             }
@@ -57,10 +58,10 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
         kotlin.runCatching {
             store.save(soknadData)
         }.onSuccess {
-            logger.info("Soknad saved: ${soknadData.søknadsId}")
+            logger.info("Søknad saved: ${soknadData.soknadId}")
             Prometheus.soknadCounter.inc()
         }.onFailure {
-            logger.error(it) { "Failed to save søknad: ${soknadData.søknadsId}" }
+            logger.error(it) { "Failed to save søknad: ${soknadData.soknadId}" }
         }.getOrThrow()
 
     private fun CoroutineScope.forward(søknadData: SoknadData, context: RapidsConnection.MessageContext) {
@@ -70,19 +71,19 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
         }.invokeOnCompletion {
             when (it) {
                 null -> {
-                    logger.info("Søknad sent: ${søknadData.søknadsId}")
-                    sikkerlogg.info("Søknad sent med søknadsId: ${søknadData.søknadsId}, fnr: ${søknadData.fnrBruker})")
+                    // logger.info("Søknad sent: ${søknadData.søknadsId}")
+                    // sikkerlogg.info("Søknad sent med søknadsId: ${søknadData.søknadsId}, fnr: ${søknadData.fnrBruker})")
                 }
-                is CancellationException -> logger.warn("Cancelled: ${it.message}. Soknad: ${søknadData.søknadsId}")
+                is CancellationException -> logger.warn("Cancelled: ${it.message}")
                 else -> {
-                    logger.error("Failed: ${it.message}. Soknad: ${søknadData.søknadsId}")
+                    // logger.error("Failed: ${it.message}. Soknad: ${søknadData.søknadsId}")
                 }
             }
         }
     }
 }
 
-internal data class SoknadData(val fnrBruker: String, val fnrInnsender: String, val søknadsId: String, val soknad: String) {
+internal data class SoknadData(val fnrBruker: String, val fnrInnsender: String, val soknadId: UUID, val soknad: String) {
     internal fun toJson(): String {
         return JsonMessage("{}", MessageProblems("")).also {
             it["@id"] = ULID.random()
@@ -90,7 +91,6 @@ internal data class SoknadData(val fnrBruker: String, val fnrInnsender: String, 
             it["@opprettet"] = LocalDateTime.now()
             it["fnrBruker"] = this.fnrBruker
             it["fnrInnsender"] = this.fnrInnsender
-            it["søknadsId"] = this.søknadsId
         }.toJson()
     }
 }

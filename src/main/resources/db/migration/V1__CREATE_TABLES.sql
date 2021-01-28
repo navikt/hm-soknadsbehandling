@@ -1,11 +1,11 @@
 CREATE TABLE IF NOT EXISTS V1_SOKNAD
 (
+    SOKNADS_ID       UUID                     NOT NULL,
     FNR_BRUKER       CHAR(11)                 NOT NULL,
     FNR_INNSENDER    CHAR(11)                 NOT NULL,
-    SOKNADS_ID       VARCHAR(20)              NOT NULL,
     DATA             JSONB                    NOT NULL,
-    PRIMARY KEY (FNR_BRUKER, SOKNADS_ID),
-    opprettet_dato   TIMESTAMP WITH TIME ZONE NOT NULL default (now() at time zone 'utc')
+    created          TIMESTAMP                NOT NULL default (now()),
+    PRIMARY KEY (FNR_BRUKER, SOKNADS_ID)
 );
 
 CREATE INDEX V1_SOKNAD_FNR_BRUKER_IDX ON V1_SOKNAD (FNR_BRUKER);

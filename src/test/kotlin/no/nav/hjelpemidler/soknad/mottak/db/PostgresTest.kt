@@ -8,6 +8,7 @@ import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.PostgreSQLContainer
+import java.util.UUID
 
 internal object PostgresContainer {
     val instance by lazy {
@@ -42,7 +43,7 @@ internal class SoknadStoreTest {
     fun `Store soknad`() {
         withMigratedDb {
             SoknadStorePostgres(DataSource.instance).apply {
-                this.save(SoknadData("id", "id2", "00000000000", """ {"key": "value"} """)).also {
+                this.save(SoknadData("id", "id2", UUID.randomUUID(), """ {"key": "value"} """)).also {
                     it shouldBe 1
                 }
             }
