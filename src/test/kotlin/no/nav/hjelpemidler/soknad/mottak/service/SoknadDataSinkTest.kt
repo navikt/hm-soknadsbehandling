@@ -94,7 +94,7 @@ internal class SoknadDataSinkTest {
         inspektør.key(0) shouldBe "fnrBruker"
         val jsonNode = inspektør.message(0)
 
-        jsonNode["@soknadId"].isNull shouldBe false
+        jsonNode["soknadId"].isNull shouldBe false
         jsonNode["fnrBruker"].textValue() shouldBe "fnrBruker"
         jsonNode["@event_name"].textValue() shouldBe "Søknad"
         jsonNode["@opprettet"].textValue() shouldNotBe null
@@ -102,12 +102,12 @@ internal class SoknadDataSinkTest {
     }
 
     @Test
-    fun `Does not handle packet with @soknadId`() {
+    fun `Does not handle packet with soknadId`() {
 
         val forbiddenPacket =
             """
                 {
-                    "@soknadId": "id",
+                    "soknadId": "id",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fnrInnsender",
                     "soknad": 

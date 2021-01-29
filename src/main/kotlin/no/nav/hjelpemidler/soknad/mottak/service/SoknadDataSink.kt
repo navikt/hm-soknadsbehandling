@@ -40,7 +40,7 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
 
     init {
         River(rapidsConnection).apply {
-            validate { it.forbid("@soknadId") }
+            validate { it.forbid("soknadId") }
             validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad") }
         }.register(this)
     }
