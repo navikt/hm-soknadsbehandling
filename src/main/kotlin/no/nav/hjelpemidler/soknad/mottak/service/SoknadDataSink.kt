@@ -114,7 +114,7 @@ internal data class SoknadData(
             it["@id"] = ULID.random()
             it["@event_name"] = "Søknad"
             it["@opprettet"] = LocalDateTime.now()
-            it["fnrBruker"] = this.fnrBruker
+            it["fodselNrBruker"] = this.fnrBruker
             it["navnBruker"] = this.navnBruker
             it["soknad"] = this.soknad
             it["soknadId"] = this.soknadId
