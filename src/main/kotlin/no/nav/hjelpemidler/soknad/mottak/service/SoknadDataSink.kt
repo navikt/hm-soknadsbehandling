@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.guepardoapps.kulid.ULID
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -110,12 +111,13 @@ internal data class SoknadData(
 ) {
     internal fun toJson(): String {
         return JsonMessage("{}", MessageProblems("")).also {
-            it["@soknadId"] = this.soknadId
+            it["@id"] = ULID.random()
             it["@event_name"] = "Søknad"
             it["@opprettet"] = LocalDateTime.now()
             it["fnrBruker"] = this.fnrBruker
             it["navnBruker"] = this.navnBruker
             it["soknad"] = this.soknad
+            it["soknadId"] = this.soknadId
         }.toJson()
     }
 }
