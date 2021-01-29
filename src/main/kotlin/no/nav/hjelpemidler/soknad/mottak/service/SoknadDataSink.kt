@@ -50,11 +50,6 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
     private val JsonMessage.soknad get() = this["soknad"]
     private val JsonMessage.navnBruker get() = this["soknad"]["soknad"]["bruker"]["etternavn"].textValue() + " " + this["soknad"]["soknad"]["bruker"]["fornavn"].textValue()
 
-    override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {
-        super.onError(problems, context)
-        print(problems.toExtendedReport())
-    }
-
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
             withContext(Dispatchers.IO) {
