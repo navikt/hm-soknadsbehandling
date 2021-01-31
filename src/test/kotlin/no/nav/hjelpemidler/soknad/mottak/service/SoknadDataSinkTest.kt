@@ -36,7 +36,7 @@ internal class SoknadDataSinkTest {
             """
                 {
                     "fodselNrBruker": "fnrBruker",
-                    "fodselNrInnsender": "fnrInnsender",
+                    "fodselNrInnsender": "fodselNrInnsender",
                     "soknad": 
                         {
                             "soknad":
@@ -56,7 +56,7 @@ internal class SoknadDataSinkTest {
         rapid.sendTestMessage(okPacket)
 
         capturedSoknadData.captured.fnrBruker shouldBe "fnrBruker"
-        capturedSoknadData.captured.fnrInnsender shouldBe "fnrInnsender"
+        capturedSoknadData.captured.fnrInnsender shouldBe "fodselNrInnsender"
     }
 
     @Test
@@ -95,7 +95,7 @@ internal class SoknadDataSinkTest {
         val jsonNode = inspektør.message(0)
 
         jsonNode["soknadId"].isNull shouldBe false
-        jsonNode["fnrBruker"].textValue() shouldBe "fnrBruker"
+        jsonNode["fodselNrBruker"].textValue() shouldBe "fnrBruker"
         jsonNode["@event_name"].textValue() shouldBe "Søknad"
         jsonNode["@opprettet"].textValue() shouldNotBe null
         jsonNode["navnBruker"].textValue() shouldBe "etternavn fornavn"
@@ -109,7 +109,7 @@ internal class SoknadDataSinkTest {
                 {
                     "soknadId": "id",
                     "fodselNrBruker": "fnrBruker",
-                    "fodselNrInnsender": "fnrInnsender",
+                    "fodselNrInnsender": "fodselNrInnsender",
                     "soknad": 
                         {
                             "soknad":
