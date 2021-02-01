@@ -28,3 +28,6 @@ spec:
     - team: teamdigihot
       application: hm-joark-sink
       access: readwrite   # read, write, readwrite
+    - team: teamdigihot
+      application: hm-oppgave-sink
+      access: readwrite   # read, write, readwrite
