@@ -11,7 +11,7 @@ Kjør docker-compose for å starte database lokalt:
 docker-compose -f docker-compose/docker-compose.yml up
 ```
 
-start [backend](https://github.com/navikt/hm-soknad-api) for å starte rapid og evt. populere rapid
-start [hm-soknadsbehandling](https://github.com/navikt/hm-soknadsbehandling) for å lagre søknad i db og sende videre på rapid
+- start [backend](https://github.com/navikt/hm-soknad-api) for å starte rapid og evt. populere rapid
+- start [hm-soknadsbehandling](https://github.com/navikt/hm-soknadsbehandling) for å lagre søknad i db og sende videre på rapid
 
-start hm-soknadsbehandling og vent på melding
+- start hm-soknadsbehandling og vent på melding
