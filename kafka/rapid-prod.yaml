@@ -22,3 +22,9 @@ spec:
     - team: teamdigihot
       application: hm-soknad-api
       access: write   # read, write, readwrite
+    - team: teamdigihot
+      application: hm-ditt-nav
+      access: read    # read, write, readwrite
+    - team: teamdigihot
+      application: hm-joark-listener
+      access: readwrite   # read, write, readwrite
