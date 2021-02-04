@@ -30,7 +30,7 @@ spec:
       access: readwrite   # read, write, readwrite
     - team: teamdigihot
       application: hm-joark-listener
-      access: write   # read, write, readwrite
+      access: readwrite   # read, write, readwrite
     - team: teamdigihot
       application: hm-oppgave-sink
       access: readwrite   # read, write, readwrite
