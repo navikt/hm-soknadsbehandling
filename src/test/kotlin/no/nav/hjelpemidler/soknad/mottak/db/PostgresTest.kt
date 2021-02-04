@@ -13,7 +13,7 @@ import java.util.UUID
 
 internal object PostgresContainer {
     val instance by lazy {
-        PostgreSQLContainer<Nothing>("postgres:11.2").apply {
+        PostgreSQLContainer<Nothing>("postgres:13.1").apply {
             start()
         }
     }
