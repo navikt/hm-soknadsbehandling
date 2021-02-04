@@ -23,8 +23,8 @@ private val localProperties = ConfigurationMap(
         "kafka.reset.policy" to "earliest",
         "kafka.topic" to "teamdigihot.hm-soknadsbehandling-v1",
         "KAFKA_TRUSTSTORE_PATH" to "",
-        "KAFKA_CREDSTORE_PASSWORD" to "foo",
-        "KAFKA_KEYSTORE_PATH" to "bla/bla",
+        "KAFKA_CREDSTORE_PASSWORD" to "",
+        "KAFKA_KEYSTORE_PATH" to "",
         "kafka.truststore.password" to "foo",
         "kafka.brokers" to "host.docker.internal:9092",
     )
