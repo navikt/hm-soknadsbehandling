@@ -15,3 +15,12 @@ docker-compose -f docker-compose/docker-compose.yml up
 - start [hm-soknadsbehandling](https://github.com/navikt/hm-soknadsbehandling) for å lagre søknad i db og sende videre på rapid
 
 - start hm-soknadsbehandling og vent på melding
+
+
+# Henvendelser
+
+Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på GitHub.
+
+## For NAV-ansatte
+
+Interne henvendelser kan sendes via Slack i kanalen #digihot-dev.
