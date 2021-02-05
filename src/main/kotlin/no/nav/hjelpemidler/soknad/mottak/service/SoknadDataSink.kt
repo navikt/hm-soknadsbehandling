@@ -20,6 +20,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import java.lang.RuntimeException
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -45,6 +46,7 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
         }.register(this)
     }
 
+    // private val JsonMessage.eventId get() = this["eventId"].textValue()
     private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
     private val JsonMessage.fnrInnsender get() = this["fodselNrInnsender"].textValue()
     private val JsonMessage.soknadId get() = this["soknad"]["soknad"]["id"].textValue()
@@ -55,21 +57,34 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
-                    val soknadData = SoknadData(
-                        fnrBruker = packet.fnrBruker,
-                        fnrInnsender = packet.fnrInnsender,
-                        navnBruker = packet.navnBruker,
-                        soknadJson = soknadToJson(packet.soknad),
-                        soknad = packet.soknad,
-                        soknadId = UUID.fromString(packet.soknadId)
-                    )
-
-                    logger.info { "Søknad mottatt: ${soknadData.soknadId}" }
-                    save(soknadData)
-                    forward(soknadData, context)
+                    if (skipEvent(UUID.fromString(packet.soknadId))) {
+                        logger.info { "Hopper over event i skip-list: ${packet.soknadId}" }
+                        return@launch
+                    }
+                    try {
+                        val soknadData = SoknadData(
+                            fnrBruker = packet.fnrBruker,
+                            fnrInnsender = packet.fnrInnsender,
+                            navnBruker = packet.navnBruker,
+                            soknadJson = soknadToJson(packet.soknad),
+                            soknad = packet.soknad,
+                            soknadId = UUID.fromString(packet.soknadId)
+                        )
+                        logger.info { "Søknad mottatt: ${packet.soknadId}" }
+                        save(soknadData)
+                        forward(soknadData, context)
+                    } catch (e: Exception) {
+                        throw RuntimeException("Håndtering av event ${packet.soknadId} feilet", e)
+                    }
                 }
             }
         }
+    }
+
+    private fun skipEvent(eventId: UUID): Boolean {
+        return listOf(
+            UUID.fromString("62f68547-11ae-418c-8ab7-4d2af985bcd9")
+        ).any { it == eventId }
     }
 
     private fun save(soknadData: SoknadData) =

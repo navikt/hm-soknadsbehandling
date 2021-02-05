@@ -47,7 +47,7 @@ internal class SoknadDataSinkTest {
                                             "fornavn": "fornavn",
                                             "etternavn": "etternavn"
                                         },
-                                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd9"
+                                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                                 }
                         }
                 }
@@ -77,7 +77,7 @@ internal class SoknadDataSinkTest {
                                             "fornavn": "fornavn",
                                             "etternavn": "etternavn"
                                         },
-                                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd9"
+                                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                                 }
                         }
                 }
