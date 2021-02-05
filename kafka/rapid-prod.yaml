@@ -11,10 +11,10 @@ spec:
   config: # optional; all fields are optional too; defaults shown
     cleanupPolicy: delete  # delete, compact
     minimumInSyncReplicas: 1
-    partitions: 1
+    partitions: 16
     replication: 3  # see min/max requirements
     retentionBytes: -1  # -1 means unlimited
-    retentionHours: 72  # -1 means unlimited
+    retentionHours: 168  # -1 means unlimited
   acl:
     - team: teamdigihot
       application: hm-soknadsbehandling
@@ -26,5 +26,11 @@ spec:
       application: hm-ditt-nav
       access: read    # read, write, readwrite
     - team: teamdigihot
+      application: hm-joark-sink
+      access: readwrite   # read, write, readwrite
+    - team: teamdigihot
       application: hm-joark-listener
+      access: readwrite   # read, write, readwrite
+    - team: teamdigihot
+      application: hm-oppgave-sink
       access: readwrite   # read, write, readwrite
