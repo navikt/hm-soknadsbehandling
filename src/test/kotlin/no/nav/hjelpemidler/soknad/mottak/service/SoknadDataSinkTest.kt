@@ -35,6 +35,7 @@ internal class SoknadDataSinkTest {
         val okPacket =
             """
                 {
+                    "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
                     "soknad": 
@@ -65,6 +66,7 @@ internal class SoknadDataSinkTest {
         val okPacket =
             """
                 {
+                    "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fnrInnsender",
                     "soknad": 
@@ -107,6 +109,7 @@ internal class SoknadDataSinkTest {
         val forbiddenPacket =
             """
                 {
+                    "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "soknadId": "id",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",

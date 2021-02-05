@@ -42,11 +42,11 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
     init {
         River(rapidsConnection).apply {
             validate { it.forbid("soknadId") }
-            validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad") }
+            validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId") }
         }.register(this)
     }
 
-    // private val JsonMessage.eventId get() = this["eventId"].textValue()
+    private val JsonMessage.eventId get() = this["eventId"].textValue()
     private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
     private val JsonMessage.fnrInnsender get() = this["fodselNrInnsender"].textValue()
     private val JsonMessage.soknadId get() = this["soknad"]["soknad"]["id"].textValue()
@@ -57,8 +57,8 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
-                    if (skipEvent(UUID.fromString(packet.soknadId))) {
-                        logger.info { "Hopper over event i skip-list: ${packet.soknadId}" }
+                    if (skipEvent(UUID.fromString(packet.eventId))) {
+                        logger.info { "Hopper over event i skip-list: ${packet.eventId}" }
                         return@launch
                     }
                     try {
@@ -74,7 +74,7 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
                         save(soknadData)
                         forward(soknadData, context)
                     } catch (e: Exception) {
-                        throw RuntimeException("Håndtering av event ${packet.soknadId} feilet", e)
+                        throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
                     }
                 }
             }
@@ -82,9 +82,8 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
     }
 
     private fun skipEvent(eventId: UUID): Boolean {
-        return listOf(
-            UUID.fromString("62f68547-11ae-418c-8ab7-4d2af985bcd9")
-        ).any { it == eventId }
+        val skipList = mutableListOf<UUID>()
+        return skipList.any { it == eventId }
     }
 
     private fun save(soknadData: SoknadData) =
