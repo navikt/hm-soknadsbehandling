@@ -83,7 +83,7 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
 
     private fun skipEvent(eventId: UUID): Boolean {
         val skipList = mutableListOf<UUID>()
-        skipList.add(UUID.fromString("dedb9634-eaa1-495f-af09-e6465f112e79"))
+        skipList.add(UUID.fromString("01fc4654-bba8-43b3-807b-8487ab21cea3"))
         return skipList.any { it == eventId }
     }
 
