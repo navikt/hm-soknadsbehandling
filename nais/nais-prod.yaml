@@ -35,12 +35,12 @@ spec:
     pool: nav-prod
   gcp:
     sqlInstances:
-      - name: hm-soknadsbehandling-db
+      - name: hm-soknadsbehandling-db-prod
         type: POSTGRES_12
-        tier: db-custom-1-3840
+        tier: db-custom-4-15360
         diskType: SSD
         highAvailability: true
-        diskSize: 10
+        diskSize: 20
         diskAutoresize: true
         autoBackupTime: "03:00"
         databases:
