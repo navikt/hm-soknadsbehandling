@@ -32,10 +32,10 @@ spec:
   secureLogs:
     enabled: true
   kafka:
-    pool: nav-dev
+    pool: nav-prod
   gcp:
     sqlInstances:
-      - name: hm-soknadsbehandling-db-dev
+      - name: hm-soknadsbehandling-db
         type: POSTGRES_12
         tier: db-custom-1-3840
         diskType: SSD
