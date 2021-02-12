@@ -58,6 +58,37 @@ internal class SoknadDataSinkTest {
 
         capturedSoknadData.captured.fnrBruker shouldBe "fnrBruker"
         capturedSoknadData.captured.fnrInnsender shouldBe "fodselNrInnsender"
+        capturedSoknadData.captured.status shouldBe Status.GODKJENT_MED_FULLMAKT
+    }
+
+    @Test
+    fun `Signatur element in JSON is mapped to correct status`() {
+
+        val okPacket =
+            """
+                {
+                    "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "fodselNrBruker": "fnrBruker",
+                    "fodselNrInnsender": "fodselNrInnsender",
+                    "soknad": 
+                        {
+                            "soknad":
+                                {
+                                    "date": "2020-06-19",
+                                    "bruker": 
+                                        {
+                                            "fornavn": "fornavn",
+                                            "etternavn": "etternavn",
+                                            "signatur": "BRUKER_BEKREFTER"
+                                        },
+                                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
+                                }
+                        }
+                }
+        """.trimMargin()
+
+        rapid.sendTestMessage(okPacket)
+        capturedSoknadData.captured.status shouldBe Status.VENTER_GODKJENNING
     }
 
     @Test

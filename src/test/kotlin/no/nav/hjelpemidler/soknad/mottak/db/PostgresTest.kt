@@ -7,6 +7,7 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
+import no.nav.hjelpemidler.soknad.mottak.service.Status
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.PostgreSQLContainer
 import java.util.UUID
@@ -44,7 +45,17 @@ internal class SoknadStoreTest {
     fun `Store soknad`() {
         withMigratedDb {
             SoknadStorePostgres(DataSource.instance).apply {
-                this.save(SoknadData("id", "id2", "navn", UUID.randomUUID(), """ {"key": "value"} """, ObjectMapper().readTree(""" {"key": "value"} """))).also {
+                this.save(
+                    SoknadData(
+                        "id",
+                        "id2",
+                        "navn",
+                        UUID.randomUUID(),
+                        """ {"key": "value"} """,
+                        ObjectMapper().readTree(""" {"key": "value"} """),
+                        status = Status.VENTER_GODKJENNING
+                    )
+                ).also {
                     it shouldBe 1
                 }
             }

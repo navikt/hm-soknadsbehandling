@@ -52,6 +52,9 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
     private val JsonMessage.soknadId get() = this["soknad"]["soknad"]["id"].textValue()
     private val JsonMessage.soknad get() = this["soknad"]
     private val JsonMessage.navnBruker get() = this["soknad"]["soknad"]["bruker"]["etternavn"].textValue() + " " + this["soknad"]["soknad"]["bruker"]["fornavn"].textValue()
+    private val JsonMessage.signatur get() = if (this["soknad"]["soknad"]["bruker"].has("signatur")) {
+        this["soknad"]["soknad"]["bruker"]["signatur"].textValue()
+    } else "FULLMAKT"
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
@@ -68,16 +71,27 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
                             navnBruker = packet.navnBruker,
                             soknadJson = soknadToJson(packet.soknad),
                             soknad = packet.soknad,
-                            soknadId = UUID.fromString(packet.soknadId)
+                            soknadId = UUID.fromString(packet.soknadId),
+                            status = lagStatus(packet.signatur)
                         )
                         logger.info { "Søknad mottatt: ${packet.soknadId}" }
                         save(soknadData)
+
+
                         forward(soknadData, context)
                     } catch (e: Exception) {
                         throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
                     }
                 }
             }
+        }
+    }
+
+    private fun lagStatus(signatur: String): Status {
+        return when (signatur) {
+            "BRUKER_BEKREFTER" -> Status.VENTER_GODKJENNING
+            "FULLMAKT" -> Status.GODKJENT_MED_FULLMAKT
+            else -> { throw RuntimeException("Ukjent signaturtype i søknad") }
         }
     }
 
@@ -116,13 +130,18 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
     }
 }
 
+enum class Status {
+    VENTER_GODKJENNING, GODKJENT_MED_FULLMAKT, GODKJENT, UTLØPT
+}
+
 internal data class SoknadData(
     val fnrBruker: String,
     val fnrInnsender: String,
     val navnBruker: String,
     val soknadId: UUID,
     val soknadJson: String,
-    val soknad: JsonNode
+    val soknad: JsonNode,
+    val status: Status
 ) {
     internal fun toJson(): String {
         return JsonMessage("{}", MessageProblems("")).also {
