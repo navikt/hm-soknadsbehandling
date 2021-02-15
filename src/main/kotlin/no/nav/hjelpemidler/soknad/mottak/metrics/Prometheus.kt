@@ -11,15 +11,21 @@ internal object Prometheus {
         .labelNames("query")
         .register(collectorRegistry)
 
-    val soknadCounter = Counter
-        .build()
-        .name("hm_soknad_mottak_soknad_mottatt_counter")
-        .help("Antall soknakder mottatt")
-        .register(collectorRegistry)
-
     val soknadSendtCounter = Counter
         .build()
         .name("hm_soknad_mottak_soknad_sendt")
-        .help("Antall soknakder sendt")
+        .help("Antall søknader sendt")
+        .register(collectorRegistry)
+
+    val soknadMedFullmaktCounter = Counter
+        .build()
+        .name("hm_soknad_mottak_soknad_fullmakt")
+        .help("Antall søknader med fullmakt")
+        .register(collectorRegistry)
+
+    val soknadTilGodkjenningCounter = Counter
+        .build()
+        .name("hm_soknad_mottak_soknad_til_godkjenning")
+        .help("Antall søknader til godkjenning")
         .register(collectorRegistry)
 }

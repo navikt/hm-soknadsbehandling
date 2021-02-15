@@ -10,17 +10,19 @@ import io.mockk.slot
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.lang.RuntimeException
 
-internal class SoknadDataSinkTest {
+internal class SoknadMedFullmaktDataSinkTest {
     private val capturedSoknadData = slot<SoknadData>()
     private val mock = mockk<SoknadStore>().apply {
         every { save(capture(capturedSoknadData)) } returns 1
     }
 
     private val rapid = TestRapid().apply {
-        SoknadDataSink(this, mock)
+        SoknadMedFullmaktDataSink(this, mock)
     }
 
     @BeforeEach
@@ -35,6 +37,7 @@ internal class SoknadDataSinkTest {
         val okPacket =
             """
                 {
+                    "eventName": "soknadMedFullmakt",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
@@ -62,12 +65,42 @@ internal class SoknadDataSinkTest {
     }
 
     @Test
-    fun `Do not react to events with "event_name" key`() {
+    fun `Do not react to events without "event_name" key`() {
 
         val invalidPacket =
             """
                 {
-                    "eventName": "someName",
+                    "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "fodselNrBruker": "fnrBruker",
+                    "fodselNrInnsender": "fodselNrInnsender",
+                    "soknad": 
+                        {
+                            "soknad":
+                                {
+                                    "date": "2020-06-19",
+                                    "bruker": 
+                                        {
+                                            "fornavn": "fornavn",
+                                            "etternavn": "etternavn"
+                                        },
+                                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
+                                }
+                        }
+                }
+        """.trimMargin()
+
+        rapid.sendTestMessage(invalidPacket)
+
+        verify { mock wasNot Called }
+    }
+
+    @Test
+    fun `Do not react to events with irrelevant eventName`() {
+
+        val invalidPacket =
+            """
+                {
+                    "eventName": "soknadUtenFullmakt",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
@@ -98,6 +131,7 @@ internal class SoknadDataSinkTest {
         val okPacket =
             """
                 {
+                    "eventName": "soknadMedFullmakt",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
@@ -109,8 +143,7 @@ internal class SoknadDataSinkTest {
                                     "bruker": 
                                         {
                                             "fornavn": "fornavn",
-                                            "etternavn": "etternavn",
-                                            "signatur": "BRUKER_BEKREFTER"
+                                            "etternavn": "etternavn"
                                         },
                                     "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                                 }
@@ -119,7 +152,7 @@ internal class SoknadDataSinkTest {
         """.trimMargin()
 
         rapid.sendTestMessage(okPacket)
-        capturedSoknadData.captured.status shouldBe Status.VENTER_GODKJENNING
+        capturedSoknadData.captured.status shouldBe Status.GODKJENT_MED_FULLMAKT
     }
 
     @Test
@@ -128,6 +161,7 @@ internal class SoknadDataSinkTest {
         val okPacket =
             """
                 {
+                    "eventName": "soknadMedFullmakt",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fnrInnsender",
@@ -171,6 +205,7 @@ internal class SoknadDataSinkTest {
         val forbiddenPacket =
             """
                 {
+                    "eventName": "soknadMedFullmakt",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "soknadId": "id",
                     "fodselNrBruker": "fnrBruker",
@@ -193,5 +228,35 @@ internal class SoknadDataSinkTest {
 
         rapid.sendTestMessage(forbiddenPacket)
         verify { mock wasNot Called }
+    }
+
+    @Test
+    fun `Fail on message with lacking interesting key `() {
+
+        val forbiddenPacket =
+            """
+                {
+                    "eventName": "soknadMedFullmakt",
+                    "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "fodselNrInnsender": "fodselNrInnsender",
+                    "soknad": 
+                        {
+                            "soknad":
+                                {
+                                    "date": "2020-06-19",
+                                    "bruker": 
+                                        {
+                                            "fornavn": "fornavn",
+                                            "etternavn": "etternavn"
+                                        },
+                                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd9"
+                                }
+                        }
+                }
+        """.trimMargin()
+
+        assertThrows(RuntimeException::class.java) {
+            rapid.sendTestMessage(forbiddenPacket)
+        }
     }
 }
