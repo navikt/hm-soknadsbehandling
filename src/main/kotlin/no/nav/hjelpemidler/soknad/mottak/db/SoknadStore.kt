@@ -22,7 +22,7 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
                         soknadData.soknadId,
                         soknadData.fnrBruker,
                         soknadData.fnrInnsender,
-                        soknadData.status,
+                        soknadData.status.name,
                         PGobject().apply {
                             type = "jsonb"
                             value = soknadData.soknadJson
