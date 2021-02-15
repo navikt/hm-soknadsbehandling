@@ -37,7 +37,8 @@ internal class SoknadMedFullmaktDataSinkTest {
         val okPacket =
             """
                 {
-                    "eventName": "soknadMedFullmakt",
+                    "eventName": "nySoknad",
+                    "signatur": "FULLMAKT",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
@@ -70,6 +71,7 @@ internal class SoknadMedFullmaktDataSinkTest {
         val invalidPacket =
             """
                 {
+                    "signatur": "FULLMAKT",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
@@ -95,12 +97,13 @@ internal class SoknadMedFullmaktDataSinkTest {
     }
 
     @Test
-    fun `Do not react to events with irrelevant eventName`() {
+    fun `Do not react to events with irrelevant signature`() {
 
         val invalidPacket =
             """
                 {
-                    "eventName": "soknadUtenFullmakt",
+                    "eventName": "nySoknad",
+                    "signatur": "BRUKER_BEKREFTER",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
@@ -131,7 +134,8 @@ internal class SoknadMedFullmaktDataSinkTest {
         val okPacket =
             """
                 {
-                    "eventName": "soknadMedFullmakt",
+                    "eventName": "nySoknad",
+                    "signatur": "FULLMAKT",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
@@ -161,7 +165,8 @@ internal class SoknadMedFullmaktDataSinkTest {
         val okPacket =
             """
                 {
-                    "eventName": "soknadMedFullmakt",
+                    "eventName": "nySoknad",
+                    "signatur": "FULLMAKT",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fnrInnsender",
@@ -205,7 +210,8 @@ internal class SoknadMedFullmaktDataSinkTest {
         val forbiddenPacket =
             """
                 {
-                    "eventName": "soknadMedFullmakt",
+                    "eventName": "nySoknad",
+                    "signatur": "FULLMAKT",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "soknadId": "id",
                     "fodselNrBruker": "fnrBruker",
@@ -236,7 +242,8 @@ internal class SoknadMedFullmaktDataSinkTest {
         val forbiddenPacket =
             """
                 {
-                    "eventName": "soknadMedFullmakt",
+                    "eventName": "nySoknad",
+                    "signatur": "FULLMAKT",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrInnsender": "fodselNrInnsender",
                     "soknad": 

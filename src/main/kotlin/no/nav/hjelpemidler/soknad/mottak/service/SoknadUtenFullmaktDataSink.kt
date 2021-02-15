@@ -37,7 +37,8 @@ internal class SoknadUtenFullmaktDataSink(rapidsConnection: RapidsConnection, pr
 
     init {
         River(rapidsConnection).apply {
-            validate { it.requireValue("eventName", "soknadUtenFullmakt") }
+            validate { it.requireValue("eventName", "nySoknad") }
+            validate { it.requireValue("signatur", "BRUKER_BEKREFTER") }
             validate { it.forbid("soknadId") }
             validate { it.interestedIn("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId") }
         }.register(this)

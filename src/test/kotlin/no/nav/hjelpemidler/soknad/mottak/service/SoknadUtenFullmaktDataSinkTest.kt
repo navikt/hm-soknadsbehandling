@@ -36,7 +36,8 @@ internal class SoknadUtenFullmaktDataSinkTest {
         val okPacket =
             """
                 {
-                    "eventName": "soknadUtenFullmakt",
+                    "eventName": "nySoknad",
+                    "signatur": "BRUKER_BEKREFTET",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
@@ -69,6 +70,7 @@ internal class SoknadUtenFullmaktDataSinkTest {
         val invalidPacket =
             """
                 {
+                    "signatur": "BRUKER_BEKREFTET",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
@@ -99,7 +101,8 @@ internal class SoknadUtenFullmaktDataSinkTest {
         val invalidPacket =
             """
                 {
-                    "eventName": "soknadMedFullmakt",
+                    "eventName": "nySoknad",
+                    "signatur": "BRUKER_BEKREFTET",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
@@ -130,7 +133,8 @@ internal class SoknadUtenFullmaktDataSinkTest {
         val okPacket =
             """
                 {
-                    "eventName": "soknadUtenFullmakt",
+                    "eventName": "nySoknad",
+                    "signatur": "BRUKER_BEKREFTET",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fnrInnsender",
@@ -173,7 +177,8 @@ internal class SoknadUtenFullmaktDataSinkTest {
         val forbiddenPacket =
             """
                 {
-                    "eventName": "soknadUtenFullmakt",
+                    "eventName": "nySoknad",
+                    "signatur": "BRUKER_BEKREFTET",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "soknadId": "id",
                     "fodselNrBruker": "fnrBruker",
@@ -204,7 +209,8 @@ internal class SoknadUtenFullmaktDataSinkTest {
         val forbiddenPacket =
             """
                 {
-                    "eventName": "soknadUtenFullmakt",
+                    "eventName": "nySoknad",
+                    "signatur": "BRUKER_BEKREFTET",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrInnsender": "fodselNrInnsender",
                     "soknad": 
