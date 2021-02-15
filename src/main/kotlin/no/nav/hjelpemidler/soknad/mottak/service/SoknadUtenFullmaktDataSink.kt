@@ -23,7 +23,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val store: SoknadStore) :
+internal class SoknadUtenFullmaktDataSink(rapidsConnection: RapidsConnection, private val store: SoknadStore) :
     River.PacketListener {
 
     companion object {
@@ -37,8 +37,9 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
 
     init {
         River(rapidsConnection).apply {
-            validate { it.forbid("soknadId", "eventName") }
-            validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId") }
+            validate { it.requireValue("eventName", "soknadUtenFullmakt") }
+            validate { it.forbid("soknadId") }
+            validate { it.interestedIn("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId") }
         }.register(this)
     }
 
@@ -48,10 +49,6 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
     private val JsonMessage.soknadId get() = this["soknad"]["soknad"]["id"].textValue()
     private val JsonMessage.soknad get() = this["soknad"]
     private val JsonMessage.navnBruker get() = this["soknad"]["soknad"]["bruker"]["etternavn"].textValue() + " " + this["soknad"]["soknad"]["bruker"]["fornavn"].textValue()
-    private val JsonMessage.signatur get() =
-        if (this["soknad"]["soknad"]["bruker"].has("signatur")) {
-            this["soknad"]["soknad"]["bruker"]["signatur"].textValue()
-        } else "FULLMAKT"
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
@@ -69,9 +66,9 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
                             soknadJson = soknadToJson(packet.soknad),
                             soknad = packet.soknad,
                             soknadId = UUID.fromString(packet.soknadId),
-                            status = lagStatus(packet.signatur)
+                            status = Status.VENTER_GODKJENNING
                         )
-                        logger.info { "Søknad mottatt: ${packet.soknadId}" }
+                        logger.info { "Søknad til godkjenning mottatt: ${packet.soknadId}" }
                         save(soknadData)
 
                         forward(soknadData, context)
@@ -83,17 +80,8 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
         }
     }
 
-    private fun lagStatus(signatur: String): Status {
-        return when (signatur) {
-            "BRUKER_BEKREFTER" -> Status.VENTER_GODKJENNING
-            "FULLMAKT" -> Status.GODKJENT_MED_FULLMAKT
-            else -> { throw RuntimeException("Ukjent signaturtype i søknad") }
-        }
-    }
-
     private fun skipEvent(eventId: UUID): Boolean {
         val skipList = mutableListOf<UUID>()
-        skipList.add(UUID.fromString("01fc4654-bba8-43b3-807b-8487ab21cea3"))
         return skipList.any { it == eventId }
     }
 
@@ -101,20 +89,20 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
         kotlin.runCatching {
             store.save(soknadData)
         }.onSuccess {
-            logger.info("Søknad saved: ${soknadData.soknadId}")
+            logger.info("Søknad klar til godkjenning saved: ${soknadData.soknadId}")
         }.onFailure {
-            logger.error(it) { "Failed to save søknad: ${soknadData.soknadId}" }
+            logger.error(it) { "Failed to save søknad klar til godkjenning: ${soknadData.soknadId}" }
         }.getOrThrow()
 
     private fun CoroutineScope.forward(søknadData: SoknadData, context: RapidsConnection.MessageContext) {
         launch(Dispatchers.IO + SupervisorJob()) {
-            context.send(søknadData.fnrBruker, søknadData.toJson())
-            Prometheus.soknadSendtCounter.inc()
+            context.send(søknadData.fnrBruker, søknadData.toVenterPaaGodkjenningJson())
+            Prometheus.soknadTilGodkjenningCounter.inc()
         }.invokeOnCompletion {
             when (it) {
                 null -> {
-                    logger.info("Søknad sent: ${søknadData.soknadId}")
-                    sikkerlogg.info("Søknad sent med søknadsId: ${søknadData.soknadId}, fnr: ${søknadData.fnrBruker})")
+                    logger.info("Søknad klar til godkjenning: ${søknadData.soknadId}")
+                    sikkerlogg.info("Søknad klar til godkjenning med søknadsId: ${søknadData.soknadId}, fnr: ${søknadData.fnrBruker})")
                 }
                 is CancellationException -> logger.warn("Cancelled: ${it.message}")
                 else -> {
