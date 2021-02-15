@@ -37,7 +37,7 @@ internal class SoknadUtenFullmaktDataSinkTest {
             """
                 {
                     "eventName": "nySoknad",
-                    "signatur": "BRUKER_BEKREFTET",
+                    "signatur": "BRUKER_BEKREFTER",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
@@ -70,7 +70,7 @@ internal class SoknadUtenFullmaktDataSinkTest {
         val invalidPacket =
             """
                 {
-                    "signatur": "BRUKER_BEKREFTET",
+                    "signatur": "BRUKER_BEKREFTER",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
@@ -96,13 +96,13 @@ internal class SoknadUtenFullmaktDataSinkTest {
     }
 
     @Test
-    fun `Do not react to events with irrelevant eventName`() {
+    fun `Do not react to events with irrelevant signature`() {
 
         val invalidPacket =
             """
                 {
                     "eventName": "nySoknad",
-                    "signatur": "BRUKER_BEKREFTET",
+                    "signatur": "FULLMAKT",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
@@ -134,7 +134,7 @@ internal class SoknadUtenFullmaktDataSinkTest {
             """
                 {
                     "eventName": "nySoknad",
-                    "signatur": "BRUKER_BEKREFTET",
+                    "signatur": "BRUKER_BEKREFTER",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fnrInnsender",
@@ -178,7 +178,7 @@ internal class SoknadUtenFullmaktDataSinkTest {
             """
                 {
                     "eventName": "nySoknad",
-                    "signatur": "BRUKER_BEKREFTET",
+                    "signatur": "BRUKER_BEKREFTER",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "soknadId": "id",
                     "fodselNrBruker": "fnrBruker",
@@ -210,7 +210,7 @@ internal class SoknadUtenFullmaktDataSinkTest {
             """
                 {
                     "eventName": "nySoknad",
-                    "signatur": "BRUKER_BEKREFTET",
+                    "signatur": "BRUKER_BEKREFTER",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrInnsender": "fodselNrInnsender",
                     "soknad": 
