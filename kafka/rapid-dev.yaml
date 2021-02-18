@@ -23,6 +23,9 @@ spec:
       application: hm-soknad-api
       access: write   # read, write, readwrite
     - team: teamdigihot
+      application: hm-soknad-api-q1
+      access: write   # read, write, readwrite
+    - team: teamdigihot
       application: hm-ditt-nav
       access: read    # read, write, readwrite
     - team: teamdigihot
