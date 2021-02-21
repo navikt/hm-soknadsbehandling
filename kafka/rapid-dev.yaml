@@ -37,3 +37,6 @@ spec:
     - team: teamdigihot
       application: hm-oppgave-sink
       access: readwrite   # read, write, readwrite
+    - team: teamdigihot
+      application: hm-brukerbekreftelse
+      access: write
