@@ -2,6 +2,7 @@ package no.nav.hjelpemidler.soknad.mottak
 
 import io.ktor.application.Application
 import io.ktor.application.install
+import io.ktor.auth.authenticate
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.http.ContentType
@@ -9,6 +10,7 @@ import io.ktor.jackson.JacksonConverter
 import io.ktor.request.path
 import io.ktor.routing.route
 import io.ktor.routing.routing
+import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
@@ -54,9 +56,15 @@ internal fun Application.api(store: SoknadStore) {
         register(ContentType.Application.Json, JacksonConverter(JacksonMapper.objectMapper))
     }
 
+    val config = runBlocking { environment.config.load() }
+
+    installAuthentication(config)
+
     routing {
-        route("/api") {
-            hentSoknad(store)
+        authenticate("tokenX") {
+            route("/api") {
+                hentSoknad(store)
+            }
         }
     }
 }

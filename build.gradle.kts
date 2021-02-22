@@ -1,6 +1,8 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
+val ktor_version = "1.4.0"
+
 plugins {
     application
     kotlin("jvm") version Kotlin.version
@@ -51,11 +53,15 @@ dependencies {
     implementation(Konfig.konfig)
     implementation(Kotlin.Logging.kotlinLogging)
     implementation(kotlin("stdlib-jdk8"))
-    implementation("io.ktor:ktor-jackson:1.4.0")
+    implementation("io.ktor:ktor-jackson:$ktor_version")
     implementation(Database.VaultJdbc) {
         exclude(module = "slf4j-simple")
         exclude(module = "slf4j-api")
     }
+    implementation("io.ktor:ktor-auth:$ktor_version")
+    implementation("io.ktor:ktor-auth-jwt:$ktor_version")
+    implementation("io.ktor:ktor-client-apache:$ktor_version")
+    implementation("io.ktor:ktor-client-jackson:$ktor_version")
 
     testImplementation(Junit5.api)
     testImplementation(KoTest.assertions)
