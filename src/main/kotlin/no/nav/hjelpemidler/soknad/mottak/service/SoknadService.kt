@@ -1,31 +1,32 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import io.ktor.application.*
-import io.ktor.http.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import io.ktor.util.pipeline.*
+import io.ktor.application.ApplicationCall
+import io.ktor.application.call
+import io.ktor.http.HttpStatusCode
+import io.ktor.response.respond
+import io.ktor.routing.Route
+import io.ktor.routing.get
+import io.ktor.util.pipeline.PipelineContext
+import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
+import java.util.UUID
 
-internal fun Route.getFagsakId(store: SoknadStore) {
-        get("/soknad/bruker/{soknadsId}") {
-            val soknadsId = soknadsId()
-            soknadsId?.let {
-                try {
-                    store.hentSoknad(it).let { soknad ->
-                                if (soknad != null) {
-                                    // TODO returnere noe fornuftig her
-                                } else {
-                                    call.respond(HttpStatusCode.NotFound)
-                                }
-                            }
-                } catch (e: Exception) {
-                   //logger.error(e) { "Unable to find fagsakId for søknadsId: $soknadsId" }
-                    call.respond(HttpStatusCode.InternalServerError)
-                }
+private val logger = KotlinLogging.logger {}
+
+internal fun Route.hentSoknad(store: SoknadStore) {
+    get("/soknad/bruker/{soknadsId}") {
+        val soknadsId = UUID.fromString(soknadsId())
+        soknadsId?.let {
+            try {
+                val soknad = store.hentSoknad(it)
+                if (soknad != null) call.respond(soknad) else call.respond(HttpStatusCode.NotFound)
+            } catch (e: Exception) {
+                logger.error(e) { "Unable to find soknad for søknadsId: $soknadsId" }
+                call.respond(HttpStatusCode.InternalServerError)
             }
         }
     }
+}
 
 private fun PipelineContext<Unit, ApplicationCall>.soknadsId() =
-        call.parameters["soknadsId"]
+    call.parameters["soknadsId"]

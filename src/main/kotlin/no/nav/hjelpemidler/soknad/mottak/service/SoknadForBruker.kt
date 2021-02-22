@@ -1,11 +1,8 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.github.guepardoapps.kulid.ULID
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
-import java.time.LocalDateTime
-import java.util.*
+import java.util.Date
+import java.util.UUID
 
 data class SoknadForBruker(
     val fnrBruker: String,
