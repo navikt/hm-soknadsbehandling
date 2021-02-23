@@ -15,7 +15,7 @@ import javax.sql.DataSource
 
 internal interface SoknadStore {
     fun save(soknadData: SoknadData): Int
-    fun hentSoknad(søknadsId: UUID): SoknadForBruker?
+    fun hentSoknad(soknadsId: UUID): SoknadForBruker?
 }
 
 internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
@@ -39,7 +39,7 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
                             status = Status.valueOf(it.string("STATUS")),
                             datoOpprettet = it.sqlTimestamp("created"),
                             soknad = JacksonMapper.objectMapper.readTree(
-                                it.string("DATA")
+                                    it.string("DATA")
                             )
                         )
                     }.asSingle
