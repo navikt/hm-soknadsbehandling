@@ -57,12 +57,11 @@ internal fun Application.api(store: SoknadStore) {
     }
 
     val config = runBlocking { environment.config.load() }
-
     installAuthentication(config)
 
     routing {
-        authenticate("tokenX") {
-            route("/api") {
+        route("/api") {
+            authenticate("tokenX") {
                 hentSoknad(store)
             }
         }
