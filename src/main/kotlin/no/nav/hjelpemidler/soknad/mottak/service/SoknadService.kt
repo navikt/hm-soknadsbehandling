@@ -27,14 +27,14 @@ internal fun Route.hentSoknad(store: SoknadStore) {
                 if (soknad == null) {
                     call.respond(HttpStatusCode.NotFound)
                 } else {
-                    if (soknad.fnrBruker != fnr) {
+                    if (soknad.bruker.fnummer != fnr) {
                         call.respond(HttpStatusCode.Forbidden, "Søknad er ikke registrert på aktuell bruker")
                     }
                     call.respond(soknad)
                 }
             } catch (e: Exception) {
                 logger.error(e) { "Unable to find soknad for søknadsId: $soknadsId" }
-                call.respond(HttpStatusCode.InternalServerError)
+                call.respond(HttpStatusCode.InternalServerError, e)
             }
         }
     }

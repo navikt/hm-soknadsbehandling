@@ -22,7 +22,7 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
 
     override fun hentSoknad(soknadsId: UUID): SoknadForBruker? {
         @Language("PostgreSQL") val statement =
-            """SELECT SOKNADS_ID, FNR_BRUKER, FNR_INNSENDER, STATUS, DATA, CREATED
+            """SELECT SOKNADS_ID, STATUS, DATA, CREATED
                     FROM V1_SOKNAD 
                     WHERE SOKNADS_ID = ?"""
 
@@ -35,11 +35,10 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
                     ).map {
                         SoknadForBruker(
                             soknadId = UUID.fromString(it.string("SOKNADS_ID")),
-                            fnrBruker = it.string("FNR_BRUKER"),
                             status = Status.valueOf(it.string("STATUS")),
                             datoOpprettet = it.sqlTimestamp("created"),
                             soknad = JacksonMapper.objectMapper.readTree(
-                                    it.string("DATA")
+                                it.string("DATA")
                             )
                         )
                     }.asSingle
