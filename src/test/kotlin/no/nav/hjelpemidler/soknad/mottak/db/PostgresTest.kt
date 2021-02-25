@@ -117,7 +117,16 @@ internal class SoknadStoreTest {
                           },
                               "levering": {
                                  "hmfFornavn": "formidlerFornavn",
-                                 "hmfEtternavn": "formidlerEtternavn"
+                                 "hmfEtternavn": "formidlerEtternavn", 
+                                 "hmfArbeidssted": "arbeidssted",
+                                  "hmfStilling": "stilling",
+                                  "hmfPostadresse": "postadresse arbeidssted",
+                                  "hmfPostnr": "1234",
+                                  "hmfPoststed": "poststed",
+                                  "hmfTelefon": "12345678",
+                                  "hmfTreffesEnklest": "treffedager",
+                                  "hmfEpost": "epost@adad.com",
+                                   "opfRadioButton": "Hjelpemiddelformidler"
                               }
                           }
                         } """,
@@ -135,8 +144,14 @@ internal class SoknadStoreTest {
                 assertNull(hentSoknad?.bruker?.adresse)
                 assertNull(hentSoknad?.bruker?.postnummer)
                 assertEquals("Stedet", hentSoknad?.bruker?.poststed)
-                assertEquals("formidlerFornavn", hentSoknad?.formidler?.fornavn)
-                assertEquals("formidlerEtternavn", hentSoknad?.formidler?.etternavn)
+                assertEquals("formidlerFornavn formidlerEtternavn", hentSoknad?.formidler?.navn)
+                assertEquals("arbeidssted", hentSoknad?.formidler?.arbeidssted)
+                assertEquals("stilling", hentSoknad?.formidler?.stilling)
+                assertEquals("postadresse arbeidssted 1234 poststed", hentSoknad?.formidler?.adresse)
+                assertEquals("12345678", hentSoknad?.formidler?.telefon)
+                assertEquals("treffedager", hentSoknad?.formidler?.treffesEnklest)
+                assertEquals("epost@adad.com", hentSoknad?.formidler?.epost)
+                assertNull(hentSoknad?.oppfolgingsansvarlig)
                 assertEquals("Hjemme", hentSoknad?.bruker?.boform)
                 assertEquals(Bruksarena.DAGLIGLIVET, hentSoknad?.bruker?.bruksarena)
                 assertEquals(listOf(Funksjonsnedsettelse.BEVEGELSE, Funksjonsnedsettelse.HØRSEL), hentSoknad?.bruker?.funksjonsnedsettelser)
