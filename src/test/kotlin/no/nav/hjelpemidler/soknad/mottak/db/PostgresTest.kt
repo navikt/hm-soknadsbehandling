@@ -126,7 +126,9 @@ internal class SoknadStoreTest {
                                   "hmfTelefon": "12345678",
                                   "hmfTreffesEnklest": "treffedager",
                                   "hmfEpost": "epost@adad.com",
-                                   "opfRadioButton": "Hjelpemiddelformidler"
+                                   "opfRadioButton": "Hjelpemiddelformidler",
+                                   "utleveringsmaateRadioButton": "FolkeregistrertAdresse",
+                                   "utleveringskontaktpersonRadioButton": "Hjelpemiddelbruker"
                               }
                           }
                         } """,
@@ -175,6 +177,8 @@ internal class SoknadStoreTest {
                 assertEquals(1, hentSoknad?.hjelpemidler?.first()?.tilbehorListe?.first()?.antall)
                 assertEquals("begrunnelse", hentSoknad?.hjelpemidler?.first()?.begrunnelse)
                 assertEquals(true, hentSoknad?.hjelpemidler?.first()?.kanIkkeTilsvarande)
+
+                assertNull(hentSoknad?.levering?.adresse)
             }
         }
     }
