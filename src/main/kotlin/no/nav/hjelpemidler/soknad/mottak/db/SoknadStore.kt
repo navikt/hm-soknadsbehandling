@@ -7,6 +7,7 @@ import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadForBruker
+import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedStatus
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
@@ -16,6 +17,7 @@ import javax.sql.DataSource
 internal interface SoknadStore {
     fun save(soknadData: SoknadData): Int
     fun hentSoknad(soknadsId: UUID): SoknadForBruker?
+    fun hentSoknaderTilGodkjenning(fnrBruker: String): List<SoknadMedStatus>
 }
 
 internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
@@ -42,6 +44,31 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
                             )
                         )
                     }.asSingle
+                )
+            }
+        }
+    }
+
+    override fun hentSoknaderTilGodkjenning(fnrBruker: String): List<SoknadMedStatus> {
+        @Language("PostgreSQL") val statement =
+            """SELECT SOKNADS_ID, CREATED, STATUS
+                    FROM V1_SOKNAD 
+                    WHERE FNR_BRUKER = ? AND STATUS = ? """
+
+        return time("hent_soknader_til_godkjenning") {
+            using(sessionOf(ds)) { session ->
+                session.run(
+                    queryOf(
+                        statement,
+                        fnrBruker,
+                        Status.VENTER_GODKJENNING.name
+                    ).map {
+                        SoknadMedStatus(
+                            soknadId = UUID.fromString(it.string("SOKNADS_ID")),
+                            status = Status.valueOf(it.string("STATUS")),
+                            datoOpprettet = it.sqlTimestamp("created"),
+                        )
+                    }.asList
                 )
             }
         }
