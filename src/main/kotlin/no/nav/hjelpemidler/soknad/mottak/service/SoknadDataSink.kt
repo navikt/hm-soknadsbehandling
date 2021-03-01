@@ -41,7 +41,6 @@ internal class SoknadDataSink(rapidsConnection: RapidsConnection, private val st
             validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId") }
         }.register(this)
     }
-
     private val JsonMessage.eventId get() = this["eventId"].textValue()
     private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
     private val JsonMessage.fnrInnsender get() = this["fodselNrInnsender"].textValue()

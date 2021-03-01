@@ -27,6 +27,7 @@ private val localProperties = ConfigurationMap(
         "KAFKA_KEYSTORE_PATH" to "",
         "kafka.truststore.password" to "foo",
         "kafka.brokers" to "host.docker.internal:9092",
+
     )
 )
 private val devProperties = ConfigurationMap(
