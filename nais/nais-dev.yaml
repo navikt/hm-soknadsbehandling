@@ -22,6 +22,10 @@ spec:
   replicas:
     max: 2
     min: 2
+  accessPolicy:
+    inbound:
+      rules:
+        hm-brukerbekreftelse
   resources:
     limits:
       cpu: 500m
