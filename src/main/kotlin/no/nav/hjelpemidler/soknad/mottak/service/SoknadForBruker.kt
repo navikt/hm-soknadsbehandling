@@ -87,18 +87,20 @@ private fun kontaktPerson(soknad: JsonNode): KontaktPerson {
             kontaktpersonType = kontaktPersonType
         )
     } else {
-        KontaktPerson(kontaktpersonType = kontaktPersonType)
+        KontaktPerson(
+            kontaktpersonType = kontaktPersonType
+        )
     }
 }
 
 private fun kontaktPersonType(soknad: JsonNode): KontaktpersonType {
     val leveringNode = soknad["soknad"]["levering"]
 
-    return when (leveringNode["utleveringskontaktpersonRadioButton"].textValue()) {
+    return when (leveringNode["utleveringskontaktpersonRadioButton"]?.textValue()) {
         "Hjelpemiddelbruker" -> KontaktpersonType.HJELPEMIDDELBRUKER
         "Hjelpemiddelformidler" -> KontaktpersonType.HJELPEMIDDELFORMIDLER
         "AnnenKontaktperson" -> KontaktpersonType.ANNEN_KONTAKTPERSON
-        else -> throw RuntimeException("Ugyldig kontaktpersontype")
+        else -> KontaktpersonType.INGEN_KONTAKTPERSON
     }
 }
 
@@ -254,7 +256,7 @@ enum class Leveringsmaate {
 }
 
 enum class KontaktpersonType {
-    HJELPEMIDDELBRUKER, HJELPEMIDDELFORMIDLER, ANNEN_KONTAKTPERSON
+    HJELPEMIDDELBRUKER, HJELPEMIDDELFORMIDLER, ANNEN_KONTAKTPERSON, INGEN_KONTAKTPERSON
 }
 
 class HjelpemiddelVilkar(
