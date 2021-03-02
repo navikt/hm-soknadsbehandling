@@ -18,6 +18,8 @@ internal interface SoknadStore {
     fun save(soknadData: SoknadData): Int
     fun hentSoknad(soknadsId: UUID): SoknadForBruker?
     fun hentSoknaderTilGodkjenning(fnrBruker: String): List<SoknadMedStatus>
+    fun oppdaterStatus(soknadsId: UUID, status: Status): Int
+    fun hentFnrForSoknad(soknadsId: UUID): String
 }
 
 internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
@@ -48,6 +50,47 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
             }
         }
     }
+
+    override fun hentFnrForSoknad(soknadsId: UUID): String {
+        @Language("PostgreSQL") val statement =
+            """SELECT FNR_BRUKER
+                    FROM V1_SOKNAD 
+                    WHERE SOKNADS_ID = ?"""
+
+        val fnrBruker =
+            time("hent_soknad") {
+                using(sessionOf(ds)) { session ->
+                    session.run(
+                        queryOf(
+                            statement,
+                            soknadsId,
+                        ).map {
+                            it.string("FNR_BRUKER")
+                        }.asSingle
+                    )
+                }
+            }
+
+        if (fnrBruker == null) {
+            throw RuntimeException("No søknad with FNR found for soknadsId $soknadsId")
+        } else {
+            return fnrBruker
+        }
+    }
+
+    override fun oppdaterStatus(soknadsId: UUID, status: Status): Int =
+        time("oppdater_status") {
+            using(sessionOf(ds)) { session ->
+                session.run(
+                    queryOf(
+                        "UPDATE V1_SOKNAD SET STATUS = ?, UPDATED = now() WHERE SOKNADS_ID = ? AND STATUS NOT LIKE ?",
+                        status.name,
+                        soknadsId,
+                        status.name
+                    ).asUpdate
+                )
+            }
+        }
 
     override fun hentSoknaderTilGodkjenning(fnrBruker: String): List<SoknadMedStatus> {
         @Language("PostgreSQL") val statement =

@@ -17,6 +17,7 @@ import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
 import no.nav.hjelpemidler.soknad.mottak.db.SoknadStorePostgres
 import no.nav.hjelpemidler.soknad.mottak.db.dataSourceFrom
 import no.nav.hjelpemidler.soknad.mottak.db.migrate
+import no.nav.hjelpemidler.soknad.mottak.service.GodkjennSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadDataSink
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedFullmaktDataSink
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadUtenFullmaktDataSink
@@ -35,7 +36,11 @@ fun main() {
             SoknadMedFullmaktDataSink(this, store)
         }.apply {
             SoknadUtenFullmaktDataSink(this, store)
-        }.apply {
+        }
+        .apply {
+            GodkjennSoknad(this, store)
+        }
+        .apply {
             register(
                 object : RapidsConnection.StatusListener {
                     override fun onStartup(rapidsConnection: RapidsConnection) {
