@@ -25,7 +25,7 @@ spec:
   accessPolicy:
     inbound:
       rules:
-        hm-brukerbekreftelse
+        - application: hm-brukerbekreftelse
   resources:
     limits:
       cpu: 500m
