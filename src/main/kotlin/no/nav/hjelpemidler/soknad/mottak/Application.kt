@@ -58,7 +58,7 @@ internal fun Application.api(store: SoknadStore) {
     }
 
     val config = runBlocking { environment.config.load() }
-    installAuthentication(config)
+    installAuthentication(config, Configuration)
 
     routing {
         route("/api") {
