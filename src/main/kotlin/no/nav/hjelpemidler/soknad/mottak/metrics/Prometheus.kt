@@ -28,4 +28,16 @@ internal object Prometheus {
         .name("hm_soknad_mottak_soknad_til_godkjenning")
         .help("Antall søknader til godkjenning")
         .register(collectorRegistry)
+
+    val soknadGodkjentAvBrukerCounter = Counter
+        .build()
+        .name("hm_soknad_mottak_godkjenning_fra_bruker")
+        .help("Antall søknader godkjent")
+        .register(collectorRegistry)
+
+    val soknadSlettetAvBrukerCounter = Counter
+        .build()
+        .name("hm_soknad_mottak_sletting_fra_bruker")
+        .help("Antall søknader slettet")
+        .register(collectorRegistry)
 }

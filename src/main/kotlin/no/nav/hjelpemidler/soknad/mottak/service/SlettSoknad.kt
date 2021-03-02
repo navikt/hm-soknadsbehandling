@@ -21,12 +21,12 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val store: SoknadStore) :
+internal class SlettSoknad(rapidsConnection: RapidsConnection, private val store: SoknadStore) :
     River.PacketListener {
 
     init {
         River(rapidsConnection).apply {
-            validate { it.requireValue("eventName", "godkjentAvBruker") }
+            validate { it.requireValue("eventName", "slettetAvBruker") }
             validate { it.requireKey("soknadId") }
         }.register(this)
     }
@@ -38,16 +38,16 @@ internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val st
             withContext(Dispatchers.IO) {
                 launch {
                     try {
-                        logger.info { "Bruker har godkjent søknad: ${packet.soknadId}" }
-                        val rowsUpdated = update(UUID.fromString(packet.soknadId), Status.GODKJENT)
+                        logger.info { "Bruker har slettet søknad: ${packet.soknadId}" }
+                        val rowsUpdated = update(UUID.fromString(packet.soknadId), Status.SLETTET)
                         if (rowsUpdated> 0) {
                             val fnrBruker = store.hentFnrForSoknad(UUID.fromString(packet.soknadId))
                             forward(UUID.fromString(packet.soknadId), fnrBruker, context)
                         } else {
-                            logger.info { "Søknad som godkjennes er allerede godkjent, søknadId: ${packet.soknadId}" }
+                            logger.info { "Søknad som slettes er allerede slettet eller stod ikke til godkjenning, søknadId: ${packet.soknadId}" }
                         }
                     } catch (e: Exception) {
-                        throw RuntimeException("Håndtering av brukergodkjenning for søknad ${packet.soknadId} feilet", e)
+                        throw RuntimeException("Håndtering av brukers sletting av søknad ${packet.soknadId} feilet", e)
                     }
                 }
             }
@@ -68,18 +68,18 @@ internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val st
 
             val soknadGodkjentMessage = JsonMessage("{}", MessageProblems("")).also {
                 it["@id"] = ULID.random()
-                it["@event_name"] = "SøknadGodkjentAvBruker"
+                it["@event_name"] = "SøknadSlettetAvBruker"
                 it["@opprettet"] = LocalDateTime.now()
                 it["fodselNrBruker"] = fnrBruker
                 it["soknadId"] = soknadId.toString()
             }.toJson()
             context.send(fnrBruker, soknadGodkjentMessage)
-            Prometheus.soknadGodkjentAvBrukerCounter.inc()
+            Prometheus.soknadSlettetAvBrukerCounter.inc()
         }.invokeOnCompletion {
             when (it) {
                 null -> {
-                    logger.info("Søknad er godkjent av bruker: $soknadId")
-                    sikkerlogg.info("Søknad er godkjent med søknadsId: $soknadId, fnr: $fnrBruker)")
+                    logger.info("Søknad er slettet av bruker: $soknadId")
+                    sikkerlogg.info("Søknad er slettet med søknadsId: $soknadId, fnr: $fnrBruker)")
                 }
                 is CancellationException -> logger.warn("Cancelled: ${it.message}")
                 else -> {
