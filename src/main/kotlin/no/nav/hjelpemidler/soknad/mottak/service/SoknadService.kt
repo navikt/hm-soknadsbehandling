@@ -17,25 +17,25 @@ private val logger = KotlinLogging.logger {}
 
 internal fun Route.hentSoknad(store: SoknadStore) {
     get("/soknad/bruker/{soknadsId}") {
-        val soknadsId = UUID.fromString(soknadsId())
-        val fnr = call.principal<UserPrincipal>()?.getFnr() ?: throw RuntimeException("Fnr mangler i token claim")
+        try {
+            val soknadsId = UUID.fromString(soknadsId())
+            val fnr = call.principal<UserPrincipal>()?.getFnr()
+                ?: call.respond(HttpStatusCode.BadRequest, "Fnr mangler i token claim")
+            val soknad = store.hentSoknad(soknadsId)
 
-        soknadsId?.let {
-            try {
-                val soknad = store.hentSoknad(it)
-
-                if (soknad == null) {
+            when {
+                soknad == null -> {
                     call.respond(HttpStatusCode.NotFound)
-                } else {
-                    if (soknad.bruker.fnummer != fnr) {
-                        call.respond(HttpStatusCode.Forbidden, "Søknad er ikke registrert på aktuell bruker")
-                    }
+                }
+                soknad.bruker.fnummer != fnr -> {
+                    call.respond(HttpStatusCode.Forbidden, "Søknad er ikke registrert på aktuell bruker")
+                }
+                else -> {
                     call.respond(soknad)
                 }
-            } catch (e: Exception) {
-                logger.error(e) { "Unable to find soknad for søknadsId: $soknadsId" }
-                call.respond(HttpStatusCode.InternalServerError, e)
             }
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.BadRequest, "Feil ved henting av søknad ${e.message}")
         }
     }
 }
