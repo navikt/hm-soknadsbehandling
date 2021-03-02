@@ -27,6 +27,7 @@ private val localProperties = ConfigurationMap(
         "KAFKA_KEYSTORE_PATH" to "",
         "kafka.truststore.password" to "foo",
         "kafka.brokers" to "host.docker.internal:9092",
+        "userclaim" to "sub",
 
     )
 )
@@ -36,6 +37,7 @@ private val devProperties = ConfigurationMap(
         "application.profile" to "DEV",
         "kafka.reset.policy" to "earliest",
         "kafka.topic" to "teamdigihot.hm-soknadsbehandling-v1",
+        "userclaim" to "pid",
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -44,6 +46,7 @@ private val prodProperties = ConfigurationMap(
         "application.profile" to "PROD",
         "kafka.reset.policy" to "earliest",
         "kafka.topic" to "teamdigihot.hm-soknadsbehandling-v1",
+        "userclaim" to "pid",
     )
 )
 
@@ -83,7 +86,8 @@ internal object Configuration {
     data class Application(
         val id: String = config().getOrElse(Key("", stringType), "hm-soknadsbehandling-v1"),
         val profile: Profile = config()[Key("application.profile", stringType)].let { Profile.valueOf(it) },
-        val httpPort: Int = config()[Key("application.httpPort", intType)]
+        val httpPort: Int = config()[Key("application.httpPort", intType)],
+        val userclaim: String = config()[Key("userclaim", stringType)]
     )
 }
 

@@ -9,7 +9,7 @@ import io.ktor.auth.jwt.jwt
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
-internal fun Application.installAuthentication(config: TokenXConfig) {
+internal fun Application.installAuthentication(config: TokenXConfig, applicationConfig: Configuration) {
 
     val jwkProvider = JwkProviderBuilder(URL(config.metadata.jwksUri))
         // cache up to 10 JWKs for 24 hours
@@ -30,7 +30,7 @@ internal fun Application.installAuthentication(config: TokenXConfig) {
                 }
 
                 require(credentials.payload.getClaim("acr").asString() == ("Level4")) { "Auth: Level4 required" }
-                UserPrincipal(credentials.payload.getClaim("sub").asString())
+                UserPrincipal(credentials.payload.getClaim(applicationConfig.application.userclaim).asString())
             }
         }
     }

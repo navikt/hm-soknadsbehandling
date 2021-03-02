@@ -26,6 +26,8 @@ spec:
     inbound:
       rules:
         - application: hm-brukerbekreftelse
+  tokenx:
+    enabled: true
   resources:
     limits:
       cpu: 500m
