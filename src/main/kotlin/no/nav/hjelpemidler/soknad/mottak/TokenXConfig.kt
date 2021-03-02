@@ -18,8 +18,8 @@ data class TokenXConfig(
 @KtorExperimentalAPI
 suspend fun ApplicationConfig.load(): TokenXConfig {
 
-    val jwksUri = propertyOrNull("TOKEN_X_WELL_KNOWN_URL")?.getString() ?: "http://host.docker.internal:8080/default/.well-known/openid-configuration"
-    val clientId = propertyOrNull("TOKEN_X_CLIENT_ID")?.getString() ?: "local:hm-soknadsbehandling"
+    val jwksUri = System.getenv("TOKEN_X_WELL_KNOWN_URL") ?: "http://host.docker.internal:8080/default/.well-known/openid-configuration"
+    val clientId = System.getenv("TOKEN_X_CLIENT_ID") ?: "local:hm-soknadsbehandling"
 
     return TokenXConfig(
         metadata = httpClient().get(jwksUri),
