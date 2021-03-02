@@ -35,6 +35,7 @@ internal fun Route.hentSoknad(store: SoknadStore) {
                 }
             }
         } catch (e: Exception) {
+            logger.error { "Feilet ved henting av søknad: ${e.message}. ${e.stackTrace}" }
             call.respond(HttpStatusCode.BadRequest, "Feil ved henting av søknad ${e.message}")
         }
     }
