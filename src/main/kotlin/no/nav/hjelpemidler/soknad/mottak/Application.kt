@@ -23,7 +23,7 @@ import no.nav.hjelpemidler.soknad.mottak.service.SoknadDataSink
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedFullmaktDataSink
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadUtenFullmaktDataSink
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknad
-import no.nav.hjelpemidler.soknad.mottak.service.hentSoknaderTilGodkjenning
+import no.nav.hjelpemidler.soknad.mottak.service.hentSoknaderForBruker
 import org.slf4j.event.Level
 
 fun main() {
@@ -71,7 +71,7 @@ internal fun Application.api(store: SoknadStore) {
         route("/api") {
             authenticate("tokenX") {
                 hentSoknad(store)
-                hentSoknaderTilGodkjenning(store)
+                hentSoknaderForBruker(store)
             }
         }
     }

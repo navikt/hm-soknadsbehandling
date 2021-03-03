@@ -41,14 +41,13 @@ internal fun Route.hentSoknad(store: SoknadStore) {
     }
 }
 
-internal fun Route.hentSoknaderTilGodkjenning(store: SoknadStore) {
+internal fun Route.hentSoknaderForBruker(store: SoknadStore) {
     get("/soknad/bruker") {
 
         val fnr = call.principal<UserPrincipal>()?.getFnr() ?: throw RuntimeException("Fnr mangler i token claim")
 
         try {
-            val soknaderTilGodkjenning = store.hentSoknaderTilGodkjenning(fnr)
-
+            val soknaderTilGodkjenning = store.hentSoknaderForBruker(fnr)
             call.respond(soknaderTilGodkjenning)
         } catch (e: Exception) {
             logger.error(e) { "Error on fetching søknader til godkjenning" }

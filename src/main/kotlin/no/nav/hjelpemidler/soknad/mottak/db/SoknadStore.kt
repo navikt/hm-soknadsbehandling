@@ -17,7 +17,7 @@ import javax.sql.DataSource
 internal interface SoknadStore {
     fun save(soknadData: SoknadData): Int
     fun hentSoknad(soknadsId: UUID): SoknadForBruker?
-    fun hentSoknaderTilGodkjenning(fnrBruker: String): List<SoknadMedStatus>
+    fun hentSoknaderForBruker(fnrBruker: String): List<SoknadMedStatus>
     fun oppdaterStatus(soknadsId: UUID, status: Status): Int
     fun hentFnrForSoknad(soknadsId: UUID): String
 }
@@ -92,19 +92,18 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
             }
         }
 
-    override fun hentSoknaderTilGodkjenning(fnrBruker: String): List<SoknadMedStatus> {
+    override fun hentSoknaderForBruker(fnrBruker: String): List<SoknadMedStatus> {
         @Language("PostgreSQL") val statement =
             """SELECT SOKNADS_ID, CREATED, STATUS
                     FROM V1_SOKNAD 
-                    WHERE FNR_BRUKER = ? AND STATUS = ? """
+                    WHERE FNR_BRUKER = ? """
 
-        return time("hent_soknader_til_godkjenning") {
+        return time("hent_soknader_for_bruker") {
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
                         statement,
                         fnrBruker,
-                        Status.VENTER_GODKJENNING.name
                     ).map {
                         SoknadMedStatus(
                             soknadId = UUID.fromString(it.string("SOKNADS_ID")),
