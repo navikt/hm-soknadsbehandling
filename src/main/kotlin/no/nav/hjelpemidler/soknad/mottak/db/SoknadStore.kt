@@ -96,7 +96,8 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
         @Language("PostgreSQL") val statement =
             """SELECT SOKNADS_ID, CREATED, STATUS
                     FROM V1_SOKNAD 
-                    WHERE FNR_BRUKER = ? """
+                    WHERE FNR_BRUKER = ? 
+                    ORDER BY CREATED DESC """
 
         return time("hent_soknader_for_bruker") {
             using(sessionOf(ds)) { session ->
