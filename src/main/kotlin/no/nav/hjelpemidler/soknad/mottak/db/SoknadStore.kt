@@ -94,7 +94,7 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
 
     override fun hentSoknaderForBruker(fnrBruker: String): List<SoknadMedStatus> {
         @Language("PostgreSQL") val statement =
-            """SELECT SOKNADS_ID, CREATED, STATUS
+            """SELECT SOKNADS_ID, CREATED, UPDATED, STATUS, DATA
                     FROM V1_SOKNAD 
                     WHERE FNR_BRUKER = ? """
 
@@ -109,6 +109,13 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
                             soknadId = UUID.fromString(it.string("SOKNADS_ID")),
                             status = Status.valueOf(it.string("STATUS")),
                             datoOpprettet = it.sqlTimestamp("created"),
+                            datoOppdatert = when {
+                                it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
+                                else -> it.sqlTimestamp("created")
+                            },
+                            soknad = JacksonMapper.objectMapper.readTree(
+                                it.string("DATA")
+                            )
                         )
                     }.asList
                 )
