@@ -40,7 +40,7 @@ internal class SoknadUtenFullmaktDataSink(rapidsConnection: RapidsConnection, pr
             validate { it.requireValue("eventName", "nySoknad") }
             validate { it.requireValue("signatur", "BRUKER_BEKREFTER") }
             validate { it.forbid("soknadId") }
-            validate { it.interestedIn("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId") }
+            validate { it.interestedIn("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId", "kommunenavn") }
         }.register(this)
     }
 
@@ -50,6 +50,7 @@ internal class SoknadUtenFullmaktDataSink(rapidsConnection: RapidsConnection, pr
     private val JsonMessage.soknadId get() = this["soknad"]["soknad"]["id"].textValue()
     private val JsonMessage.soknad get() = this["soknad"]
     private val JsonMessage.navnBruker get() = this["soknad"]["soknad"]["bruker"]["etternavn"].textValue() + " " + this["soknad"]["soknad"]["bruker"]["fornavn"].textValue()
+    private val JsonMessage.kommunenavn get() = this["kommunenavn"]?.textValue()
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
@@ -67,7 +68,8 @@ internal class SoknadUtenFullmaktDataSink(rapidsConnection: RapidsConnection, pr
                             soknadJson = soknadToJson(packet.soknad),
                             soknad = packet.soknad,
                             soknadId = UUID.fromString(packet.soknadId),
-                            status = Status.VENTER_GODKJENNING
+                            status = Status.VENTER_GODKJENNING,
+                            kommunenavn = packet?.kommunenavn
                         )
                         logger.info { "Søknad til godkjenning mottatt: ${packet.soknadId}" }
                         save(soknadData)

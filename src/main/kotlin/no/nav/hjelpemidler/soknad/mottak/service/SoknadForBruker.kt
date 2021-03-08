@@ -8,10 +8,11 @@ class SoknadForBruker(
     val soknadId: UUID,
     val datoOpprettet: Date,
     soknad: JsonNode,
-    val status: Status
+    val status: Status,
+    kommunenavn: String?
 ) {
     val bruker = bruker(soknad)
-    val formidler = formidler(soknad)
+    val formidler = formidler(soknad, kommunenavn)
     val hjelpemidler = hjelpemidler(soknad)
     val hjelpemiddelTotalAntall = soknad["soknad"]["hjelpemidler"]["hjelpemiddelTotaltAntall"].intValue()
     val oppfolgingsansvarlig = oppfolgingsansvarlig(soknad)
@@ -36,7 +37,7 @@ private fun bruker(soknad: JsonNode): Bruker {
     )
 }
 
-private fun formidler(soknad: JsonNode): Formidler {
+private fun formidler(soknad: JsonNode, kommunenavn: String?): Formidler {
     val leveringNode = soknad["soknad"]["levering"]
     return Formidler(
         navn = "${leveringNode["hmfFornavn"].textValue()} ${leveringNode["hmfEtternavn"].textValue()}",
@@ -46,6 +47,7 @@ private fun formidler(soknad: JsonNode): Formidler {
         telefon = leveringNode["hmfTelefon"].textValue(),
         treffesEnklest = leveringNode["hmfTreffesEnklest"].textValue(),
         epost = leveringNode["hmfEpost"].textValue(),
+        kommunenavn = kommunenavn,
     )
 }
 
@@ -211,7 +213,8 @@ class Formidler(
     val adresse: String,
     val telefon: String,
     val treffesEnklest: String,
-    val epost: String
+    val epost: String,
+    val kommunenavn: String?,
 )
 
 class Oppfolgingsansvarlig(

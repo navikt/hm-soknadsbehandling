@@ -14,7 +14,8 @@ internal data class SoknadData(
     val soknadId: UUID,
     val soknadJson: String,
     val soknad: JsonNode,
-    val status: Status
+    val status: Status,
+    val kommunenavn: String?
 ) {
     internal fun toJson(): String {
         return JsonMessage("{}", MessageProblems("")).also {
@@ -35,6 +36,7 @@ internal data class SoknadData(
             it["@opprettet"] = LocalDateTime.now()
             it["fodselNrBruker"] = this.fnrBruker
             it["soknadId"] = this.soknadId
+            it["kommunenavn"] = this.kommunenavn ?: ""
         }.toJson()
     }
 }
