@@ -1,5 +1,10 @@
 package no.nav.hjelpemidler.soknad.mottak.db
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -18,6 +23,7 @@ internal interface SoknadStore {
     fun save(soknadData: SoknadData): Int
     fun hentSoknad(soknadsId: UUID): SoknadForBruker?
     fun hentSoknaderForBruker(fnrBruker: String): List<SoknadMedStatus>
+    fun hentSoknadData(soknadsId: UUID): SoknadData?
     fun oppdaterStatus(soknadsId: UUID, status: Status): Int
     fun hentFnrForSoknad(soknadsId: UUID): String
 }
@@ -41,6 +47,35 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
                             soknadId = UUID.fromString(it.string("SOKNADS_ID")),
                             status = Status.valueOf(it.string("STATUS")),
                             datoOpprettet = it.sqlTimestamp("created"),
+                            soknad = JacksonMapper.objectMapper.readTree(
+                                it.string("DATA")
+                            ),
+                            kommunenavn = it.stringOrNull("KOMMUNENAVN")
+                        )
+                    }.asSingle
+                )
+            }
+        }
+    }
+
+    override fun hentSoknadData(soknadsId: UUID): SoknadData? {
+        @Language("PostgreSQL") val statement =
+            """SELECT SOKNADS_ID,FNR_BRUKER, FNR_INNSENDER, STATUS, DATA, KOMMUNENAVN
+                    FROM V1_SOKNAD 
+                    WHERE SOKNADS_ID = ?"""
+
+        return time("hent_soknaddata") {
+            using(sessionOf(ds)) { session ->
+                session.run(
+                    queryOf(
+                        statement,
+                        soknadsId,
+                    ).map {
+                        SoknadData(
+                            fnrBruker = it.string("FNR_BRUKER"),
+                            fnrInnsender = it.string("FNR_INNSENDER"),
+                            soknadId = UUID.fromString(it.string("SOKNADS_ID")),
+                            status = Status.valueOf(it.string("STATUS")),
                             soknad = JacksonMapper.objectMapper.readTree(
                                 it.string("DATA")
                             ),
@@ -137,7 +172,7 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
                         soknadData.status.name,
                         PGobject().apply {
                             type = "jsonb"
-                            value = soknadData.soknadJson
+                            value = soknadToJsonString(soknadData.soknad)
                         },
                         soknadData.kommunenavn,
                     ).asUpdate
@@ -151,4 +186,13 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
                 timer.observeDuration()
             }
         }
+
+    companion object {
+        private val objectMapper = jacksonObjectMapper()
+            .registerModule(JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+    }
+
+    private fun soknadToJsonString(soknad: JsonNode): String = objectMapper.writeValueAsString(soknad)
 }

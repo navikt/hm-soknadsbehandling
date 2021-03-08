@@ -10,20 +10,18 @@ import java.util.UUID
 internal data class SoknadData(
     val fnrBruker: String,
     val fnrInnsender: String,
-    val navnBruker: String,
     val soknadId: UUID,
-    val soknadJson: String,
     val soknad: JsonNode,
     val status: Status,
     val kommunenavn: String?
 ) {
-    internal fun toJson(): String {
+    internal fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
             it["@id"] = ULID.random()
-            it["@event_name"] = "Søknad"
+            it["@event_name"] = eventName
             it["@opprettet"] = LocalDateTime.now()
             it["fodselNrBruker"] = this.fnrBruker
-            it["navnBruker"] = this.navnBruker
+            it["navnBruker"] = this.soknad["soknad"]["bruker"]["etternavn"].textValue() + " " + this.soknad["soknad"]["bruker"]["fornavn"].textValue()
             it["soknad"] = this.soknad
             it["soknadId"] = this.soknadId
         }.toJson()
