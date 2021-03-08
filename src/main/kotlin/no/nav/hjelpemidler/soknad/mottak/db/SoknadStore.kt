@@ -44,7 +44,7 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
                             soknad = JacksonMapper.objectMapper.readTree(
                                 it.string("DATA")
                             ),
-                            kommunenavn = it.string("KOMMUNENAVN")
+                            kommunenavn = it.stringOrNull("KOMMUNENAVN")
                         )
                     }.asSingle
                 )

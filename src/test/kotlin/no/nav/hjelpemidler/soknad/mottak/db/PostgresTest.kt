@@ -135,7 +135,8 @@ internal class SoknadStoreTest {
                         ObjectMapper().readTree(
                             """  {"key": "value"} """
                         ),
-                        status = Status.VENTER_GODKJENNING
+                        status = Status.VENTER_GODKJENNING,
+                        kommunenavn = null
                     )
                 )
                 val hentSoknad = this.hentSoknad(soknadsId)
@@ -300,7 +301,8 @@ internal class SoknadStoreTest {
                         ObjectMapper().readTree(
                             """  {"key": "value"} """
                         ),
-                        status = Status.VENTER_GODKJENNING
+                        status = Status.VENTER_GODKJENNING,
+                        kommunenavn = null
                     )
                 )
                 val hentSoknad = this.hentSoknad(soknadsId)
@@ -321,7 +323,9 @@ internal class SoknadStoreTest {
                         UUID.randomUUID(),
                         """ {"key": "value"} """,
                         ObjectMapper().readTree(""" {"key": "value"} """),
-                        status = Status.VENTER_GODKJENNING
+                        status = Status.VENTER_GODKJENNING,
+                        kommunenavn = null
+
                     )
                 ).also {
                     it shouldBe 1
@@ -337,7 +341,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            migrations shouldBe 4
+            migrations shouldBe 5
         }
     }
 
