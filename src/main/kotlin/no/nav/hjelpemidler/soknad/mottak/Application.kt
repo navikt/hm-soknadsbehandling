@@ -19,7 +19,6 @@ import no.nav.hjelpemidler.soknad.mottak.db.dataSourceFrom
 import no.nav.hjelpemidler.soknad.mottak.db.migrate
 import no.nav.hjelpemidler.soknad.mottak.service.GodkjennSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.SlettSoknad
-import no.nav.hjelpemidler.soknad.mottak.service.SoknadDataSink
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedFullmaktDataSink
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadUtenFullmaktDataSink
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknad
@@ -32,8 +31,6 @@ fun main() {
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .withKtorModule { api(store) }
         .build().apply {
-            SoknadDataSink(this, store)
-        }.apply {
             SoknadMedFullmaktDataSink(this, store)
         }.apply {
             SoknadUtenFullmaktDataSink(this, store)

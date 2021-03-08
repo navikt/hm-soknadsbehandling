@@ -40,7 +40,7 @@ internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, pri
             validate { it.requireValue("eventName", "nySoknad") }
             validate { it.requireValue("signatur", "FULLMAKT") }
             validate { it.forbid("soknadId") }
-            validate { it.interestedIn("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId") }
+            validate { it.interestedIn("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId", "kommunenavn") }
         }.register(this)
     }
 
@@ -50,6 +50,7 @@ internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, pri
     private val JsonMessage.soknadId get() = this["soknad"]["soknad"]["id"].textValue()
     private val JsonMessage.soknad get() = this["soknad"]
     private val JsonMessage.navnBruker get() = this["soknad"]["soknad"]["bruker"]["etternavn"].textValue() + " " + this["soknad"]["soknad"]["bruker"]["fornavn"].textValue()
+    private val JsonMessage.kommunenavn get() = this["kommunenavn"]?.textValue()
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
@@ -67,7 +68,8 @@ internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, pri
                             soknadJson = soknadToJson(packet.soknad),
                             soknad = packet.soknad,
                             soknadId = UUID.fromString(packet.soknadId),
-                            status = Status.GODKJENT_MED_FULLMAKT
+                            status = Status.GODKJENT_MED_FULLMAKT,
+                            kommunenavn = packet?.kommunenavn
                         )
                         logger.info { "Søknad med fullmakt mottatt: ${packet.soknadId}" }
                         save(soknadData)

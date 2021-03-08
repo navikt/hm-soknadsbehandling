@@ -26,7 +26,7 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
 
     override fun hentSoknad(soknadsId: UUID): SoknadForBruker? {
         @Language("PostgreSQL") val statement =
-            """SELECT SOKNADS_ID, STATUS, DATA, CREATED
+            """SELECT SOKNADS_ID, STATUS, DATA, CREATED, KOMMUNENAVN
                     FROM V1_SOKNAD 
                     WHERE SOKNADS_ID = ?"""
 
@@ -43,7 +43,8 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
                             datoOpprettet = it.sqlTimestamp("created"),
                             soknad = JacksonMapper.objectMapper.readTree(
                                 it.string("DATA")
-                            )
+                            ),
+                            kommunenavn = it.string("KOMMUNENAVN")
                         )
                     }.asSingle
                 )
@@ -129,7 +130,7 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
-                        "INSERT INTO V1_SOKNAD (SOKNADS_ID,FNR_BRUKER, FNR_INNSENDER, STATUS, DATA ) VALUES (?,?,?,?,?) ON CONFLICT DO NOTHING",
+                        "INSERT INTO V1_SOKNAD (SOKNADS_ID,FNR_BRUKER, FNR_INNSENDER, STATUS, DATA, KOMMUNENAVN ) VALUES (?,?,?,?,?, ?) ON CONFLICT DO NOTHING",
                         soknadData.soknadId,
                         soknadData.fnrBruker,
                         soknadData.fnrInnsender,
@@ -138,6 +139,7 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
                             type = "jsonb"
                             value = soknadData.soknadJson
                         },
+                        soknadData.kommunenavn,
                     ).asUpdate
                 )
             }
