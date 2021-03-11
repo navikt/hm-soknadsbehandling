@@ -21,7 +21,7 @@ internal class SøknadsgodkjenningService(
     fun slettUtgåtteSøknader(): Int {
         val utgåtteSøknader = søknadStore.hentSoknaderTilGodkjenningEldreEnn(FEMTEN_DAGER)
         utgåtteSøknader.forEach { søknad ->
-            søknadStore.oppdaterStatus(søknad.søknadId, Status.UTLØPT)
+            søknadStore.oppdaterUtgåttSøknad(søknad.søknadId)
 
             val søknadErUtgåttMessage = JsonMessage("{}", MessageProblems("")).also {
                 it["eventId"] = ULID.random()

@@ -4,19 +4,20 @@ import com.fasterxml.jackson.databind.JsonNode
 import java.util.Date
 import java.util.UUID
 
-class SøknadForBruker(
+class SøknadForBruker private constructor(
     val søknadId: UUID,
     val datoOpprettet: Date,
-    søknad: JsonNode,
     val status: Status,
-    kommunenavn: String?
+    val fnrBruker: String,
+    val søknadsdata: Søknadsdata?
 ) {
-    val bruker = bruker(søknad)
-    val formidler = formidler(søknad, kommunenavn)
-    val hjelpemidler = hjelpemidler(søknad)
-    val hjelpemiddelTotalAntall = søknad["soknad"]["hjelpemidler"]["hjelpemiddelTotaltAntall"].intValue()
-    val oppfolgingsansvarlig = oppfolgingsansvarlig(søknad)
-    val levering = levering(søknad)
+
+    companion object {
+        fun new(søknadId: UUID, datoOpprettet: Date, søknad: JsonNode, status: Status, kommunenavn: String?, fnrBruker: String) =
+            SøknadForBruker(søknadId, datoOpprettet, status, fnrBruker, Søknadsdata(søknad, kommunenavn))
+        fun newEmptySøknad(søknadId: UUID, datoOpprettet: Date, status: Status, fnrBruker: String) =
+            SøknadForBruker(søknadId, datoOpprettet, status, fnrBruker, null)
+    }
 }
 
 private fun bruker(søknad: JsonNode): Bruker {
@@ -186,6 +187,15 @@ private fun tilbehor(hjelpemiddel: JsonNode): List<Tilbehor> {
         )
     }
     return tilbehorListe
+}
+
+class Søknadsdata(søknad: JsonNode, kommunenavn: String?) {
+    val bruker = bruker(søknad)
+    val formidler = formidler(søknad, kommunenavn)
+    val hjelpemidler = hjelpemidler(søknad)
+    val hjelpemiddelTotalAntall = søknad["soknad"]["hjelpemidler"]["hjelpemiddelTotaltAntall"].intValue()
+    val oppfolgingsansvarlig = oppfolgingsansvarlig(søknad)
+    val levering = levering(søknad)
 }
 
 class Bruker(

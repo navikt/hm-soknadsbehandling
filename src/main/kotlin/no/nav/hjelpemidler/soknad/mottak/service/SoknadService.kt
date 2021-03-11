@@ -27,7 +27,7 @@ internal fun Route.hentSoknad(store: SøknadStore) {
                 soknad == null -> {
                     call.respond(HttpStatusCode.NotFound)
                 }
-                soknad.bruker.fnummer != fnr -> {
+                soknad.fnrBruker != fnr -> {
                     call.respond(HttpStatusCode.Forbidden, "Søknad er ikke registrert på aktuell bruker")
                 }
                 else -> {

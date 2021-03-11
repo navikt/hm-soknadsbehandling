@@ -35,7 +35,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
 
     override fun hentSoknad(soknadsId: UUID): SøknadForBruker? {
         @Language("PostgreSQL") val statement =
-            """SELECT SOKNADS_ID, STATUS, DATA, CREATED, KOMMUNENAVN
+            """SELECT SOKNADS_ID, STATUS, DATA, CREATED, KOMMUNENAVN, FNR_BRUKER
                     FROM V1_SOKNAD 
                     WHERE SOKNADS_ID = ?"""
 
@@ -46,15 +46,26 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                         statement,
                         soknadsId,
                     ).map {
-                        SøknadForBruker(
-                            søknadId = UUID.fromString(it.string("SOKNADS_ID")),
-                            status = Status.valueOf(it.string("STATUS")),
-                            datoOpprettet = it.sqlTimestamp("created"),
-                            søknad = JacksonMapper.objectMapper.readTree(
-                                it.string("DATA")
-                            ),
-                            kommunenavn = it.stringOrNull("KOMMUNENAVN")
-                        )
+                        val status = Status.valueOf(it.string("STATUS"))
+                        if (status.isSlettetEllerUtløpt()) {
+                            SøknadForBruker.newEmptySøknad(
+                                søknadId = UUID.fromString(it.string("SOKNADS_ID")),
+                                status = Status.valueOf(it.string("STATUS")),
+                                datoOpprettet = it.sqlTimestamp("created"),
+                                fnrBruker = it.string("FNR_BRUKER")
+                            )
+                        } else {
+                            SøknadForBruker.new(
+                                søknadId = UUID.fromString(it.string("SOKNADS_ID")),
+                                status = Status.valueOf(it.string("STATUS")),
+                                datoOpprettet = it.sqlTimestamp("created"),
+                                søknad = JacksonMapper.objectMapper.readTree(
+                                    it.stringOrNull("DATA") ?: "{}"
+                                ),
+                                kommunenavn = it.stringOrNull("KOMMUNENAVN"),
+                                fnrBruker = it.string("FNR_BRUKER")
+                            )
+                        }
                     }.asSingle
                 )
             }
@@ -136,10 +147,9 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
-                        "UPDATE V1_SOKNAD SET STATUS = ?, UPDATED = now(), DATA = ? WHERE SOKNADS_ID = ?",
-                        soknadsId,
+                        "UPDATE V1_SOKNAD SET STATUS = ?, UPDATED = now(), DATA = NULL WHERE SOKNADS_ID = ?",
                         Status.UTLØPT.name,
-                        Status.VENTER_GODKJENNING.name,
+                        soknadsId,
                     ).asUpdate
                 )
             }
@@ -159,18 +169,31 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                         statement,
                         fnrBruker,
                     ).map {
-                        SoknadMedStatus(
-                            soknadId = UUID.fromString(it.string("SOKNADS_ID")),
-                            status = Status.valueOf(it.string("STATUS")),
-                            datoOpprettet = it.sqlTimestamp("created"),
-                            datoOppdatert = when {
-                                it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
-                                else -> it.sqlTimestamp("created")
-                            },
-                            soknad = JacksonMapper.objectMapper.readTree(
-                                it.string("DATA")
+                        val status = Status.valueOf(it.string("STATUS"))
+                        if (status.isSlettetEllerUtløpt()) {
+                            SoknadMedStatus.newSøknadUtenFormidlernavn(
+                                soknadId = UUID.fromString(it.string("SOKNADS_ID")),
+                                status = Status.valueOf(it.string("STATUS")),
+                                datoOpprettet = it.sqlTimestamp("created"),
+                                datoOppdatert = when {
+                                    it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
+                                    else -> it.sqlTimestamp("created")
+                                }
                             )
-                        )
+                        } else {
+                            SoknadMedStatus.newSøknadMedFormidlernavn(
+                                soknadId = UUID.fromString(it.string("SOKNADS_ID")),
+                                status = Status.valueOf(it.string("STATUS")),
+                                datoOpprettet = it.sqlTimestamp("created"),
+                                datoOppdatert = when {
+                                    it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
+                                    else -> it.sqlTimestamp("created")
+                                },
+                                søknad = JacksonMapper.objectMapper.readTree(
+                                    it.string("DATA")
+                                )
+                            )
+                        }
                     }.asList
                 )
             }

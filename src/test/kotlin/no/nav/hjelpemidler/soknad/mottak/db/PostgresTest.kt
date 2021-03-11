@@ -55,49 +55,49 @@ internal class SøknadStoreTest {
                     mockSøknad(soknadsId)
                 )
                 val hentSoknad = this.hentSoknad(soknadsId)
-                assertEquals("15084300133", hentSoknad?.bruker?.fnummer)
-                assertEquals("fornavn", hentSoknad?.bruker?.fornavn)
-                assertEquals("etternavn", hentSoknad?.bruker?.etternavn)
-                assertEquals("12345678", hentSoknad?.bruker?.telefonNummer)
-                assertNull(hentSoknad?.bruker?.adresse)
-                assertNull(hentSoknad?.bruker?.postnummer)
-                assertEquals("Stedet", hentSoknad?.bruker?.poststed)
-                assertEquals("formidlerFornavn formidlerEtternavn", hentSoknad?.formidler?.navn)
-                assertEquals("arbeidssted", hentSoknad?.formidler?.arbeidssted)
-                assertEquals("stilling", hentSoknad?.formidler?.stilling)
-                assertEquals("postadresse arbeidssted 1234 poststed", hentSoknad?.formidler?.adresse)
-                assertEquals("12345678", hentSoknad?.formidler?.telefon)
-                assertEquals("treffedager", hentSoknad?.formidler?.treffesEnklest)
-                assertEquals("epost@adad.com", hentSoknad?.formidler?.epost)
-                assertNull(hentSoknad?.oppfolgingsansvarlig)
-                assertEquals("Hjemme", hentSoknad?.bruker?.boform)
-                assertEquals(Bruksarena.DAGLIGLIVET, hentSoknad?.bruker?.bruksarena)
+                assertEquals("15084300133", hentSoknad?.søknadsdata?.bruker?.fnummer)
+                assertEquals("fornavn", hentSoknad?.søknadsdata?.bruker?.fornavn)
+                assertEquals("etternavn", hentSoknad?.søknadsdata?.bruker?.etternavn)
+                assertEquals("12345678", hentSoknad?.søknadsdata?.bruker?.telefonNummer)
+                assertNull(hentSoknad?.søknadsdata?.bruker?.adresse)
+                assertNull(hentSoknad?.søknadsdata?.bruker?.postnummer)
+                assertEquals("Stedet", hentSoknad?.søknadsdata?.bruker?.poststed)
+                assertEquals("formidlerFornavn formidlerEtternavn", hentSoknad?.søknadsdata?.formidler?.navn)
+                assertEquals("arbeidssted", hentSoknad?.søknadsdata?.formidler?.arbeidssted)
+                assertEquals("stilling", hentSoknad?.søknadsdata?.formidler?.stilling)
+                assertEquals("postadresse arbeidssted 1234 poststed", hentSoknad?.søknadsdata?.formidler?.adresse)
+                assertEquals("12345678", hentSoknad?.søknadsdata?.formidler?.telefon)
+                assertEquals("treffedager", hentSoknad?.søknadsdata?.formidler?.treffesEnklest)
+                assertEquals("epost@adad.com", hentSoknad?.søknadsdata?.formidler?.epost)
+                assertNull(hentSoknad?.søknadsdata?.oppfolgingsansvarlig)
+                assertEquals("Hjemme", hentSoknad?.søknadsdata?.bruker?.boform)
+                assertEquals(Bruksarena.DAGLIGLIVET, hentSoknad?.søknadsdata?.bruker?.bruksarena)
                 assertEquals(
                     listOf(Funksjonsnedsettelse.BEVEGELSE, Funksjonsnedsettelse.HØRSEL),
-                    hentSoknad?.bruker?.funksjonsnedsettelser
+                    hentSoknad?.søknadsdata?.bruker?.funksjonsnedsettelser
                 )
 
-                assertEquals(2, hentSoknad?.hjelpemiddelTotalAntall)
-                assertEquals(1, hentSoknad?.hjelpemidler?.size)
-                assertEquals(1, hentSoknad?.hjelpemidler?.first()?.antall)
-                assertEquals("Hjelpemiddelnavn", hentSoknad?.hjelpemidler?.first()?.navn)
-                assertEquals("beskrivelse", hentSoknad?.hjelpemidler?.first()?.beskrivelse)
-                assertEquals("Arbeidsstoler", hentSoknad?.hjelpemidler?.first()?.hjelpemiddelkategori)
-                assertEquals("123456", hentSoknad?.hjelpemidler?.first()?.hmsNr)
-                assertEquals("Tilleggsinformasjon", hentSoknad?.hjelpemidler?.first()?.tilleggsinformasjon)
-                assertEquals("1", hentSoknad?.hjelpemidler?.first()?.rangering)
-                assertEquals(true, hentSoknad?.hjelpemidler?.first()?.utlevertFraHjelpemiddelsentralen)
-                assertEquals(1, hentSoknad?.hjelpemidler?.first()?.vilkarliste?.size)
-                assertEquals("Vilkår 1", hentSoknad?.hjelpemidler?.first()?.vilkarliste?.first()?.vilkaarTekst)
-                assertEquals("Tilleggsinfo", hentSoknad?.hjelpemidler?.first()?.vilkarliste?.first()?.tilleggsInfo)
-                assertEquals(1, hentSoknad?.hjelpemidler?.first()?.tilbehorListe?.size)
-                assertEquals("654321", hentSoknad?.hjelpemidler?.first()?.tilbehorListe?.first()?.hmsnr)
-                assertEquals("Tilbehør 1", hentSoknad?.hjelpemidler?.first()?.tilbehorListe?.first()?.navn)
-                assertEquals(1, hentSoknad?.hjelpemidler?.first()?.tilbehorListe?.first()?.antall)
-                assertEquals("begrunnelse", hentSoknad?.hjelpemidler?.first()?.begrunnelse)
-                assertEquals(true, hentSoknad?.hjelpemidler?.first()?.kanIkkeTilsvarande)
+                assertEquals(2, hentSoknad?.søknadsdata?.hjelpemiddelTotalAntall)
+                assertEquals(1, hentSoknad?.søknadsdata?.hjelpemidler?.size)
+                assertEquals(1, hentSoknad?.søknadsdata?.hjelpemidler?.first()?.antall)
+                assertEquals("Hjelpemiddelnavn", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.navn)
+                assertEquals("beskrivelse", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.beskrivelse)
+                assertEquals("Arbeidsstoler", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.hjelpemiddelkategori)
+                assertEquals("123456", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.hmsNr)
+                assertEquals("Tilleggsinformasjon", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.tilleggsinformasjon)
+                assertEquals("1", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.rangering)
+                assertEquals(true, hentSoknad?.søknadsdata?.hjelpemidler?.first()?.utlevertFraHjelpemiddelsentralen)
+                assertEquals(1, hentSoknad?.søknadsdata?.hjelpemidler?.first()?.vilkarliste?.size)
+                assertEquals("Vilkår 1", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.vilkarliste?.first()?.vilkaarTekst)
+                assertEquals("Tilleggsinfo", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.vilkarliste?.first()?.tilleggsInfo)
+                assertEquals(1, hentSoknad?.søknadsdata?.hjelpemidler?.first()?.tilbehorListe?.size)
+                assertEquals("654321", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.tilbehorListe?.first()?.hmsnr)
+                assertEquals("Tilbehør 1", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.tilbehorListe?.first()?.navn)
+                assertEquals(1, hentSoknad?.søknadsdata?.hjelpemidler?.first()?.tilbehorListe?.first()?.antall)
+                assertEquals("begrunnelse", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.begrunnelse)
+                assertEquals(true, hentSoknad?.søknadsdata?.hjelpemidler?.first()?.kanIkkeTilsvarande)
 
-                assertNull(hentSoknad?.levering?.adresse)
+                assertNull(hentSoknad?.søknadsdata?.levering?.adresse)
             }
         }
     }
@@ -219,7 +219,7 @@ internal class SøknadStoreTest {
                     )
                 )
                 val hentSoknad = this.hentSoknad(soknadsId)
-                assertEquals("15084300133", hentSoknad?.bruker?.fnummer)
+                assertEquals("15084300133", hentSoknad?.søknadsdata?.bruker?.fnummer)
             }
         }
     }
@@ -295,7 +295,7 @@ internal class PostgresTest {
     fun `Migration scripts are applied successfully`() {
         withCleanDb {
             val migrations = migrate(DataSource.instance)
-            migrations shouldBe 5
+            migrations shouldBe 6
         }
     }
 
