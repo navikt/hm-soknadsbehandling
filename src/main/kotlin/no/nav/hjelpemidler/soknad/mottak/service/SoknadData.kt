@@ -17,10 +17,14 @@ internal data class SoknadData(
 ) {
     internal fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
-            it["@id"] = ULID.random()
-            it["@event_name"] = eventName
-            it["@opprettet"] = LocalDateTime.now()
-            it["fodselNrBruker"] = this.fnrBruker
+            val id = ULID.random()
+            it["@id"] = id // @deprecated
+            it["eventId"] = id
+            it["@event_name"] = eventName // @deprecated
+            it["eventName"] = "hm-$eventName"
+            it["opprettet"] = LocalDateTime.now()
+            it["fodselNrBruker"] = this.fnrBruker // @deprecated
+            it["fnrBruker"] = this.fnrBruker
             it["navnBruker"] = this.soknad["soknad"]["bruker"]["etternavn"].textValue() + " " + this.soknad["soknad"]["bruker"]["fornavn"].textValue()
             it["soknad"] = this.soknad
             it["soknadId"] = this.soknadId
@@ -29,10 +33,14 @@ internal data class SoknadData(
 
     internal fun toVenterPaaGodkjenningJson(): String {
         return JsonMessage("{}", MessageProblems("")).also {
-            it["@id"] = ULID.random()
-            it["@event_name"] = "SøknadTilGodkjenning"
-            it["@opprettet"] = LocalDateTime.now()
-            it["fodselNrBruker"] = this.fnrBruker
+            val id = ULID.random()
+            it["@id"] = id // @deprecated
+            it["eventId"] = id
+            it["@event_name"] = "SøknadTilGodkjenning" // @deprecated
+            it["eventName"] = "hm-SøknadTilGodkjenning"
+            it["opprettet"] = LocalDateTime.now()
+            it["fodselNrBruker"] = this.fnrBruker // @deprecated
+            it["fnrBruker"] = this.fnrBruker
             it["soknadId"] = this.soknadId
             it["kommunenavn"] = this.kommunenavn ?: ""
         }.toJson()

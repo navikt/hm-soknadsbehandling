@@ -166,9 +166,9 @@ internal class SoknadUtenFullmaktDataSinkTest {
         val jsonNode = inspektør.message(0)
 
         jsonNode["soknadId"].isNull shouldBe false
-        jsonNode["fodselNrBruker"].textValue() shouldBe "fnrBruker"
-        jsonNode["@event_name"].textValue() shouldBe "SøknadTilGodkjenning"
-        jsonNode["@opprettet"].textValue() shouldNotBe null
+        jsonNode["fnrBruker"].textValue() shouldBe "fnrBruker"
+        jsonNode["eventName"].textValue() shouldBe "hm-SøknadTilGodkjenning"
+        jsonNode["opprettet"].textValue() shouldNotBe null
     }
 
     @Test
