@@ -7,16 +7,17 @@ import java.util.UUID
 class SøknadForBruker private constructor(
     val søknadId: UUID,
     val datoOpprettet: Date,
+    var datoOppdatert: Date,
     val status: Status,
     val fnrBruker: String,
     val søknadsdata: Søknadsdata?
 ) {
 
     companion object {
-        fun new(søknadId: UUID, datoOpprettet: Date, søknad: JsonNode, status: Status, kommunenavn: String?, fnrBruker: String) =
-            SøknadForBruker(søknadId, datoOpprettet, status, fnrBruker, Søknadsdata(søknad, kommunenavn))
-        fun newEmptySøknad(søknadId: UUID, datoOpprettet: Date, status: Status, fnrBruker: String) =
-            SøknadForBruker(søknadId, datoOpprettet, status, fnrBruker, null)
+        fun new(søknadId: UUID, datoOpprettet: Date, datoOppdatert: Date, søknad: JsonNode, status: Status, kommunenavn: String?, fnrBruker: String) =
+            SøknadForBruker(søknadId, datoOpprettet, datoOppdatert, status, fnrBruker, Søknadsdata(søknad, kommunenavn))
+        fun newEmptySøknad(søknadId: UUID, datoOpprettet: Date, datoOppdatert: Date, status: Status, fnrBruker: String) =
+            SøknadForBruker(søknadId, datoOpprettet, datoOppdatert, status, fnrBruker, null)
     }
 }
 

@@ -35,7 +35,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
 
     override fun hentSoknad(soknadsId: UUID): SøknadForBruker? {
         @Language("PostgreSQL") val statement =
-            """SELECT SOKNADS_ID, STATUS, DATA, CREATED, KOMMUNENAVN, FNR_BRUKER
+            """SELECT SOKNADS_ID, STATUS, DATA, CREATED, KOMMUNENAVN, FNR_BRUKER, UPDATED
                     FROM V1_SOKNAD 
                     WHERE SOKNADS_ID = ?"""
 
@@ -52,6 +52,10 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                                 søknadId = UUID.fromString(it.string("SOKNADS_ID")),
                                 status = Status.valueOf(it.string("STATUS")),
                                 datoOpprettet = it.sqlTimestamp("created"),
+                                datoOppdatert = when {
+                                    it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
+                                    else -> it.sqlTimestamp("created")
+                                },
                                 fnrBruker = it.string("FNR_BRUKER")
                             )
                         } else {
@@ -59,6 +63,10 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                                 søknadId = UUID.fromString(it.string("SOKNADS_ID")),
                                 status = Status.valueOf(it.string("STATUS")),
                                 datoOpprettet = it.sqlTimestamp("created"),
+                                datoOppdatert = when {
+                                    it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
+                                    else -> it.sqlTimestamp("created")
+                                },
                                 søknad = JacksonMapper.objectMapper.readTree(
                                     it.stringOrNull("DATA") ?: "{}"
                                 ),
