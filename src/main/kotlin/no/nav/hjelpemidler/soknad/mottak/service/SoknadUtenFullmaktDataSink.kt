@@ -16,14 +16,14 @@ import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
+import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class SoknadUtenFullmaktDataSink(rapidsConnection: RapidsConnection, private val store: SoknadStore) :
+internal class SoknadUtenFullmaktDataSink(rapidsConnection: RapidsConnection, private val store: SøknadStore) :
     River.PacketListener {
 
     companion object {

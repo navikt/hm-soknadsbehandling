@@ -10,12 +10,12 @@ import io.ktor.routing.get
 import io.ktor.util.pipeline.PipelineContext
 import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.UserPrincipal
-import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
+import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
-internal fun Route.hentSoknad(store: SoknadStore) {
+internal fun Route.hentSoknad(store: SøknadStore) {
     get("/soknad/bruker/{soknadsId}") {
         try {
             val soknadsId = UUID.fromString(soknadsId())
@@ -41,7 +41,7 @@ internal fun Route.hentSoknad(store: SoknadStore) {
     }
 }
 
-internal fun Route.hentSoknaderForBruker(store: SoknadStore) {
+internal fun Route.hentSoknaderForBruker(store: SøknadStore) {
     get("/soknad/bruker") {
 
         val fnr = call.principal<UserPrincipal>()?.getFnr() ?: throw RuntimeException("Fnr mangler i token claim")

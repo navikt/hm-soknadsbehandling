@@ -9,14 +9,14 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
+import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class SoknadUtenFullmaktDataSinkTest {
     private val capturedSoknadData = slot<SoknadData>()
-    private val mock = mockk<SoknadStore>().apply {
+    private val mock = mockk<SøknadStore>().apply {
         every { save(capture(capturedSoknadData)) } returns 1
     }
 
