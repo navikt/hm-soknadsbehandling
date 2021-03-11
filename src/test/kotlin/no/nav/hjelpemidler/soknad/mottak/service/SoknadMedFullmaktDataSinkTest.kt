@@ -66,7 +66,7 @@ internal class SoknadMedFullmaktDataSinkTest {
     }
 
     @Test
-    fun `Do not react to events without "event_name" key`() {
+    fun `Do not react to events without event_name key`() {
 
         val invalidPacket =
             """
