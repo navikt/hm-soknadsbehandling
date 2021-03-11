@@ -10,7 +10,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
+import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
@@ -19,7 +19,7 @@ internal class GodkjennSoknadTest {
     private val soknadId = "e8dac11d-fa66-4561-89d7-88a62ab31c2b"
     private val capturedStatus = slot<Status>()
     private val capturedSoknadId = slot<UUID>()
-    private val mock = mockk<SoknadStore>().apply {
+    private val mock = mockk<SøknadStore>().apply {
         every { oppdaterStatus(capture(capturedSoknadId), capture(capturedStatus)) } returns 1
         every { hentSoknadData(any()) } returns SoknadData(
             "fnrBruker",

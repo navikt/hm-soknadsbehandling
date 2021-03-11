@@ -257,7 +257,7 @@ internal class SøknadStoreTest {
                         "id",
                         "id2",
                         id,
-                        """ {"key": "value"} """,
+                        ObjectMapper().readTree(""" {"key": "value"} """),
                         status = Status.VENTER_GODKJENNING,
                         kommunenavn = null
 

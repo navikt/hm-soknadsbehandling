@@ -8,9 +8,9 @@ import java.util.UUID
 internal fun mockSøknad(id: UUID) = SoknadData(
     "15084300133",
     "id2",
-    "navn",
     id,
-    """ {
+    ObjectMapper().readTree(
+        """ {
                           "fnrBruker": "15084300133",
                           "soknadId": "62f68547-11ae-418c-8ab7-4d2af985bcd9",
                           "datoOpprettet": "2021-02-23T09:46:45.146+00:00",
@@ -85,9 +85,7 @@ internal fun mockSøknad(id: UUID) = SoknadData(
                                    "utleveringskontaktpersonRadioButton": "Hjelpemiddelbruker"
                               }
                           }
-                        } """,
-    ObjectMapper().readTree(
-        """  {"key": "value"} """
+                        } """
     ),
     status = Status.VENTER_GODKJENNING,
     kommunenavn = null
