@@ -9,14 +9,14 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
+import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class SoknadUtenFullmaktDataSinkTest {
     private val capturedSoknadData = slot<SoknadData>()
-    private val mock = mockk<SoknadStore>().apply {
+    private val mock = mockk<SøknadStore>().apply {
         every { save(capture(capturedSoknadData)) } returns 1
     }
 
@@ -65,7 +65,7 @@ internal class SoknadUtenFullmaktDataSinkTest {
     }
 
     @Test
-    fun `Do not react to events without "event_name" key`() {
+    fun `Do not react to events without event_name key`() {
 
         val invalidPacket =
             """
@@ -166,9 +166,9 @@ internal class SoknadUtenFullmaktDataSinkTest {
         val jsonNode = inspektør.message(0)
 
         jsonNode["soknadId"].isNull shouldBe false
-        jsonNode["fodselNrBruker"].textValue() shouldBe "fnrBruker"
-        jsonNode["@event_name"].textValue() shouldBe "SøknadTilGodkjenning"
-        jsonNode["@opprettet"].textValue() shouldNotBe null
+        jsonNode["fnrBruker"].textValue() shouldBe "fnrBruker"
+        jsonNode["eventName"].textValue() shouldBe "hm-SøknadTilGodkjenning"
+        jsonNode["opprettet"].textValue() shouldNotBe null
     }
 
     @Test

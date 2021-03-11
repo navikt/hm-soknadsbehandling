@@ -35,6 +35,12 @@ internal object Prometheus {
         .help("Antall søknader godkjent")
         .register(collectorRegistry)
 
+    val godkjenningsfristErUtløptCounter = Counter
+        .build()
+        .name("hm_soknad_godkjenningsfrist_utlopt")
+        .help("Antall søknader der godkjenningsfrist er utløpt")
+        .register(collectorRegistry)
+
     val soknadSlettetAvBrukerCounter = Counter
         .build()
         .name("hm_soknad_mottak_sletting_fra_bruker")

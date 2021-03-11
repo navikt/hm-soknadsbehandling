@@ -1,6 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import com.github.guepardoapps.kulid.ULID
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -10,18 +9,16 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
+import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
-import java.time.LocalDateTime
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val store: SoknadStore) :
+internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val store: SøknadStore) :
     River.PacketListener {
 
     init {
@@ -41,8 +38,8 @@ internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val st
                         logger.info { "Bruker har godkjent søknad: ${packet.soknadId}" }
                         val rowsUpdated = update(UUID.fromString(packet.soknadId), Status.GODKJENT)
                         if (rowsUpdated> 0) {
-                            val fnrBruker = store.hentFnrForSoknad(UUID.fromString(packet.soknadId))
-                            forward(UUID.fromString(packet.soknadId), fnrBruker, context)
+                            val soknad = hentSoknadData(UUID.fromString(packet.soknadId))
+                            forward(soknad, context)
                         } else {
                             logger.info { "Søknad som godkjennes er allerede godkjent, søknadId: ${packet.soknadId}" }
                         }
@@ -63,16 +60,19 @@ internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val st
             logger.error(it) { "Failed to update søknad $soknadId med status $status" }
         }.getOrThrow()
 
-    private fun CoroutineScope.forward(soknadId: UUID, fnrBruker: String, context: RapidsConnection.MessageContext) {
-        launch(Dispatchers.IO + SupervisorJob()) {
+    private fun hentSoknadData(soknadId: UUID): SoknadData =
+        kotlin.runCatching {
+            store.hentSoknadData(soknadId)!!
+        }.onFailure {
+            logger.error(it) { "Failed to retrieve søknad $soknadId" }
+        }.getOrThrow()
 
-            val soknadGodkjentMessage = JsonMessage("{}", MessageProblems("")).also {
-                it["@id"] = ULID.random()
-                it["@event_name"] = "SøknadGodkjentAvBruker"
-                it["@opprettet"] = LocalDateTime.now()
-                it["fodselNrBruker"] = fnrBruker
-                it["soknadId"] = soknadId.toString()
-            }.toJson()
+    private fun CoroutineScope.forward(soknadData: SoknadData, context: RapidsConnection.MessageContext) {
+        val fnrBruker = soknadData.fnrBruker
+        val soknadId = soknadData.soknadId.toString()
+
+        launch(Dispatchers.IO + SupervisorJob()) {
+            val soknadGodkjentMessage = soknadData.toJson("SøknadGodkjentAvBruker")
             context.send(fnrBruker, soknadGodkjentMessage)
             Prometheus.soknadGodkjentAvBrukerCounter.inc()
         }.invokeOnCompletion {

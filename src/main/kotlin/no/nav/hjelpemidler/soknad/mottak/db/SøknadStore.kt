@@ -1,30 +1,39 @@
 package no.nav.hjelpemidler.soknad.mottak.db
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
-import no.nav.hjelpemidler.soknad.mottak.service.SoknadForBruker
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedStatus
 import no.nav.hjelpemidler.soknad.mottak.service.Status
+import no.nav.hjelpemidler.soknad.mottak.service.SøknadForBruker
+import no.nav.hjelpemidler.soknad.mottak.service.UtgåttSøknad
 import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
 import java.util.UUID
 import javax.sql.DataSource
 
-internal interface SoknadStore {
+internal interface SøknadStore {
     fun save(soknadData: SoknadData): Int
-    fun hentSoknad(soknadsId: UUID): SoknadForBruker?
+    fun hentSoknad(soknadsId: UUID): SøknadForBruker?
     fun hentSoknaderForBruker(fnrBruker: String): List<SoknadMedStatus>
+    fun hentSoknadData(soknadsId: UUID): SoknadData?
     fun oppdaterStatus(soknadsId: UUID, status: Status): Int
+    fun oppdaterUtgåttSøknad(soknadsId: UUID): Int
     fun hentFnrForSoknad(soknadsId: UUID): String
+    fun hentSoknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad>
 }
 
-internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
+internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
 
-    override fun hentSoknad(soknadsId: UUID): SoknadForBruker? {
+    override fun hentSoknad(soknadsId: UUID): SøknadForBruker? {
         @Language("PostgreSQL") val statement =
             """SELECT SOKNADS_ID, STATUS, DATA, CREATED, KOMMUNENAVN, UPDATED
                     FROM V1_SOKNAD 
@@ -37,14 +46,43 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
                         statement,
                         soknadsId,
                     ).map {
-                        SoknadForBruker(
-                            soknadId = UUID.fromString(it.string("SOKNADS_ID")),
+                        SøknadForBruker(
+                            søknadId = UUID.fromString(it.string("SOKNADS_ID")),
                             status = Status.valueOf(it.string("STATUS")),
                             datoOpprettet = it.sqlTimestamp("created"),
                             datoOppdatert = when {
                                 it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
                                 else -> it.sqlTimestamp("created")
                             },
+                            søknad = JacksonMapper.objectMapper.readTree(
+                                it.string("DATA")
+                            ),
+                            kommunenavn = it.stringOrNull("KOMMUNENAVN")
+                        )
+                    }.asSingle
+                )
+            }
+        }
+    }
+
+    override fun hentSoknadData(soknadsId: UUID): SoknadData? {
+        @Language("PostgreSQL") val statement =
+            """SELECT SOKNADS_ID,FNR_BRUKER, FNR_INNSENDER, STATUS, DATA, KOMMUNENAVN
+                    FROM V1_SOKNAD 
+                    WHERE SOKNADS_ID = ?"""
+
+        return time("hent_soknaddata") {
+            using(sessionOf(ds)) { session ->
+                session.run(
+                    queryOf(
+                        statement,
+                        soknadsId,
+                    ).map {
+                        SoknadData(
+                            fnrBruker = it.string("FNR_BRUKER"),
+                            fnrInnsender = it.string("FNR_INNSENDER"),
+                            soknadId = UUID.fromString(it.string("SOKNADS_ID")),
+                            status = Status.valueOf(it.string("STATUS")),
                             soknad = JacksonMapper.objectMapper.readTree(
                                 it.string("DATA")
                             ),
@@ -97,6 +135,20 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
             }
         }
 
+    override fun oppdaterUtgåttSøknad(soknadsId: UUID): Int =
+        time("oppdater_utgaatt_soknad") {
+            using(sessionOf(ds)) { session ->
+                session.run(
+                    queryOf(
+                        "UPDATE V1_SOKNAD SET STATUS = ?, UPDATED = now(), DATA = ? WHERE SOKNADS_ID = ?",
+                        soknadsId,
+                        Status.UTLØPT.name,
+                        Status.VENTER_GODKJENNING.name,
+                    ).asUpdate
+                )
+            }
+        }
+
     override fun hentSoknaderForBruker(fnrBruker: String): List<SoknadMedStatus> {
         @Language("PostgreSQL") val statement =
             """SELECT SOKNADS_ID, CREATED, UPDATED, STATUS, DATA
@@ -129,19 +181,44 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
         }
     }
 
+    override fun hentSoknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad> {
+        @Language("PostgreSQL") val statement =
+            """SELECT SOKNADS_ID, STATUS, FNR_BRUKER
+                    FROM V1_SOKNAD 
+                    WHERE STATUS = ? AND (CREATED + interval '$dager day') < now()
+                    ORDER BY CREATED DESC """
+
+        return time("utgåtte_søknader") {
+            using(sessionOf(ds)) { session ->
+                session.run(
+                    queryOf(
+                        statement,
+                        Status.VENTER_GODKJENNING.name,
+                    ).map {
+                        UtgåttSøknad(
+                            søknadId = UUID.fromString(it.string("SOKNADS_ID")),
+                            status = Status.valueOf(it.string("STATUS")),
+                            fnrBruker = it.string("FNR_BRUKER")
+                        )
+                    }.asList
+                )
+            }
+        }
+    }
+
     override fun save(soknadData: SoknadData): Int =
         time("insert_soknad") {
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
-                        "INSERT INTO V1_SOKNAD (SOKNADS_ID,FNR_BRUKER, FNR_INNSENDER, STATUS, DATA, KOMMUNENAVN ) VALUES (?,?,?,?,?, ?) ON CONFLICT DO NOTHING",
+                        "INSERT INTO V1_SOKNAD (SOKNADS_ID,FNR_BRUKER, FNR_INNSENDER, STATUS, DATA, KOMMUNENAVN ) VALUES (?,?,?,?,?,?) ON CONFLICT DO NOTHING",
                         soknadData.soknadId,
                         soknadData.fnrBruker,
                         soknadData.fnrInnsender,
                         soknadData.status.name,
                         PGobject().apply {
                             type = "jsonb"
-                            value = soknadData.soknadJson
+                            value = soknadToJsonString(soknadData.soknad)
                         },
                         soknadData.kommunenavn,
                     ).asUpdate
@@ -155,4 +232,13 @@ internal class SoknadStorePostgres(private val ds: DataSource) : SoknadStore {
                 timer.observeDuration()
             }
         }
+
+    companion object {
+        private val objectMapper = jacksonObjectMapper()
+            .registerModule(JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+    }
+
+    private fun soknadToJsonString(soknad: JsonNode): String = objectMapper.writeValueAsString(soknad)
 }

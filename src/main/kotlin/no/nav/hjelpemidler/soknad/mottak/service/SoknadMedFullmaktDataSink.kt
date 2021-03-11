@@ -1,10 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,24 +11,15 @@ import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
+import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, private val store: SoknadStore) :
+internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, private val store: SøknadStore) :
     River.PacketListener {
-
-    companion object {
-        private val objectMapper = jacksonObjectMapper()
-            .registerModule(JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-    }
-
-    private fun soknadToJson(soknad: JsonNode): String = objectMapper.writeValueAsString(soknad)
 
     init {
         River(rapidsConnection).apply {
@@ -49,8 +35,7 @@ internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, pri
     private val JsonMessage.fnrInnsender get() = this["fodselNrInnsender"].textValue()
     private val JsonMessage.soknadId get() = this["soknad"]["soknad"]["id"].textValue()
     private val JsonMessage.soknad get() = this["soknad"]
-    private val JsonMessage.navnBruker get() = this["soknad"]["soknad"]["bruker"]["etternavn"].textValue() + " " + this["soknad"]["soknad"]["bruker"]["fornavn"].textValue()
-    private val JsonMessage.kommunenavn get() = this["kommunenavn"]?.textValue()
+    private val JsonMessage.kommunenavn get() = this["kommunenavn"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
@@ -64,12 +49,10 @@ internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, pri
                         val soknadData = SoknadData(
                             fnrBruker = packet.fnrBruker,
                             fnrInnsender = packet.fnrInnsender,
-                            navnBruker = packet.navnBruker,
-                            soknadJson = soknadToJson(packet.soknad),
                             soknad = packet.soknad,
                             soknadId = UUID.fromString(packet.soknadId),
                             status = Status.GODKJENT_MED_FULLMAKT,
-                            kommunenavn = packet?.kommunenavn
+                            kommunenavn = packet.kommunenavn
                         )
                         logger.info { "Søknad med fullmakt mottatt: ${packet.soknadId}" }
                         save(soknadData)
@@ -100,7 +83,7 @@ internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, pri
 
     private fun CoroutineScope.forward(søknadData: SoknadData, context: RapidsConnection.MessageContext) {
         launch(Dispatchers.IO + SupervisorJob()) {
-            context.send(søknadData.fnrBruker, søknadData.toJson())
+            context.send(søknadData.fnrBruker, søknadData.toJson("Søknad"))
             Prometheus.soknadMedFullmaktCounter.inc()
         }.invokeOnCompletion {
             when (it) {

@@ -6,6 +6,7 @@ import io.kotest.matchers.shouldBe
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.hjelpemidler.soknad.mottak.Configuration
+import no.nav.hjelpemidler.soknad.mottak.mockSøknad
 import no.nav.hjelpemidler.soknad.mottak.service.Bruksarena
 import no.nav.hjelpemidler.soknad.mottak.service.Funksjonsnedsettelse
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
@@ -43,101 +44,15 @@ internal fun withMigratedDb(test: () -> Unit) =
     DataSource.instance.also { clean(it) }
         .also { migrate(it) }.run { test() }
 
-internal class SoknadStoreTest {
+internal class SøknadStoreTest {
 
     @Test
     fun `Hent lagret soknad`() {
         val soknadsId = UUID.randomUUID()
         withMigratedDb {
-            SoknadStorePostgres(DataSource.instance).apply {
+            SøknadStorePostgres(DataSource.instance).apply {
                 this.save(
-                    SoknadData(
-                        "15084300133",
-                        "id2",
-                        "navn",
-                        soknadsId,
-                        """ {
-                          "fnrBruker": "15084300133",
-                          "soknadId": "62f68547-11ae-418c-8ab7-4d2af985bcd9",
-                          "datoOpprettet": "2021-02-23T09:46:45.146+00:00",
-                          "soknad": {
-                              "id": "62f68547-11ae-418c-8ab7-4d2af985bcd9",
-                              "date": "2020-06-19",
-                              "bruker": {
-                                "fnummer": "15084300133",
-                                "fornavn": "fornavn",
-                                "signatur": "FULLMAKT",
-                                "etternavn": "etternavn",
-                                "telefonNummer": "12345678",
-                                "poststed": "Stedet"
-                              },
-                              "brukersituasjon": {
-                                "bostedRadioButton": "Hjemme",
-                                "bruksarenaErDagliglivet": true,
-                                "nedsattFunksjonTypes": {
-                                    "bevegelse": true,
-                                    "kognisjon": false,
-                                    "horsel": true
-                                }
-                              }, 
-                              "hjelpemidler": {
-                            "hjelpemiddelTotaltAntall": 2,
-                            "hjelpemiddelListe": [
-                              {
-                                "uniqueKey": "1234561592555082660",
-                                "hmsNr": "123456",
-                                "beskrivelse": "beskrivelse",
-                                "begrunnelsen": "begrunnelse",
-                                "antall": 1,
-                                "navn": "Hjelpemiddelnavn",
-                                "utlevertFraHjelpemiddelsentralen": true,
-                                "tilleggsinformasjon": "Tilleggsinformasjon",
-                                "kanIkkeTilsvarande": true,
-                                "hjelpemiddelkategori": "Arbeidsstoler",
-                                "produkt": {
-                                  "postrank": "1"
-                                },
-                                "vilkarliste": [
-                                  {
-                                    "id": 1,
-                                    "vilkartekst": "Vilkår 1",
-                                    "tilleggsinfo": "Tilleggsinfo",
-                                    "checked": true
-                                  }
-                                ],
-                                "tilbehorListe": [
-                                  {
-                                    "hmsnr": "654321",
-                                    "navn": "Tilbehør 1",
-                                    "antall": 1
-                                  }
-                                ]
-                              }
-                            ]
-                          },
-                              "levering": {
-                                 "hmfFornavn": "formidlerFornavn",
-                                 "hmfEtternavn": "formidlerEtternavn", 
-                                 "hmfArbeidssted": "arbeidssted",
-                                  "hmfStilling": "stilling",
-                                  "hmfPostadresse": "postadresse arbeidssted",
-                                  "hmfPostnr": "1234",
-                                  "hmfPoststed": "poststed",
-                                  "hmfTelefon": "12345678",
-                                  "hmfTreffesEnklest": "treffedager",
-                                  "hmfEpost": "epost@adad.com",
-                                   "opfRadioButton": "Hjelpemiddelformidler",
-                                   "utleveringsmaateRadioButton": "FolkeregistrertAdresse",
-                                   "utleveringskontaktpersonRadioButton": "Hjelpemiddelbruker"
-                              }
-                          }
-                        } """,
-                        ObjectMapper().readTree(
-                            """  {"key": "value"} """
-                        ),
-                        status = Status.VENTER_GODKJENNING,
-                        kommunenavn = null
-                    )
+                    mockSøknad(soknadsId)
                 )
                 val hentSoknad = this.hentSoknad(soknadsId)
                 assertEquals("15084300133", hentSoknad?.bruker?.fnummer)
@@ -191,14 +106,14 @@ internal class SoknadStoreTest {
     fun `Hent lagret soknad 2`() {
         val soknadsId = UUID.randomUUID()
         withMigratedDb {
-            SoknadStorePostgres(DataSource.instance).apply {
+            SøknadStorePostgres(DataSource.instance).apply {
                 this.save(
                     SoknadData(
                         "15084300133",
                         "id2",
-                        "navn",
                         soknadsId,
-                        """ {
+                        ObjectMapper().readTree(
+                            """ {
                           "fnrBruker": "15084300133",
                           "soknadId": "62f68547-11ae-418c-8ab7-4d2af985bcd9",
                           "datoOpprettet": "2021-02-23T09:46:45.146+00:00",
@@ -297,9 +212,7 @@ internal class SoknadStoreTest {
                               "bruksarenaErDagliglivet": true
                             }
                           }
-                        } """,
-                        ObjectMapper().readTree(
-                            """  {"key": "value"} """
+                        } """
                         ),
                         status = Status.VENTER_GODKJENNING,
                         kommunenavn = null
@@ -314,14 +227,12 @@ internal class SoknadStoreTest {
     @Test
     fun `Store soknad`() {
         withMigratedDb {
-            SoknadStorePostgres(DataSource.instance).apply {
+            SøknadStorePostgres(DataSource.instance).apply {
                 this.save(
                     SoknadData(
                         "id",
                         "id2",
-                        "navn",
                         UUID.randomUUID(),
-                        """ {"key": "value"} """,
                         ObjectMapper().readTree(""" {"key": "value"} """),
                         status = Status.VENTER_GODKJENNING,
                         kommunenavn = null
@@ -329,6 +240,49 @@ internal class SoknadStoreTest {
                     )
                 ).also {
                     it shouldBe 1
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `Søknad is utgått`() {
+
+        val id = UUID.randomUUID()
+
+        withMigratedDb {
+            SøknadStorePostgres(DataSource.instance).apply {
+                this.save(
+                    SoknadData(
+                        "id",
+                        "id2",
+                        id,
+                        ObjectMapper().readTree(""" {"key": "value"} """),
+                        status = Status.VENTER_GODKJENNING,
+                        kommunenavn = null
+
+                    )
+                ).also {
+                    it shouldBe 1
+                }
+            }
+            DataSource.instance.apply {
+                sessionOf(this).run(queryOf("UPDATE V1_SOKNAD SET CREATED = (now() - interval '2 week') WHERE SOKNADS_ID = '$id' ").asExecute)
+            }
+
+            SøknadStorePostgres(DataSource.instance).apply {
+                this.hentSoknaderTilGodkjenningEldreEnn(14).also {
+                    it.size shouldBe 1
+                }
+            }
+
+            DataSource.instance.apply {
+                sessionOf(this).run(queryOf("UPDATE V1_SOKNAD SET CREATED = (now() - interval '13 day') WHERE SOKNADS_ID = '$id' ").asExecute)
+            }
+
+            SøknadStorePostgres(DataSource.instance).apply {
+                this.hentSoknaderTilGodkjenningEldreEnn(14).also {
+                    it.size shouldBe 0
                 }
             }
         }

@@ -11,22 +11,28 @@ import io.ktor.request.path
 import io.ktor.routing.route
 import io.ktor.routing.routing
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.hjelpemidler.soknad.mottak.db.SoknadStore
-import no.nav.hjelpemidler.soknad.mottak.db.SoknadStorePostgres
+import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
+import no.nav.hjelpemidler.soknad.mottak.db.SøknadStorePostgres
 import no.nav.hjelpemidler.soknad.mottak.db.dataSourceFrom
 import no.nav.hjelpemidler.soknad.mottak.db.migrate
 import no.nav.hjelpemidler.soknad.mottak.service.GodkjennSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.SlettSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedFullmaktDataSink
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadUtenFullmaktDataSink
+import no.nav.hjelpemidler.soknad.mottak.service.SøknadsgodkjenningService
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknaderForBruker
 import org.slf4j.event.Level
+import java.util.Timer
+import kotlin.concurrent.scheduleAtFixedRate
+
+private val logger = KotlinLogging.logger {}
 
 fun main() {
-    val store = SoknadStorePostgres(dataSourceFrom(Configuration))
+    val store = SøknadStorePostgres(dataSourceFrom(Configuration))
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .withKtorModule { api(store) }
@@ -40,6 +46,9 @@ fun main() {
             GodkjennSoknad(this, store)
         }
         .apply {
+            startSøknadUtgåttScheduling(SøknadsgodkjenningService(store, this))
+        }
+        .apply {
             register(
                 object : RapidsConnection.StatusListener {
                     override fun onStartup(rapidsConnection: RapidsConnection) {
@@ -50,7 +59,7 @@ fun main() {
         }.start()
 }
 
-internal fun Application.api(store: SoknadStore) {
+internal fun Application.api(store: SøknadStore) {
 
     install(CallLogging) {
         level = Level.INFO
@@ -71,5 +80,15 @@ internal fun Application.api(store: SoknadStore) {
                 hentSoknaderForBruker(store)
             }
         }
+    }
+}
+
+private fun startSøknadUtgåttScheduling(søknadsgodkjenningService: SøknadsgodkjenningService) {
+    val timer = Timer("utgatt-soknader-task", true)
+
+    timer.scheduleAtFixedRate(60000, 1000 * 60 * 60) {
+        logger.info("markerer utgåtte søknader...")
+        val antallUtgåtte = søknadsgodkjenningService.slettUtgåtteSøknader()
+        logger.info("Antall utgåtte søknader: $antallUtgåtte")
     }
 }

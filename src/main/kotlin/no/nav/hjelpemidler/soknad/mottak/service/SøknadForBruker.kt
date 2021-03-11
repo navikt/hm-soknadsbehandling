@@ -4,25 +4,25 @@ import com.fasterxml.jackson.databind.JsonNode
 import java.util.Date
 import java.util.UUID
 
-class SoknadForBruker(
-    val soknadId: UUID,
+class SøknadForBruker(
+    val søknadId: UUID,
     val datoOpprettet: Date,
     var datoOppdatert: Date,
-    soknad: JsonNode,
+    søknad: JsonNode,
     val status: Status,
     kommunenavn: String?
 ) {
-    val bruker = bruker(soknad)
-    val formidler = formidler(soknad, kommunenavn)
-    val hjelpemidler = hjelpemidler(soknad)
-    val hjelpemiddelTotalAntall = soknad["soknad"]["hjelpemidler"]["hjelpemiddelTotaltAntall"].intValue()
-    val oppfolgingsansvarlig = oppfolgingsansvarlig(soknad)
-    val levering = levering(soknad)
+    val bruker = bruker(søknad)
+    val formidler = formidler(søknad, kommunenavn)
+    val hjelpemidler = hjelpemidler(søknad)
+    val hjelpemiddelTotalAntall = søknad["soknad"]["hjelpemidler"]["hjelpemiddelTotaltAntall"].intValue()
+    val oppfolgingsansvarlig = oppfolgingsansvarlig(søknad)
+    val levering = levering(søknad)
 }
 
-private fun bruker(soknad: JsonNode): Bruker {
-    val brukerNode = soknad["soknad"]["bruker"]
-    val brukerSituasjonNode = soknad["soknad"]["brukersituasjon"]
+private fun bruker(søknad: JsonNode): Bruker {
+    val brukerNode = søknad["soknad"]["bruker"]
+    val brukerSituasjonNode = søknad["soknad"]["brukersituasjon"]
     return Bruker(
         fnummer = brukerNode["fnummer"].textValue(),
         fornavn = brukerNode["fornavn"].textValue(),
@@ -32,14 +32,14 @@ private fun bruker(soknad: JsonNode): Bruker {
         postnummer = brukerNode["postnummer"]?.textValue(),
         poststed = brukerNode["poststed"]?.textValue(),
         boform = brukerSituasjonNode["bostedRadioButton"].textValue(),
-        bruksarena = if (soknad["soknad"]["brukersituasjon"]["bruksarenaErDagliglivet"].booleanValue()) Bruksarena.DAGLIGLIVET else Bruksarena.UKJENT,
-        funksjonsnedsettelser = funksjonsnedsettelser(soknad),
-        signatur = signaturType(soknad)
+        bruksarena = if (søknad["soknad"]["brukersituasjon"]["bruksarenaErDagliglivet"].booleanValue()) Bruksarena.DAGLIGLIVET else Bruksarena.UKJENT,
+        funksjonsnedsettelser = funksjonsnedsettelser(søknad),
+        signatur = signaturType(søknad)
     )
 }
 
-private fun formidler(soknad: JsonNode, kommunenavn: String?): Formidler {
-    val leveringNode = soknad["soknad"]["levering"]
+private fun formidler(søknad: JsonNode, kommunenavn: String?): Formidler {
+    val leveringNode = søknad["soknad"]["levering"]
     return Formidler(
         navn = "${leveringNode["hmfFornavn"].textValue()} ${leveringNode["hmfEtternavn"].textValue()}",
         arbeidssted = leveringNode["hmfArbeidssted"].textValue(),
@@ -52,8 +52,8 @@ private fun formidler(soknad: JsonNode, kommunenavn: String?): Formidler {
     )
 }
 
-private fun oppfolgingsansvarlig(soknad: JsonNode): Oppfolgingsansvarlig? {
-    val leveringNode = soknad["soknad"]["levering"]
+private fun oppfolgingsansvarlig(søknad: JsonNode): Oppfolgingsansvarlig? {
+    val leveringNode = søknad["soknad"]["levering"]
 
     if (leveringNode["opfRadioButton"].textValue() == "Hjelpemiddelformidler") {
         return null
@@ -68,20 +68,20 @@ private fun oppfolgingsansvarlig(soknad: JsonNode): Oppfolgingsansvarlig? {
     )
 }
 
-private fun levering(soknad: JsonNode): Levering {
-    val leveringNode = soknad["soknad"]["levering"]
-    val leveringsMaate = leveringsMaate(soknad)
+private fun levering(søknad: JsonNode): Levering {
+    val leveringNode = søknad["soknad"]["levering"]
+    val leveringsMaate = leveringsMaate(søknad)
     return Levering(
         leveringsmaate = leveringsMaate,
         adresse = if (leveringsMaate == Leveringsmaate.ANNEN_ADRESSE) "${leveringNode["utleveringPostadresse"].textValue()} ${leveringNode["utleveringPostnr"].textValue()} ${leveringNode["utleveringPoststed"].textValue()}" else null,
-        kontaktPerson = kontaktPerson(soknad),
+        kontaktPerson = kontaktPerson(søknad),
         merknad = leveringNode["merknadTilUtlevering"]?.textValue()
     )
 }
 
-private fun kontaktPerson(soknad: JsonNode): KontaktPerson {
-    val leveringNode = soknad["soknad"]["levering"]
-    val kontaktPersonType = kontaktPersonType(soknad)
+private fun kontaktPerson(søknad: JsonNode): KontaktPerson {
+    val leveringNode = søknad["soknad"]["levering"]
+    val kontaktPersonType = kontaktPersonType(søknad)
 
     return if (kontaktPersonType == KontaktpersonType.ANNEN_KONTAKTPERSON) {
         KontaktPerson(
@@ -96,8 +96,8 @@ private fun kontaktPerson(soknad: JsonNode): KontaktPerson {
     }
 }
 
-private fun kontaktPersonType(soknad: JsonNode): KontaktpersonType {
-    val leveringNode = soknad["soknad"]["levering"]
+private fun kontaktPersonType(søknad: JsonNode): KontaktpersonType {
+    val leveringNode = søknad["soknad"]["levering"]
 
     return when (leveringNode["utleveringskontaktpersonRadioButton"]?.textValue()) {
         "Hjelpemiddelbruker" -> KontaktpersonType.HJELPEMIDDELBRUKER
@@ -107,8 +107,8 @@ private fun kontaktPersonType(soknad: JsonNode): KontaktpersonType {
     }
 }
 
-private fun signaturType(soknad: JsonNode): SignaturType {
-    val brukerNode = soknad["soknad"]["bruker"]
+private fun signaturType(søknad: JsonNode): SignaturType {
+    val brukerNode = søknad["soknad"]["bruker"]
 
     return when (brukerNode["signatur"].textValue()) {
         "BRUKER_BEKREFTER" -> SignaturType.BRUKER_BEKREFTER
@@ -117,8 +117,8 @@ private fun signaturType(soknad: JsonNode): SignaturType {
     }
 }
 
-private fun leveringsMaate(soknad: JsonNode): Leveringsmaate {
-    val leveringNode = soknad["soknad"]["levering"]
+private fun leveringsMaate(søknad: JsonNode): Leveringsmaate {
+    val leveringNode = søknad["soknad"]["levering"]
 
     return when (leveringNode["utleveringsmaateRadioButton"].textValue()) {
         "AnnenBruksadresse" -> Leveringsmaate.ANNEN_ADRESSE
@@ -129,10 +129,10 @@ private fun leveringsMaate(soknad: JsonNode): Leveringsmaate {
     }
 }
 
-private fun funksjonsnedsettelser(soknad: JsonNode): List<Funksjonsnedsettelse> {
+private fun funksjonsnedsettelser(søknad: JsonNode): List<Funksjonsnedsettelse> {
     val funksjonsnedsettelser = mutableListOf<Funksjonsnedsettelse>()
 
-    val funksjonsnedsettelseNode = soknad["soknad"]["brukersituasjon"]["nedsattFunksjonTypes"]
+    val funksjonsnedsettelseNode = søknad["soknad"]["brukersituasjon"]["nedsattFunksjonTypes"]
     if (funksjonsnedsettelseNode["bevegelse"].booleanValue()) funksjonsnedsettelser.add(Funksjonsnedsettelse.BEVEGELSE)
     if (funksjonsnedsettelseNode["kognisjon"].booleanValue()) funksjonsnedsettelser.add(Funksjonsnedsettelse.KOGNISJON)
     if (funksjonsnedsettelseNode["horsel"].booleanValue()) funksjonsnedsettelser.add(Funksjonsnedsettelse.HØRSEL)
@@ -140,9 +140,9 @@ private fun funksjonsnedsettelser(soknad: JsonNode): List<Funksjonsnedsettelse> 
     return funksjonsnedsettelser
 }
 
-private fun hjelpemidler(soknad: JsonNode): List<Hjelpemiddel> {
+private fun hjelpemidler(søknad: JsonNode): List<Hjelpemiddel> {
     val hjelpemidler = mutableListOf<Hjelpemiddel>()
-    soknad["soknad"]["hjelpemidler"]["hjelpemiddelListe"].forEach {
+    søknad["soknad"]["hjelpemidler"]["hjelpemiddelListe"].forEach {
         val hjelpemiddel = Hjelpemiddel(
             antall = it["antall"].intValue(),
             beskrivelse = it["beskrivelse"].textValue(),
