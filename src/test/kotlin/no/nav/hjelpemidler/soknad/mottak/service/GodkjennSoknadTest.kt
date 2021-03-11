@@ -93,9 +93,9 @@ internal class GodkjennSoknadTest {
         val jsonNode = inspektør.message(0)
 
         jsonNode["soknadId"].textValue() shouldBe soknadId
-        jsonNode["fodselNrBruker"].textValue() shouldBe "fnrBruker"
-        jsonNode["@event_name"].textValue() shouldBe "SøknadGodkjentAvBruker"
-        jsonNode["@opprettet"].textValue() shouldNotBe null
+        jsonNode["fnrBruker"].textValue() shouldBe "fnrBruker"
+        jsonNode["eventName"].textValue() shouldBe "hm-SøknadGodkjentAvBruker"
+        jsonNode["opprettet"].textValue() shouldNotBe null
         jsonNode["soknad"] shouldNotBe null
     }
 
