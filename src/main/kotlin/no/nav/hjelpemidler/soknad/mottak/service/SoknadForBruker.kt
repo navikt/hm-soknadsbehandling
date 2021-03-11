@@ -7,6 +7,7 @@ import java.util.UUID
 class SoknadForBruker(
     val soknadId: UUID,
     val datoOpprettet: Date,
+    var datoOppdatert: Date,
     soknad: JsonNode,
     val status: Status,
     kommunenavn: String?
