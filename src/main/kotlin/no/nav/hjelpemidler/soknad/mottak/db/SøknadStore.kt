@@ -155,9 +155,10 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
-                        "UPDATE V1_SOKNAD SET STATUS = ?, UPDATED = now(), DATA = NULL WHERE SOKNADS_ID = ?",
+                        "UPDATE V1_SOKNAD SET STATUS = ?, UPDATED = now(), DATA = NULL WHERE SOKNADS_ID = ? AND STATUS NOT LIKE ?",
                         Status.UTLØPT.name,
                         soknadsId,
+                        Status.UTLØPT.name
                     ).asUpdate
                 )
             }

@@ -21,19 +21,20 @@ internal class SøknadsgodkjenningService(
     fun slettUtgåtteSøknader(): Int {
         val utgåtteSøknader = søknadStore.hentSoknaderTilGodkjenningEldreEnn(FEMTEN_DAGER)
         utgåtteSøknader.forEach { søknad ->
-            søknadStore.oppdaterUtgåttSøknad(søknad.søknadId)
+            val antallOppdatert = søknadStore.oppdaterUtgåttSøknad(søknad.søknadId)
 
-            val søknadErUtgåttMessage = JsonMessage("{}", MessageProblems("")).also {
-                it["eventId"] = ULID.random()
-                it["event_name"] = "GodkjenningsfristErUtløpt"
-                it["opprettet"] = LocalDateTime.now()
-                it["fnrBruker"] = søknad.fnrBruker
-                it["søknadId"] = søknad.søknadId
-            }.toJson()
+            if(antallOppdatert > 0){
+                val søknadErUtgåttMessage = JsonMessage("{}", MessageProblems("")).also {
+                    it["eventId"] = ULID.random()
+                    it["event_name"] = "GodkjenningsfristErUtløpt"
+                    it["opprettet"] = LocalDateTime.now()
+                    it["fnrBruker"] = søknad.fnrBruker
+                    it["søknadId"] = søknad.søknadId
+                }.toJson()
 
-            rapidsConnection.publish(søknad.fnrBruker, søknadErUtgåttMessage)
-
-            Prometheus.godkjenningsfristErUtløptCounter.inc()
+                rapidsConnection.publish(søknad.fnrBruker, søknadErUtgåttMessage)
+                Prometheus.godkjenningsfristErUtløptCounter.inc()
+            }
         }
 
         return utgåtteSøknader.size
