@@ -26,7 +26,7 @@ internal class SøknadsgodkjenningService(
             if (antallOppdatert > 0) {
                 val søknadErUtgåttMessage = JsonMessage("{}", MessageProblems("")).also {
                     it["eventId"] = ULID.random()
-                    it["event_name"] = "GodkjenningsfristErUtløpt"
+                    it["eventName"] = "hm-GodkjenningsfristErUtløpt"
                     it["opprettet"] = LocalDateTime.now()
                     it["fnrBruker"] = søknad.fnrBruker
                     it["søknadId"] = søknad.søknadId
