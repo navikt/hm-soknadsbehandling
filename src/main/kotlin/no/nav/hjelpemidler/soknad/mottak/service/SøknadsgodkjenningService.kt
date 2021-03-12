@@ -23,7 +23,7 @@ internal class SøknadsgodkjenningService(
         utgåtteSøknader.forEach { søknad ->
             val antallOppdatert = søknadStore.oppdaterUtgåttSøknad(søknad.søknadId)
 
-            if(antallOppdatert > 0){
+            if (antallOppdatert > 0) {
                 val søknadErUtgåttMessage = JsonMessage("{}", MessageProblems("")).also {
                     it["eventId"] = ULID.random()
                     it["event_name"] = "GodkjenningsfristErUtløpt"
