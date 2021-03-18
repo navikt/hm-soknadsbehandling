@@ -29,9 +29,31 @@ internal interface SøknadStore {
     fun oppdaterUtgåttSøknad(soknadsId: UUID): Int
     fun hentFnrForSoknad(soknadsId: UUID): String
     fun hentSoknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad>
+    fun soknadFinnes(soknadsId: UUID): Boolean
 }
 
 internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
+
+    override fun soknadFinnes(soknadsId: UUID): Boolean {
+        @Language("PostgreSQL") val statement =
+            """SELECT SOKNADS_ID
+                    FROM V1_SOKNAD 
+                    WHERE SOKNADS_ID = ?"""
+
+        val uuid = time("soknad_eksisterer") {
+            using(sessionOf(ds)) { session ->
+                session.run(
+                    queryOf(
+                        statement,
+                        soknadsId,
+                    ).map {
+                        UUID.fromString(it.string("SOKNADS_ID"))
+                    }.asSingle
+                )
+            }
+        }
+        return uuid != null
+    }
 
     override fun hentSoknad(soknadsId: UUID): SøknadForBruker? {
         @Language("PostgreSQL") val statement =

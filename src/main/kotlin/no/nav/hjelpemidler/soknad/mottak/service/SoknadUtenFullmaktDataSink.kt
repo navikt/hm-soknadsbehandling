@@ -68,6 +68,11 @@ internal class SoknadUtenFullmaktDataSink(rapidsConnection: RapidsConnection, pr
                             status = Status.VENTER_GODKJENNING,
                             kommunenavn = packet.kommunenavn
                         )
+                        if (store.soknadFinnes(soknadData.soknadId)) {
+                            logger.info { "Søknaden er allerede lagret i databasen: ${packet.soknadId}" }
+                            return@launch
+                        }
+
                         logger.info { "Søknad til godkjenning mottatt: ${packet.soknadId}" }
                         save(soknadData)
 

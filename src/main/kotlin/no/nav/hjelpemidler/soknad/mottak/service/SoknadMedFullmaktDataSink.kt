@@ -54,6 +54,11 @@ internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, pri
                             status = Status.GODKJENT_MED_FULLMAKT,
                             kommunenavn = packet.kommunenavn
                         )
+                        if (store.soknadFinnes(soknadData.soknadId)) {
+                            logger.info { "Søknaden er allerede lagret i databasen: ${packet.soknadId}" }
+                            return@launch
+                        }
+
                         logger.info { "Søknad med fullmakt mottatt: ${packet.soknadId}" }
                         save(soknadData)
 
