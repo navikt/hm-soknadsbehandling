@@ -55,7 +55,7 @@ internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, pri
                             kommunenavn = packet.kommunenavn
                         )
                         if (store.soknadFinnes(soknadData.soknadId)) {
-                            logger.info { "Søknaden er allerede lagret i databasen: ${packet.soknadId}" }
+                            logger.warn { "Søknaden er allerede lagret i databasen: ${packet.soknadId}" }
                             return@launch
                         }
 
