@@ -18,6 +18,7 @@ internal class SoknadUtenFullmaktDataSinkTest {
     private val capturedSoknadData = slot<SoknadData>()
     private val mock = mockk<SøknadStore>().apply {
         every { save(capture(capturedSoknadData)) } returns 1
+        every { soknadFinnes(any()) } returns false
     }
 
     private val rapid = TestRapid().apply {
