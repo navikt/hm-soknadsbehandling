@@ -27,7 +27,11 @@ internal class DigitalSøknadEndeligJournalført(rapidsConnection: RapidsConnect
         kotlin.runCatching {
             store.oppdaterStatus(søknadsId, Status.ENDELIG_JOURNALFØRT)
         }.onSuccess {
-            logger.info("Søknad updated to endelig journalført: $søknadsId")
+            if (it > 0) {
+                logger.info("Søknad updated to endelig journalført: $søknadsId, it=$it")
+            } else {
+                logger.error("Ingen søknader oppdatert ved endelig journalførtevent: $søknadsId")
+            }
         }.onFailure {
             logger.error("Failed to update søknad to endelig journalført: $søknadsId")
         }.getOrThrow()
