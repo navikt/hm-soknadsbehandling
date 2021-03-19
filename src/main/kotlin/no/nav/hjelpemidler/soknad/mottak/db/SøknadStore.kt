@@ -18,6 +18,7 @@ import no.nav.hjelpemidler.soknad.mottak.service.UtgåttSøknad
 import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
 import java.math.BigInteger
+import java.util.Date
 import java.util.UUID
 import javax.sql.DataSource
 
@@ -33,6 +34,7 @@ internal interface SøknadStore {
     fun hentFnrForSoknad(soknadsId: UUID): String
     fun hentSoknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad>
     fun soknadFinnes(soknadsId: UUID): Boolean
+    fun hentSoknadOpprettetDato(soknadsId: UUID): Date?
 }
 
 internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
@@ -102,6 +104,24 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                     }.asSingle
                 )
             }
+        }
+    }
+
+    override fun hentSoknadOpprettetDato(soknadsId: UUID): Date? {
+        @Language("PostgreSQL") val statement =
+            """SELECT CREATED
+                    FROM V1_SOKNAD 
+                    WHERE SOKNADS_ID = ?"""
+
+        return using(sessionOf(ds)) { session ->
+            session.run(
+                queryOf(
+                    statement,
+                    soknadsId,
+                ).map {
+                    it.sqlTimestamp("created")
+                }.asSingle
+            )
         }
     }
 

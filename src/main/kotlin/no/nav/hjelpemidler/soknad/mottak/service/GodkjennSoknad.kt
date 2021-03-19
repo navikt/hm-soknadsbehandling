@@ -13,6 +13,8 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -78,8 +80,15 @@ internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val st
         }.invokeOnCompletion {
             when (it) {
                 null -> {
-                    logger.info("Søknad er godkjent av bruker: $soknadId")
+                    logger.info("Søknad er godkjent av bruker: $soknadId - Det tok ")
                     sikkerlogg.info("Søknad er godkjent med søknadsId: $soknadId, fnr: $fnrBruker)")
+                    try {
+                        val opprettetDato = store.hentSoknadOpprettetDato(soknadData.soknadId)
+                        val tid = periodeMellomDatoer(LocalDateTime.ofInstant(opprettetDato!!.toInstant(), ZoneId.systemDefault()), LocalDateTime.now())
+                        logger.info("Tid brukt fra opprettelse til godkjenning av søknad med ID $soknadId var: $tid")
+                    } catch (e: Exception) {
+                        logger.info { "Klarte ikke å måle tidbruk mellom opprettelse og godkjenning" }
+                    }
                 }
                 is CancellationException -> logger.warn("Cancelled: ${it.message}")
                 else -> {
