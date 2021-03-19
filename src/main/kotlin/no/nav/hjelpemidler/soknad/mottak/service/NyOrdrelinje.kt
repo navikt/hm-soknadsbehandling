@@ -83,13 +83,13 @@ internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val stor
         return skipList.any { it == eventId }
     }
 
-    private fun save(soknadData: SoknadData) =
+    private fun save(ordrelinje: OrdrelinjeData) =
         kotlin.runCatching {
-            store.save(soknadData)
+            store.save(ordrelinje)
         }.onSuccess {
-            logger.info("Søknad saved: ${soknadData.soknadId}")
+            logger.info("Ordrelinje lagret for SF ${ordrelinje.serviceforespoersel} og ordrenr/ordrelinje ${ordrelinje.ordrenr}/${ordrelinje.ordrelinje}")
         }.onFailure {
-            logger.error(it) { "Failed to save søknad: ${soknadData.soknadId}" }
+            logger.error(it) { "Ordrelinje lagret for SF ${ordrelinje.serviceforespoersel} og ordrenr/ordrelinje ${ordrelinje.ordrenr}/${ordrelinje.ordrelinje}" }
         }.getOrThrow()
 
     private fun CoroutineScope.forward(søknadData: SoknadData, context: RapidsConnection.MessageContext) {
