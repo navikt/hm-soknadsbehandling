@@ -14,7 +14,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-internal class SøknadStoreTest {
+internal class SøknadStorePostgresTest {
 
     @Test
     fun `Hent lagret soknad`() {
