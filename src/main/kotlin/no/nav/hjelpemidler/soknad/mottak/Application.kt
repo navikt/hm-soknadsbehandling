@@ -20,6 +20,7 @@ import no.nav.hjelpemidler.soknad.mottak.db.SøknadStoreFormidlerPostgres
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStorePostgres
 import no.nav.hjelpemidler.soknad.mottak.db.dataSourceFrom
 import no.nav.hjelpemidler.soknad.mottak.db.migrate
+import no.nav.hjelpemidler.soknad.mottak.service.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.service.GodkjennSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.SlettSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedFullmaktDataSink
@@ -51,6 +52,9 @@ fun main() {
         }
         .apply {
             startSøknadUtgåttScheduling(SøknadsgodkjenningService(store, this))
+        }
+        .apply {
+            DigitalSøknadEndeligJournalført(this, store)
         }
         .apply {
             register(
