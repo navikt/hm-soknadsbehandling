@@ -13,7 +13,7 @@ internal data class OrdrelinjeData(
         val ordrenr: Int,
         val ordrelinje: String,
         val vedtaksdato: String?, // Viss det ikkje er ein SF
-        val artikkelnummer: String,
+        val artikkelnr: String,
         val antall: Int,
         val data: JsonNode,
 ) {

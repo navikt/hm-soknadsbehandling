@@ -1,24 +1,18 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
+import no.nav.hjelpemidler.soknad.mottak.db.OrdreStore
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
-import java.util.UUID
+import java.util.*
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val store: SøknadStore) :
+internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val store: OrdreStore) :
     River.PacketListener {
 
     init {
@@ -36,7 +30,7 @@ internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val stor
     private val JsonMessage.ordrenr get() = this["ordrenr"].intValue()
     private val JsonMessage.ordrelinje get() = this["ordrelinje"].textValue()
     private val JsonMessage.vedtaksdato get() = this["vedtaksdato"].textValue()
-    private val JsonMessage.artikkelnummer get() = this["artikkelnummer"].textValue()
+    private val JsonMessage.artikkelnr get() = this["artikkelnr"].textValue()
     private val JsonMessage.antall get() = this["antall"].intValue()
     private val JsonMessage.data get() = this["data"]
 
@@ -61,7 +55,7 @@ internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val stor
                             ordrenr = packet.ordrenr,
                             ordrelinje = packet.ordrelinje,
                             vedtaksdato = packet.vedtaksdato,
-                            artikkelnummer = packet.artikkelnummer,
+                            artikkelnr = packet.artikkelnr,
                             antall = packet.antall,
                             data = packet.data,
                         )

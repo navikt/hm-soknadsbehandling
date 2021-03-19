@@ -40,27 +40,20 @@ private val logger = KotlinLogging.logger {}
 fun main() {
     val store = SøknadStorePostgres(dataSourceFrom(Configuration))
     val storeFormidler = SøknadStoreFormidlerPostgres(dataSourceFrom(Configuration))
+    val ordreStore = OrdreStorePostgres(dataSourceFrom(Configuration))
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .withKtorModule { api(store, storeFormidler) }
         .build().apply {
             SoknadMedFullmaktDataSink(this, store)
-        }.apply {
             SoknadUtenFullmaktDataSink(this, store)
-        }.apply {
             SlettSoknad(this, store)
-        }.apply {
             GodkjennSoknad(this, store)
-        }
-        .apply {
             startSøknadUtgåttScheduling(SøknadsgodkjenningService(store, this))
-        }.apply {
             JournalpostSink(this, store)
-        }.apply {
             OppgaveSink(this, store)
-        }
-        .apply {
             DigitalSøknadEndeligJournalført(this, store)
+            NyOrdrelinje(this, ordreStore)
         }
         .apply {
             register(
