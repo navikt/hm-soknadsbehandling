@@ -15,6 +15,8 @@ import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
+import no.nav.hjelpemidler.soknad.mottak.db.SøknadStoreFormidler
+import no.nav.hjelpemidler.soknad.mottak.db.SøknadStoreFormidlerPostgres
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStorePostgres
 import no.nav.hjelpemidler.soknad.mottak.db.dataSourceFrom
 import no.nav.hjelpemidler.soknad.mottak.db.migrate
@@ -25,6 +27,7 @@ import no.nav.hjelpemidler.soknad.mottak.service.SoknadUtenFullmaktDataSink
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadsgodkjenningService
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknaderForBruker
+import no.nav.hjelpemidler.soknad.mottak.service.hentSoknaderForFormidler
 import org.slf4j.event.Level
 import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
@@ -33,9 +36,10 @@ private val logger = KotlinLogging.logger {}
 
 fun main() {
     val store = SøknadStorePostgres(dataSourceFrom(Configuration))
+    val storeFormidler = SøknadStoreFormidlerPostgres(dataSourceFrom(Configuration))
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
-        .withKtorModule { api(store) }
+        .withKtorModule { api(store, storeFormidler) }
         .build().apply {
             SoknadMedFullmaktDataSink(this, store)
         }.apply {
@@ -59,7 +63,7 @@ fun main() {
         }.start()
 }
 
-internal fun Application.api(store: SøknadStore) {
+internal fun Application.api(store: SøknadStore, storeFormidler: SøknadStoreFormidler) {
 
     install(CallLogging) {
         level = Level.INFO
@@ -78,6 +82,9 @@ internal fun Application.api(store: SøknadStore) {
             authenticate("tokenX") {
                 hentSoknad(store)
                 hentSoknaderForBruker(store)
+
+                // todo: altinn auth
+                hentSoknaderForFormidler(storeFormidler)
             }
         }
     }

@@ -11,6 +11,7 @@ import io.ktor.util.pipeline.PipelineContext
 import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.UserPrincipal
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
+import no.nav.hjelpemidler.soknad.mottak.db.SøknadStoreFormidler
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -51,6 +52,21 @@ internal fun Route.hentSoknaderForBruker(store: SøknadStore) {
             call.respond(soknaderTilGodkjenning)
         } catch (e: Exception) {
             logger.error(e) { "Error on fetching søknader til godkjenning" }
+            call.respond(HttpStatusCode.InternalServerError, e)
+        }
+    }
+}
+
+internal fun Route.hentSoknaderForFormidler(store: SøknadStoreFormidler) {
+    get("/soknad/formidler") {
+
+        val fnr = call.principal<UserPrincipal>()?.getFnr() ?: throw RuntimeException("Fnr mangler i token claim")
+
+        try {
+            val formidlersSøknader = store.hentSøknaderForFormidler(fnr, 4)
+            call.respond(formidlersSøknader)
+        } catch (e: Exception) {
+            logger.error(e) { "Error on fetching formidlers søknader" }
             call.respond(HttpStatusCode.InternalServerError, e)
         }
     }

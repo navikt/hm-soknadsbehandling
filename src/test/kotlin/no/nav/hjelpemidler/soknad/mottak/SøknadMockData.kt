@@ -7,7 +7,7 @@ import java.util.UUID
 
 internal fun mockSøknad(id: UUID) = SoknadData(
     "15084300133",
-    "id2",
+    "12345678910",
     id,
     ObjectMapper().readTree(
         """ {
