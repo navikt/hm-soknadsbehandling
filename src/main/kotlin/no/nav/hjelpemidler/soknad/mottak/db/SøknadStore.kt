@@ -17,6 +17,7 @@ import no.nav.hjelpemidler.soknad.mottak.service.SøknadForBruker
 import no.nav.hjelpemidler.soknad.mottak.service.UtgåttSøknad
 import org.intellij.lang.annotations.Language
 import org.postgresql.util.PGobject
+import java.math.BigInteger
 import java.util.UUID
 import javax.sql.DataSource
 
@@ -27,6 +28,8 @@ internal interface SøknadStore {
     fun hentSoknadData(soknadsId: UUID): SoknadData?
     fun oppdaterStatus(soknadsId: UUID, status: Status): Int
     fun oppdaterUtgåttSøknad(soknadsId: UUID): Int
+    fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String): Int
+    fun oppdaterOppgaveId(soknadsId: UUID, oppgaveId: String): Int
     fun hentFnrForSoknad(soknadsId: UUID): String
     fun hentSoknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad>
     fun soknadFinnes(soknadsId: UUID): Boolean
@@ -185,6 +188,36 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                 )
             }
         }
+
+    override fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String): Int {
+        val bigIntJournalPostId = BigInteger(journalpostId)
+        return time("oppdater_journalpostId") {
+            using(sessionOf(ds)) { session ->
+                session.run(
+                    queryOf(
+                        "UPDATE V1_SOKNAD SET JOURNALPOSTID = ?, UPDATED = now() WHERE SOKNADS_ID = ? AND JOURNALPOSTID IS NULL",
+                        bigIntJournalPostId,
+                        soknadsId
+                    ).asUpdate
+                )
+            }
+        }
+    }
+
+    override fun oppdaterOppgaveId(soknadsId: UUID, oppgaveId: String): Int {
+        val bigIntOppgaveId = BigInteger(oppgaveId)
+        return time("oppdater_oppgaveId") {
+            using(sessionOf(ds)) { session ->
+                session.run(
+                    queryOf(
+                        "UPDATE V1_SOKNAD SET OPPGAVEID = ?, UPDATED = now() WHERE SOKNADS_ID = ? AND OPPGAVEID IS NULL",
+                        bigIntOppgaveId,
+                        soknadsId
+                    ).asUpdate
+                )
+            }
+        }
+    }
 
     override fun hentSoknaderForBruker(fnrBruker: String): List<SoknadMedStatus> {
         @Language("PostgreSQL") val statement =

@@ -14,7 +14,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-internal class SøknadStoreTest {
+internal class SøknadStorePostgresTest {
 
     @Test
     fun `Hent lagret soknad`() {
@@ -253,6 +253,70 @@ internal class SøknadStoreTest {
             SøknadStorePostgres(DataSource.instance).apply {
                 this.hentSoknaderTilGodkjenningEldreEnn(14).also {
                     it.size shouldBe 0
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `Oppdater journalpostId og ikke overskriv eksisterende journalpostId`() {
+        val id = UUID.randomUUID()
+        val journalpostId = "453645864"
+        withMigratedDb {
+            SøknadStorePostgres(DataSource.instance).apply {
+                this.save(
+                    SoknadData(
+                        "id",
+                        "id2",
+                        id,
+                        ObjectMapper().readTree(""" {"key": "value"} """),
+                        status = Status.GODKJENT_MED_FULLMAKT,
+                        kommunenavn = null
+                    )
+                )
+            }
+
+            SøknadStorePostgres(DataSource.instance).apply {
+                this.oppdaterJournalpostId(id, journalpostId).also {
+                    it shouldBe 1
+                }
+            }
+
+            SøknadStorePostgres(DataSource.instance).apply {
+                this.oppdaterJournalpostId(id, journalpostId).also {
+                    it shouldBe 0
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `Oppdater oppgaveId og ikke overskriv eksisterende oppgaveId`() {
+        val id = UUID.randomUUID()
+        val oppgaveId = "57983"
+        withMigratedDb {
+            SøknadStorePostgres(DataSource.instance).apply {
+                this.save(
+                    SoknadData(
+                        "id",
+                        "id2",
+                        id,
+                        ObjectMapper().readTree(""" {"key": "value"} """),
+                        status = Status.GODKJENT_MED_FULLMAKT,
+                        kommunenavn = null
+                    )
+                )
+            }
+
+            SøknadStorePostgres(DataSource.instance).apply {
+                this.oppdaterOppgaveId(id, oppgaveId).also {
+                    it shouldBe 1
+                }
+            }
+
+            SøknadStorePostgres(DataSource.instance).apply {
+                this.oppdaterOppgaveId(id, oppgaveId).also {
+                    it shouldBe 0
                 }
             }
         }
