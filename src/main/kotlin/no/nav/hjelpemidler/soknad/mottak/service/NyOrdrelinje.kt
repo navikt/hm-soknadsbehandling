@@ -32,6 +32,12 @@ internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val stor
     private val JsonMessage.eventId get() = this["eventId"].textValue()
     private val JsonMessage.opprettet get() = this["opprettet"].textValue()
     private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
+    private val JsonMessage.serviceforespoersel get() = this["serviceforespoersel"].textValue()
+    private val JsonMessage.ordrenr get() = this["ordrenr"].intValue()
+    private val JsonMessage.ordrelinje get() = this["ordrelinje"].textValue()
+    private val JsonMessage.vedtaksdato get() = this["vedtaksdato"].textValue()
+    private val JsonMessage.artikkelnummer get() = this["artikkelnummer"].textValue()
+    private val JsonMessage.antall get() = this["antall"].intValue()
     private val JsonMessage.data get() = this["data"]
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
@@ -43,15 +49,23 @@ internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val stor
                         return@launch
                     }
                     try {
+                        logger.info { "Ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
+
+                        // Match ordrelinje to Infotrygd-table
+                        val soknadId = fetchSoknadsId()
+
                         val ordrelinjeData = OrdrelinjeData(
+                            soknadId = soknadId,
                             fnrBruker = packet.fnrBruker,
-                            ordrenr = packet.ordreNr,
+                            serviceforespoersel = packet.serviceforespoersel,
+                            ordrenr = packet.ordrenr,
                             ordrelinje = packet.ordrelinje,
                             vedtaksdato = packet.vedtaksdato,
-
+                            artikkelnummer = packet.artikkelnummer,
+                            antall = packet.antall,
                             data = packet.data,
                         )
-                        logger.info { "Ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
+
                         save(ordrelinjeData)
 
                         forward(ordrelinjeData, context)

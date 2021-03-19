@@ -7,7 +7,14 @@ import java.time.LocalDateTime
 import java.util.*
 
 internal data class OrdrelinjeData(
+        val soknadId: UUID,
         val fnrBruker: String,
+        val serviceforespoersel: String?, // Viss det ikkje er ein SF
+        val ordrenr: Int,
+        val ordrelinje: String,
+        val vedtaksdato: String?, // Viss det ikkje er ein SF
+        val artikkelnummer: String,
+        val antall: Int,
         val data: JsonNode,
 ) {
     internal fun toJson(eventName: String, eventId: UUID, ): String {
