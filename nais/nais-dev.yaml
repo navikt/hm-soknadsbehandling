@@ -26,6 +26,7 @@ spec:
     inbound:
       rules:
         - application: hm-brukerbekreftelse
+        - application: hm-formidler
   tokenx:
     enabled: true
   resources:
