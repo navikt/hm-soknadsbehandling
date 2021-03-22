@@ -24,13 +24,12 @@ internal class OrdreStorePostgres(private val ds: DataSource) : OrdreStore {
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
-                        "INSERT INTO V1_OEBS_DATA (SOKNADS_ID, FNR_BRUKER, SERVICEFORESPOERSEL, ORDRENR, ORDRELINJE, VEDTAKSDATO,  ARTIKKELNR, ANTALL, DATA) VALUES (?,?,?,?,?,?,?,?,?) ON CONFLICT DO NOTHING",
+                        "INSERT INTO V1_OEBS_DATA (SOKNADS_ID, FNR_BRUKER, SERVICEFORESPOERSEL, ORDRENR, ORDRELINJE, ARTIKKELNR, ANTALL, DATA) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT DO NOTHING",
                         ordrelinje.soknadId,
                         ordrelinje.fnrBruker,
                         ordrelinje.serviceforespoersel,
                         ordrelinje.ordrenr,
                         ordrelinje.ordrelinje,
-                        ordrelinje.vedtaksdato,
                         ordrelinje.artikkelnr,
                         ordrelinje.antall,
                         PGobject().apply {

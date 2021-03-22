@@ -11,18 +11,20 @@ internal data class OrdrelinjeData(
         val fnrBruker: String,
         val serviceforespoersel: String?, // Viss det ikkje er ein SF
         val ordrenr: Int,
-        val ordrelinje: String,
-        val vedtaksdato: String?, // Viss det ikkje er ein SF
+        val ordrelinje: Int,
+        val delordrelinje: Int,
         val artikkelnr: String,
         val antall: Int,
         val data: JsonNode,
 ) {
-    internal fun toJson(eventName: String, eventId: UUID, ): String {
+    internal fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
-            it["eventId"] = eventId.toString()
+            it["eventId"] = UUID.randomUUID().toString()
             it["eventName"] = eventName
             it["opprettet"] = LocalDateTime.now()
             it["fnrBruker"] = this.fnrBruker
+            it["artikkelnr"] = this.artikkelnr
+            it["antall"] = this.antall
         }.toJson()
     }
 

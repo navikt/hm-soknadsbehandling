@@ -14,6 +14,8 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.hjelpemidler.soknad.mottak.db.*
+import no.nav.hjelpemidler.soknad.mottak.db.OrdreStorePostgres
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStoreFormidler
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStoreFormidlerPostgres
@@ -23,6 +25,7 @@ import no.nav.hjelpemidler.soknad.mottak.db.migrate
 import no.nav.hjelpemidler.soknad.mottak.service.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.service.GodkjennSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.JournalpostSink
+import no.nav.hjelpemidler.soknad.mottak.service.NyOrdrelinje
 import no.nav.hjelpemidler.soknad.mottak.service.OppgaveSink
 import no.nav.hjelpemidler.soknad.mottak.service.SlettSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedFullmaktDataSink
@@ -41,6 +44,7 @@ fun main() {
     val store = SøknadStorePostgres(dataSourceFrom(Configuration))
     val storeFormidler = SøknadStoreFormidlerPostgres(dataSourceFrom(Configuration))
     val ordreStore = OrdreStorePostgres(dataSourceFrom(Configuration))
+    val infotrygdStore = InfotrygdStorePostgres(dataSourceFrom(Configuration))
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .withKtorModule { api(store, storeFormidler) }
@@ -53,7 +57,7 @@ fun main() {
             JournalpostSink(this, store)
             OppgaveSink(this, store)
             DigitalSøknadEndeligJournalført(this, store)
-            NyOrdrelinje(this, ordreStore)
+            NyOrdrelinje(this, ordreStore, infotrygdStore)
         }
         .apply {
             register(

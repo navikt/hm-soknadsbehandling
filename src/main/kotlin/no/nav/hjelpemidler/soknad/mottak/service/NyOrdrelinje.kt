@@ -5,6 +5,8 @@ import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.hjelpemidler.soknad.mottak.db.InfotrygdStore
 import no.nav.hjelpemidler.soknad.mottak.db.OrdreStore
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.util.*
@@ -12,12 +14,12 @@ import java.util.*
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val store: OrdreStore) :
-    River.PacketListener {
+internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val ordreStore: OrdreStore, private val infotrygdStore: InfotrygdStore) :
+        River.PacketListener {
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "hm-nyOrdrelinje") }
+            validate { it.demandValue("eventName", "hm-NyOrdrelinje") }
             validate { it.requireKey("eventId", "opprettet") }
             validate { it.requireKey("fnrBruker, data") }
         }.register(this)
@@ -28,11 +30,15 @@ internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val stor
     private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
     private val JsonMessage.serviceforespoersel get() = this["serviceforespoersel"].textValue()
     private val JsonMessage.ordrenr get() = this["ordrenr"].intValue()
-    private val JsonMessage.ordrelinje get() = this["ordrelinje"].textValue()
-    private val JsonMessage.vedtaksdato get() = this["vedtaksdato"].textValue()
+    private val JsonMessage.ordrelinje get() = this["ordrelinje"].intValue()
+    private val JsonMessage.delordrelinje get() = this["delordrelinje"].intValue()
     private val JsonMessage.artikkelnr get() = this["artikkelnr"].textValue()
     private val JsonMessage.antall get() = this["antall"].intValue()
     private val JsonMessage.data get() = this["data"]
+
+    // Kun brukt til Infotrygd-matching for å finne soknadId
+    private val JsonMessage.saksblokkOgSaksnummer get() = this["saksblokkOgSaksnummer"].textValue()
+    private val JsonMessage.vedtaksdato get() = this["vedtaksdato"].asLocalDate()
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
@@ -46,18 +52,18 @@ internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val stor
                         logger.info { "Ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
 
                         // Match ordrelinje to Infotrygd-table
-                        val soknadId = fetchSoknadsId()
+                        val soknadId = infotrygdStore.hentSoknadIdFraResultat(packet.fnrBruker, packet.saksblokkOgSaksnummer, packet.vedtaksdato)
 
                         val ordrelinjeData = OrdrelinjeData(
-                            soknadId = soknadId,
-                            fnrBruker = packet.fnrBruker,
-                            serviceforespoersel = packet.serviceforespoersel,
-                            ordrenr = packet.ordrenr,
-                            ordrelinje = packet.ordrelinje,
-                            vedtaksdato = packet.vedtaksdato,
-                            artikkelnr = packet.artikkelnr,
-                            antall = packet.antall,
-                            data = packet.data,
+                                soknadId = soknadId,
+                                fnrBruker = packet.fnrBruker,
+                                serviceforespoersel = packet.serviceforespoersel,
+                                ordrenr = packet.ordrenr,
+                                ordrelinje = packet.ordrelinje,
+                                delordrelinje = packet.delordrelinje,
+                                artikkelnr = packet.artikkelnr,
+                                antall = packet.antall,
+                                data = packet.data,
                         )
 
                         save(ordrelinjeData)
@@ -78,27 +84,32 @@ internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val stor
     }
 
     private fun save(ordrelinje: OrdrelinjeData) =
-        kotlin.runCatching {
-            store.save(ordrelinje)
-        }.onSuccess {
-            logger.info("Ordrelinje lagret for SF ${ordrelinje.serviceforespoersel} og ordrenr/ordrelinje ${ordrelinje.ordrenr}/${ordrelinje.ordrelinje}")
-        }.onFailure {
-            logger.error(it) { "Ordrelinje lagret for SF ${ordrelinje.serviceforespoersel} og ordrenr/ordrelinje ${ordrelinje.ordrenr}/${ordrelinje.ordrelinje}" }
-        }.getOrThrow()
+            kotlin.runCatching {
+                ordreStore.save(ordrelinje)
+            }.onSuccess {
+                if (it == 0) {
+                    logger.warn("Duplikat av ordrelinje for SF ${ordrelinje.serviceforespoersel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra")
+                } else {
+                    logger.info("Lagra ordrelinje for SF ${ordrelinje.serviceforespoersel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}")
+                    Prometheus.ordrelinjeLagretCounter.inc()
+                }
+            }.onFailure {
+                logger.error(it) { "Feil under lagring av ordrelinje for SF ${ordrelinje.serviceforespoersel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
+            }.getOrThrow()
 
-    private fun CoroutineScope.forward(søknadData: SoknadData, context: RapidsConnection.MessageContext) {
+    private fun CoroutineScope.forward(ordrelinjeData: OrdrelinjeData, context: RapidsConnection.MessageContext) {
         launch(Dispatchers.IO + SupervisorJob()) {
-            context.send(søknadData.fnrBruker, søknadData.toJson("Søknad"))
-            Prometheus.soknadMedFullmaktCounter.inc()
+            context.send(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
+            Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
         }.invokeOnCompletion {
             when (it) {
                 null -> {
-                    logger.info("Søknad sent: ${søknadData.soknadId}")
-                    sikkerlogg.info("Søknad sendt med søknadsId: ${søknadData.soknadId}, fnr: ${søknadData.fnrBruker})")
+                    logger.info("Ordrelinje sendt: ${ordrelinjeData.soknadId}")
+                    sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.soknadId}, fnr: ${ordrelinjeData.fnrBruker})")
                 }
                 is CancellationException -> logger.warn("Cancelled: ${it.message}")
                 else -> {
-                    logger.error("Failed: ${it.message}. Soknad: ${søknadData.soknadId}")
+                    logger.error("Failed: ${it.message}")
                 }
             }
         }
