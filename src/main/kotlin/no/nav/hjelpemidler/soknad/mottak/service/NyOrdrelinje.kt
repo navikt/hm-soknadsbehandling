@@ -1,6 +1,12 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -9,13 +15,17 @@ import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.hjelpemidler.soknad.mottak.db.InfotrygdStore
 import no.nav.hjelpemidler.soknad.mottak.db.OrdreStore
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
-import java.util.*
+import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val ordreStore: OrdreStore, private val infotrygdStore: InfotrygdStore) :
-        River.PacketListener {
+internal class NyOrdrelinje(
+    rapidsConnection: RapidsConnection,
+    private val ordreStore: OrdreStore,
+    private val infotrygdStore: InfotrygdStore
+) :
+    River.PacketListener {
 
     init {
         River(rapidsConnection).apply {
@@ -34,6 +44,7 @@ internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val ordr
     private val JsonMessage.delordrelinje get() = this["delordrelinje"].intValue()
     private val JsonMessage.artikkelnr get() = this["artikkelnr"].textValue()
     private val JsonMessage.antall get() = this["antall"].intValue()
+    private val JsonMessage.produktgruppe get() = this["produktgruppe"].textValue()
     private val JsonMessage.data get() = this["data"]
 
     // Kun brukt til Infotrygd-matching for å finne soknadId
@@ -52,18 +63,23 @@ internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val ordr
                         logger.info { "Ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
 
                         // Match ordrelinje to Infotrygd-table
-                        val soknadId = infotrygdStore.hentSoknadIdFraResultat(packet.fnrBruker, packet.saksblokkOgSaksnummer, packet.vedtaksdato)
+                        val soknadId = infotrygdStore.hentSoknadIdFraResultat(
+                            packet.fnrBruker,
+                            packet.saksblokkOgSaksnummer,
+                            packet.vedtaksdato
+                        )
 
                         val ordrelinjeData = OrdrelinjeData(
-                                soknadId = soknadId,
-                                fnrBruker = packet.fnrBruker,
-                                serviceforespoersel = packet.serviceforespoersel,
-                                ordrenr = packet.ordrenr,
-                                ordrelinje = packet.ordrelinje,
-                                delordrelinje = packet.delordrelinje,
-                                artikkelnr = packet.artikkelnr,
-                                antall = packet.antall,
-                                data = packet.data,
+                            soknadId = soknadId,
+                            fnrBruker = packet.fnrBruker,
+                            serviceforespoersel = packet.serviceforespoersel,
+                            ordrenr = packet.ordrenr,
+                            ordrelinje = packet.ordrelinje,
+                            delordrelinje = packet.delordrelinje,
+                            artikkelnr = packet.artikkelnr,
+                            antall = packet.antall,
+                            produktgruppe = packet.produktgruppe,
+                            data = packet.data,
                         )
 
                         save(ordrelinjeData)
@@ -84,18 +100,18 @@ internal class NyOrdrelinje(rapidsConnection: RapidsConnection, private val ordr
     }
 
     private fun save(ordrelinje: OrdrelinjeData) =
-            kotlin.runCatching {
-                ordreStore.save(ordrelinje)
-            }.onSuccess {
-                if (it == 0) {
-                    logger.warn("Duplikat av ordrelinje for SF ${ordrelinje.serviceforespoersel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra")
-                } else {
-                    logger.info("Lagra ordrelinje for SF ${ordrelinje.serviceforespoersel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}")
-                    Prometheus.ordrelinjeLagretCounter.inc()
-                }
-            }.onFailure {
-                logger.error(it) { "Feil under lagring av ordrelinje for SF ${ordrelinje.serviceforespoersel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
-            }.getOrThrow()
+        kotlin.runCatching {
+            ordreStore.save(ordrelinje)
+        }.onSuccess {
+            if (it == 0) {
+                logger.warn("Duplikat av ordrelinje for SF ${ordrelinje.serviceforespoersel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra")
+            } else {
+                logger.info("Lagra ordrelinje for SF ${ordrelinje.serviceforespoersel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}")
+                Prometheus.ordrelinjeLagretCounter.inc()
+            }
+        }.onFailure {
+            logger.error(it) { "Feil under lagring av ordrelinje for SF ${ordrelinje.serviceforespoersel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
+        }.getOrThrow()
 
     private fun CoroutineScope.forward(ordrelinjeData: OrdrelinjeData, context: RapidsConnection.MessageContext) {
         launch(Dispatchers.IO + SupervisorJob()) {

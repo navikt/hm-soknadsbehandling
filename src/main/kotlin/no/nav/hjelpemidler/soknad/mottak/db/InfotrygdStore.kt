@@ -11,7 +11,7 @@ import kotliquery.using
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import org.intellij.lang.annotations.Language
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 import javax.sql.DataSource
 
 internal interface InfotrygdStore {
@@ -24,12 +24,13 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
         fun getSaksblokk(saksblokkOgSaksnummer: String): Char {
             return saksblokkOgSaksnummer.first()
         }
+
         fun getSaksnr(saksblokkOgSaksnummer: String): String {
             return saksblokkOgSaksnummer.takeLast(2)
         }
 
         @Language("PostgreSQL") val statement =
-                """SELECT SOKNADS_ID
+            """SELECT SOKNADS_ID
                     FROM V1_INFOTRYGD_DATA 
                     WHERE FNR_BRUKER = ?
                     AND SAKSBLOKK = ?
@@ -40,21 +41,20 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
-                            statement,
-                            fnrBruker,
-                            getSaksblokk(saksblokkOgSaksnummer),
-                            getSaksnr(saksblokkOgSaksnummer),
-                            vedtaksdato,
+                        statement,
+                        fnrBruker,
+                        getSaksblokk(saksblokkOgSaksnummer),
+                        getSaksnr(saksblokkOgSaksnummer),
+                        vedtaksdato,
                     ).map {
                         UUID.fromString(it.string("SOKNADS_ID"))
                     }.asList
                 )
             }
-
         }
         if (uuids.count() > 1) {
             throw RuntimeException("Fleire søknadar med likt fnr, saksblokk og vedtaksdato!")
-        } else if (uuids.count() == 0 ) {
+        } else if (uuids.count() == 0) {
             throw RuntimeException("Ingen søknadar med korrekt fnr, saksblokk og vedtaksdato!")
         }
         return uuids[0]

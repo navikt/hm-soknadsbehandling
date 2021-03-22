@@ -14,7 +14,7 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.hjelpemidler.soknad.mottak.db.*
+import no.nav.hjelpemidler.soknad.mottak.db.InfotrygdStorePostgres
 import no.nav.hjelpemidler.soknad.mottak.db.OrdreStorePostgres
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStoreFormidler

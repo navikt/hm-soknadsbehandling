@@ -48,14 +48,14 @@ internal object Prometheus {
         .register(collectorRegistry)
 
     val ordrelinjeLagretCounter = Counter
-            .build()
-            .name("hm_oebs_ordrelinje_lagret")
-            .help("Antall OEBS-ordrelinjer lagret")
-            .register(collectorRegistry)
+        .build()
+        .name("hm_oebs_ordrelinje_lagret")
+        .help("Antall OEBS-ordrelinjer lagret")
+        .register(collectorRegistry)
 
     val ordrelinjeLagretOgSendtTilRapidCounter = Counter
-            .build()
-            .name("hm_oebs_ordrelinje_sendt_til_rapid")
-            .help("Antall OEBS-ordrelinjer lagret og sendt til rapid")
-            .register(collectorRegistry)
+        .build()
+        .name("hm_oebs_ordrelinje_sendt_til_rapid")
+        .help("Antall OEBS-ordrelinjer lagret og sendt til rapid")
+        .register(collectorRegistry)
 }
