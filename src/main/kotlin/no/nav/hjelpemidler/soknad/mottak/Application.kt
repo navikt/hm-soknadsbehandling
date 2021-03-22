@@ -20,6 +20,7 @@ import no.nav.hjelpemidler.soknad.mottak.db.SøknadStoreFormidlerPostgres
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStorePostgres
 import no.nav.hjelpemidler.soknad.mottak.db.dataSourceFrom
 import no.nav.hjelpemidler.soknad.mottak.db.migrate
+import no.nav.hjelpemidler.soknad.mottak.service.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.service.GodkjennSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.JournalpostSink
 import no.nav.hjelpemidler.soknad.mottak.service.OppgaveSink
@@ -57,6 +58,9 @@ fun main() {
             JournalpostSink(this, store)
         }.apply {
             OppgaveSink(this, store)
+        }
+        .apply {
+            DigitalSøknadEndeligJournalført(this, store)
         }
         .apply {
             register(
