@@ -58,4 +58,15 @@ internal object Prometheus {
         .name("hm_oebs_ordrelinje_sendt_til_rapid")
         .help("Antall OEBS-ordrelinjer lagret og sendt til rapid")
         .register(collectorRegistry)
+    val knytningMellomSøknadOgInfotrygdOpprettaCounter = Counter
+        .build()
+        .name("hm_knytning_mellom_infotrygd_og_soeknad_oppretta")
+        .help("Mengda søknadar som er knytta til ei Infotrygd-sak")
+        .register(collectorRegistry)
+
+    val knytningMellomSøknadOgInfotrygdProblemCounter = Counter
+        .build()
+        .name("hm_knytning_mellom_infotrygd_og_soeknad_oppretta_problem")
+        .help("Mengda problem for knytning mellom søknadar og Infotrygd-sak")
+        .register(collectorRegistry)
 }

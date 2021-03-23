@@ -10,7 +10,7 @@ import java.util.UUID
 import javax.sql.DataSource
 
 internal interface InfotrygdStore {
-    fun lagKnytningMellomFagsakOgSøknad(søknadId: UUID, fnrBruker: String, fagsakId: String): Int
+    fun lagKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData): Int
     fun lagreVedtaksresultat(
         søknadId: UUID,
         fnrBruker: String,
@@ -19,29 +19,26 @@ internal interface InfotrygdStore {
         vedtaksdato: LocalDate
     ): Int
 
-    fun hentSøknadIdFraResultat(fnrBruker: String, saksblokkOgSaksnummer: String, vedtaksdato: LocalDate): UUID
+    fun hentSøknadIdFraVedtaksresultat(fnrBruker: String, saksblokkOgSaksnummer: String, vedtaksdato: LocalDate): UUID
     fun hentVedtaksresultatForSøknad(søknadId: UUID): VedtaksresultatData?
 }
 
 internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdStore {
 
     // EndeligJournalført frå Joark vil opprette linja, og denne blir berika seinare av Infotrygd med resultat og vedtaksdato
-    override fun lagKnytningMellomFagsakOgSøknad(søknadId: UUID, fnrBruker: String, fagsakId: String): Int =
+    override fun lagKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData): Int =
         time("insert_knytning_mellom_søknad_og_fagsak") {
-            val trygdekontorNr = fagsakId.take(4)
-            val saksblokkOgSaksnummer = fagsakId.takeLast(3)
-
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
                         "INSERT INTO V1_INFOTRYGD_DATA (SOKNADS_ID, FNR_BRUKER, TRYGDEKONTORNR, SAKSBLOKK, SAKSNR, RESULTAT, VEDTAKSDATO ) VALUES (?,?,?,?,?,?,?) ON CONFLICT DO NOTHING",
-                        søknadId,
-                        fnrBruker,
-                        trygdekontorNr,
-                        getSaksblokk(saksblokkOgSaksnummer),
-                        getSaksnr(saksblokkOgSaksnummer),
-                        null,
-                        null,
+                        vedtaksresultatData.søknadId,
+                        vedtaksresultatData.fnrBruker,
+                        vedtaksresultatData.trygdekontorNr,
+                        vedtaksresultatData.saksblokk,
+                        vedtaksresultatData.saksnr,
+                        vedtaksresultatData.resultat,
+                        vedtaksresultatData.vedtaksdato,
                     ).asUpdate
                 )
             }
@@ -69,7 +66,7 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
         }
 
     // Brukt for å matche Oebs-data mot eit Infotrygd-resultat
-    override fun hentSøknadIdFraResultat(
+    override fun hentSøknadIdFraVedtaksresultat(
         fnrBruker: String,
         saksblokkOgSaksnummer: String,
         vedtaksdato: LocalDate
@@ -80,8 +77,8 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
                     queryOf(
                         "SELECT SOKNADS_ID FROM V1_INFOTRYGD_DATA WHERE FNR_BRUKER = ? AND SAKSBLOKK = ? AND SAKSNR = ? AND VEDTAKSDATO = ?",
                         fnrBruker,
-                        getSaksblokk(saksblokkOgSaksnummer),
-                        getSaksnr(saksblokkOgSaksnummer),
+                        saksblokkOgSaksnummer.first(),
+                        saksblokkOgSaksnummer.takeLast(2),
                         vedtaksdato,
                     ).map {
                         UUID.fromString(it.string("SOKNADS_ID"))
@@ -119,14 +116,6 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
                 )
             }
         }
-    }
-
-    fun getSaksblokk(saksblokkOgSaksnummer: String): Char {
-        return saksblokkOgSaksnummer.first()
-    }
-
-    fun getSaksnr(saksblokkOgSaksnummer: String): String {
-        return saksblokkOgSaksnummer.takeLast(2)
     }
 
     private inline fun <T : Any?> time(queryName: String, function: () -> T) =

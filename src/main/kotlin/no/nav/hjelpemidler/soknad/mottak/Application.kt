@@ -56,7 +56,7 @@ fun main() {
             startSøknadUtgåttScheduling(SøknadsgodkjenningService(store, this))
             JournalpostSink(this, store)
             OppgaveSink(this, store)
-            DigitalSøknadEndeligJournalført(this, store)
+            DigitalSøknadEndeligJournalført(this, store, infotrygdStore)
             NyOrdrelinje(this, ordreStore, infotrygdStore)
         }
         .apply {
