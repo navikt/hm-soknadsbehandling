@@ -63,7 +63,7 @@ internal class NyOrdrelinje(
                         logger.info { "Ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
 
                         // Match ordrelinje to Infotrygd-table
-                        val soknadId = infotrygdStore.hentSoknadIdFraResultat(
+                        val soknadId = infotrygdStore.hentSøknadIdFraResultat(
                             packet.fnrBruker,
                             packet.saksblokkOgSaksnummer,
                             packet.vedtaksdato
