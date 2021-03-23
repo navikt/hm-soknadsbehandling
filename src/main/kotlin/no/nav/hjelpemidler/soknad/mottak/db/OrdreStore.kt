@@ -24,7 +24,7 @@ internal class OrdreStorePostgres(private val ds: DataSource) : OrdreStore {
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
-                        "INSERT INTO V1_OEBS_DATA (SOKNADS_ID, FNR_BRUKER, SERVICEFORESPOERSEL, ORDRENR, ORDRELINJE, ARTIKKELNR, ANTALL, DATA) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT DO NOTHING",
+                        "INSERT INTO V1_OEBS_DATA (SOKNADS_ID, FNR_BRUKER, SERVICEFORESPOERSEL, ORDRENR, ORDRELINJE, ARTIKKELNR, ANTALL, PRODUKTGRUPPE, DATA) VALUES (?,?,?,?,?,?,?,?,?) ON CONFLICT DO NOTHING",
                         ordrelinje.soknadId,
                         ordrelinje.fnrBruker,
                         ordrelinje.serviceforespoersel,
@@ -32,6 +32,7 @@ internal class OrdreStorePostgres(private val ds: DataSource) : OrdreStore {
                         ordrelinje.ordrelinje,
                         ordrelinje.artikkelnr,
                         ordrelinje.antall,
+                        ordrelinje.produktgruppe,
                         PGobject().apply {
                             type = "jsonb"
                             value = ordrelinjeToJsonString(ordrelinje.data)
