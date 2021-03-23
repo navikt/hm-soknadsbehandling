@@ -7,9 +7,9 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 internal data class OrdrelinjeData(
-    val soknadId: UUID,
+    val søknadId: UUID,
     val fnrBruker: String,
-    val serviceforespoersel: String?, // Viss det ikkje er ein SF
+    val serviceforespørsel: Int?, // Viss det ikkje er ein SF
     val ordrenr: Int,
     val ordrelinje: Int,
     val delordrelinje: Int,

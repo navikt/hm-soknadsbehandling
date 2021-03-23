@@ -19,17 +19,18 @@ internal interface OrdreStore {
 
 internal class OrdreStorePostgres(private val ds: DataSource) : OrdreStore {
 
-    override fun save(ordrelinje: OrdrelinjeData): Int =
-        time("insert_ordrelinje") {
+    override fun save(ordrelinje: OrdrelinjeData): Int {
+        val affectedLines: Int = time("insert_ordrelinje") {
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
-                        "INSERT INTO V1_OEBS_DATA (SOKNADS_ID, FNR_BRUKER, SERVICEFORESPOERSEL, ORDRENR, ORDRELINJE, ARTIKKELNR, ANTALL, PRODUKTGRUPPE, DATA) VALUES (?,?,?,?,?,?,?,?,?) ON CONFLICT DO NOTHING",
-                        ordrelinje.soknadId,
+                        "INSERT INTO V1_OEBS_DATA (SOKNADS_ID, FNR_BRUKER, SERVICEFORESPOERSEL, ORDRENR, ORDRELINJE, DELORDRELINJE, ARTIKKELNR, ANTALL, PRODUKTGRUPPE, DATA) VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT DO NOTHING",
+                        ordrelinje.søknadId,
                         ordrelinje.fnrBruker,
-                        ordrelinje.serviceforespoersel,
+                        ordrelinje.serviceforespørsel,
                         ordrelinje.ordrenr,
                         ordrelinje.ordrelinje,
+                        ordrelinje.delordrelinje,
                         ordrelinje.artikkelnr,
                         ordrelinje.antall,
                         ordrelinje.produktgruppe,
@@ -41,6 +42,12 @@ internal class OrdreStorePostgres(private val ds: DataSource) : OrdreStore {
                 )
             }
         }
+        if (affectedLines == 1) {
+            return affectedLines
+        } else {
+            throw RuntimeException("Kunne ikkje leggje til OEBS-data - mengd affected lines: $affectedLines")
+        }
+    }
 
     private inline fun <T : Any?> time(queryName: String, function: () -> T) =
         Prometheus.dbTimer.labels(queryName).startTimer().let { timer ->

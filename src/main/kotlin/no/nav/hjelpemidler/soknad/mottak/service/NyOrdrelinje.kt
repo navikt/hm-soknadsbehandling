@@ -38,13 +38,13 @@ internal class NyOrdrelinje(
     private val JsonMessage.eventId get() = this["eventId"].textValue()
     private val JsonMessage.opprettet get() = this["opprettet"].textValue()
     private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
-    private val JsonMessage.serviceforespoersel get() = this["serviceforespoersel"].textValue()
-    private val JsonMessage.ordrenr get() = this["ordrenr"].intValue()
-    private val JsonMessage.ordrelinje get() = this["ordrelinje"].intValue()
-    private val JsonMessage.delordrelinje get() = this["delordrelinje"].intValue()
-    private val JsonMessage.artikkelnr get() = this["artikkelnr"].textValue()
-    private val JsonMessage.antall get() = this["antall"].intValue()
-    private val JsonMessage.produktgruppe get() = this["produktgruppe"].textValue()
+    private val JsonMessage.serviceforespørsel get() = this["data"]["serviceforespørsel"].intValue()
+    private val JsonMessage.ordrenr get() = this["data"]["ordrenr"].intValue()
+    private val JsonMessage.ordrelinje get() = this["data"]["ordrelinje"].intValue()
+    private val JsonMessage.delordrelinje get() = this["data"]["delordrelinje"].intValue()
+    private val JsonMessage.artikkelnr get() = this["data"]["artikkelnr"].textValue()
+    private val JsonMessage.antall get() = this["data"]["antall"].intValue()
+    private val JsonMessage.produktgruppe get() = this["data"]["produktgruppe"].textValue()
     private val JsonMessage.data get() = this["data"]
 
     // Kun brukt til Infotrygd-matching for å finne soknadId
@@ -63,16 +63,16 @@ internal class NyOrdrelinje(
                         logger.info { "Ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
 
                         // Match ordrelinje to Infotrygd-table
-                        val soknadId = infotrygdStore.hentSøknadIdFraResultat(
+                        val søknadId = infotrygdStore.hentSøknadIdFraResultat(
                             packet.fnrBruker,
                             packet.saksblokkOgSaksnummer,
                             packet.vedtaksdato
                         )
 
                         val ordrelinjeData = OrdrelinjeData(
-                            soknadId = soknadId,
+                            søknadId = søknadId,
                             fnrBruker = packet.fnrBruker,
-                            serviceforespoersel = packet.serviceforespoersel,
+                            serviceforespørsel = packet.serviceforespørsel,
                             ordrenr = packet.ordrenr,
                             ordrelinje = packet.ordrelinje,
                             delordrelinje = packet.delordrelinje,
@@ -104,13 +104,13 @@ internal class NyOrdrelinje(
             ordreStore.save(ordrelinje)
         }.onSuccess {
             if (it == 0) {
-                logger.warn("Duplikat av ordrelinje for SF ${ordrelinje.serviceforespoersel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra")
+                logger.warn("Duplikat av ordrelinje for SF ${ordrelinje.serviceforespørsel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra")
             } else {
-                logger.info("Lagra ordrelinje for SF ${ordrelinje.serviceforespoersel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}")
+                logger.info("Lagra ordrelinje for SF ${ordrelinje.serviceforespørsel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}")
                 Prometheus.ordrelinjeLagretCounter.inc()
             }
         }.onFailure {
-            logger.error(it) { "Feil under lagring av ordrelinje for SF ${ordrelinje.serviceforespoersel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
+            logger.error(it) { "Feil under lagring av ordrelinje for SF ${ordrelinje.serviceforespørsel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
         }.getOrThrow()
 
     private fun CoroutineScope.forward(ordrelinjeData: OrdrelinjeData, context: RapidsConnection.MessageContext) {
@@ -120,8 +120,8 @@ internal class NyOrdrelinje(
         }.invokeOnCompletion {
             when (it) {
                 null -> {
-                    logger.info("Ordrelinje sendt: ${ordrelinjeData.soknadId}")
-                    sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.soknadId}, fnr: ${ordrelinjeData.fnrBruker})")
+                    logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
+                    sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
                 }
                 is CancellationException -> logger.warn("Cancelled: ${it.message}")
                 else -> {
