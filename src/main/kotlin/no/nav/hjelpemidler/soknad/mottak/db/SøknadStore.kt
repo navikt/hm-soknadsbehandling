@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import kotliquery.Session
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
@@ -40,10 +41,11 @@ internal interface SøknadStore {
 internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
 
     override fun soknadFinnes(soknadsId: UUID): Boolean {
-        @Language("PostgreSQL") val statement =
-            """SELECT SOKNADS_ID
-                    FROM V1_SOKNAD 
-                    WHERE SOKNADS_ID = ?"""
+        @Language("PostgreSQL") val statement = """
+            SELECT SOKNADS_ID
+            FROM V1_SOKNAD 
+            WHERE SOKNADS_ID = ?
+        """
 
         val uuid = time("soknad_eksisterer") {
             using(sessionOf(ds)) { session ->
@@ -61,10 +63,15 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     }
 
     override fun hentSoknad(soknadsId: UUID): SøknadForBruker? {
-        @Language("PostgreSQL") val statement =
-            """SELECT SOKNADS_ID, STATUS, DATA, CREATED, KOMMUNENAVN, FNR_BRUKER, UPDATED
-                    FROM V1_SOKNAD 
-                    WHERE SOKNADS_ID = ?"""
+        @Language("PostgreSQL") val statement = """
+            SELECT soknad.SOKNADS_ID, soknad.DATA, soknad.CREATED, soknad.KOMMUNENAVN, soknad.FNR_BRUKER, soknad.UPDATED, status.STATUS
+            FROM V1_SOKNAD AS soknad
+            LEFT JOIN V1_STATUS AS status
+            ON status.ID = (
+                SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
+            )
+            WHERE soknad.SOKNADS_ID = ?
+        """
 
         return time("hent_soknad") {
             using(sessionOf(ds)) { session ->
@@ -108,10 +115,11 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     }
 
     override fun hentSoknadOpprettetDato(soknadsId: UUID): Date? {
-        @Language("PostgreSQL") val statement =
-            """SELECT CREATED
-                    FROM V1_SOKNAD 
-                    WHERE SOKNADS_ID = ?"""
+        @Language("PostgreSQL") val statement = """
+            SELECT CREATED
+            FROM V1_SOKNAD 
+            WHERE SOKNADS_ID = ?
+        """
 
         return using(sessionOf(ds)) { session ->
             session.run(
@@ -126,10 +134,15 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     }
 
     override fun hentSoknadData(soknadsId: UUID): SoknadData? {
-        @Language("PostgreSQL") val statement =
-            """SELECT SOKNADS_ID,FNR_BRUKER, FNR_INNSENDER, STATUS, DATA, KOMMUNENAVN
-                    FROM V1_SOKNAD 
-                    WHERE SOKNADS_ID = ?"""
+        @Language("PostgreSQL") val statement = """
+            SELECT soknad.SOKNADS_ID, soknad.FNR_BRUKER, soknad.FNR_INNSENDER, soknad.DATA, soknad.KOMMUNENAVN, status.STATUS
+            FROM V1_SOKNAD AS soknad
+            LEFT JOIN V1_STATUS AS status
+            ON status.ID = (
+                SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
+            )
+            WHERE soknad.SOKNADS_ID = ?
+        """
 
         return time("hent_soknaddata") {
             using(sessionOf(ds)) { session ->
@@ -155,10 +168,11 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     }
 
     override fun hentFnrForSoknad(soknadsId: UUID): String {
-        @Language("PostgreSQL") val statement =
-            """SELECT FNR_BRUKER
-                    FROM V1_SOKNAD 
-                    WHERE SOKNADS_ID = ?"""
+        @Language("PostgreSQL") val statement = """
+            SELECT FNR_BRUKER
+            FROM V1_SOKNAD 
+            WHERE SOKNADS_ID = ?
+        """
 
         val fnrBruker =
             time("hent_soknad") {
@@ -184,14 +198,15 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     override fun oppdaterStatus(soknadsId: UUID, status: Status): Int =
         time("oppdater_status") {
             using(sessionOf(ds)) { session ->
+                if (checkIfLastStatusMatches(session, soknadsId, status)) return@using 0
                 session.run(
                     queryOf(
-                        "UPDATE V1_SOKNAD SET STATUS = ?, UPDATED = now() WHERE SOKNADS_ID = ? AND STATUS NOT LIKE ?",
-                        status.name,
+                        "INSERT INTO V1_STATUS (SOKNADS_ID, STATUS) VALUES (?, ?)",
                         soknadsId,
                         status.name
-                    ).asUpdate
+                    ).asExecute
                 )
+                return@using 1
             }
         }
 
@@ -328,6 +343,16 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                 )
             }
         }
+
+    private inline fun checkIfLastStatusMatches(session: Session, soknadsId: UUID, status: Status): Boolean = session.run(
+        queryOf(
+            "SELECT ID WHERE ID = (SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = ?) AND STATUS = ?",
+            soknadsId,
+            status.name
+        ).map {
+            1
+        }.asSingle
+    ) == null
 
     private inline fun <T : Any?> time(queryName: String, function: () -> T) =
         Prometheus.dbTimer.labels(queryName).startTimer().let { timer ->
