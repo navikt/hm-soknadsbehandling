@@ -204,13 +204,23 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
         time("oppdater_status") {
             using(sessionOf(ds)) { session ->
                 if (checkIfLastStatusMatches(session, soknadsId, status)) return@using 0
-                session.run(
-                    queryOf(
-                        "INSERT INTO V1_STATUS (SOKNADS_ID, STATUS) VALUES (?, ?)",
-                        soknadsId,
-                        status.name
-                    ).asUpdate
-                )
+                session.transaction { transaction ->
+                    // Add the new status to the status table
+                    transaction.run(
+                        queryOf(
+                            "INSERT INTO V1_STATUS (SOKNADS_ID, STATUS) VALUES (?, ?)",
+                            soknadsId,
+                            status.name
+                        ).asUpdate
+                    )
+                    // Oppdatere UPDATED felt når man legger til ny status for søknad
+                    transaction.run(
+                        queryOf(
+                            "UPDATE V1_SOKNAD SET UPDATED = now() WHERE SOKNADS_ID = ?",
+                            soknadsId,
+                        ).asUpdate
+                    )
+                }
             }
         }
 
