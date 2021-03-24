@@ -359,7 +359,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                         queryOf(
                             "INSERT INTO V1_STATUS (SOKNADS_ID, STATUS) VALUES (?, ?)",
                             soknadData.soknadId,
-                            soknadData.status,
+                            soknadData.status.name,
                         ).asUpdate
                     )
                     // Add the new Søknad into the Søknad table
@@ -380,15 +380,18 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
             }
         }
 
-    private inline fun checkIfLastStatusMatches(session: Session, soknadsId: UUID, status: Status): Boolean = session.run(
-        queryOf(
-            "SELECT ID WHERE ID = (SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = ?) AND STATUS = ?",
-            soknadsId,
-            status.name
-        ).map {
-            1
-        }.asSingle
-    ) == null
+    private fun checkIfLastStatusMatches(session: Session, soknadsId: UUID, status: Status): Boolean {
+        val result = session.run(
+            queryOf(
+                "SELECT STATUS FROM V1_STATUS WHERE ID = (SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = ?)",
+                soknadsId
+            ).map {
+                it.stringOrNull("STATUS")
+            }.asSingle
+        ) ?: return false /* special case where there is no status in the database (søknad is being added now) */
+        if (result != status.name) return false
+        return true
+    }
 
     private inline fun <T : Any?> time(queryName: String, function: () -> T) =
         Prometheus.dbTimer.labels(queryName).startTimer().let { timer ->

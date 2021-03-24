@@ -54,6 +54,7 @@ internal class SøknadsgodkjenningServiceTest {
                 ).also {
                     it shouldBe 1
                 }
+
                 val storePostgres = this
                 TestRapid().apply {
                     søknadsgodkjenningService = SøknadsgodkjenningService(storePostgres, this)
