@@ -43,10 +43,10 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     override fun soknadFinnes(soknadsId: UUID): Boolean {
         @Language("PostgreSQL") val statement =
             """
-            SELECT SOKNADS_ID
-            FROM V1_SOKNAD
-            WHERE SOKNADS_ID = ?
-        """
+                SELECT SOKNADS_ID
+                FROM V1_SOKNAD
+                WHERE SOKNADS_ID = ?
+            """
 
         val uuid = time("soknad_eksisterer") {
             using(sessionOf(ds)) { session ->
@@ -66,14 +66,14 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     override fun hentSoknad(soknadsId: UUID): SøknadForBruker? {
         @Language("PostgreSQL") val statement =
             """
-            SELECT soknad.SOKNADS_ID, soknad.DATA, soknad.CREATED, soknad.KOMMUNENAVN, soknad.FNR_BRUKER, soknad.UPDATED, status.STATUS
-            FROM V1_SOKNAD AS soknad
-            LEFT JOIN V1_STATUS AS status
-            ON status.ID = (
-                SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
-            )
-            WHERE soknad.SOKNADS_ID = ?
-        """
+                SELECT soknad.SOKNADS_ID, soknad.DATA, soknad.CREATED, soknad.KOMMUNENAVN, soknad.FNR_BRUKER, soknad.UPDATED, status.STATUS
+                FROM V1_SOKNAD AS soknad
+                LEFT JOIN V1_STATUS AS status
+                ON status.ID = (
+                    SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
+                )
+                WHERE soknad.SOKNADS_ID = ?
+            """
 
         return time("hent_soknad") {
             using(sessionOf(ds)) { session ->
@@ -119,10 +119,10 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     override fun hentSoknadOpprettetDato(soknadsId: UUID): Date? {
         @Language("PostgreSQL") val statement =
             """
-            SELECT CREATED
-            FROM V1_SOKNAD
-            WHERE SOKNADS_ID = ?
-        """
+                SELECT CREATED
+                FROM V1_SOKNAD
+                WHERE SOKNADS_ID = ?
+            """
 
         return using(sessionOf(ds)) { session ->
             session.run(
@@ -139,14 +139,14 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     override fun hentSoknadData(soknadsId: UUID): SoknadData? {
         @Language("PostgreSQL") val statement =
             """
-            SELECT soknad.SOKNADS_ID, soknad.FNR_BRUKER, soknad.FNR_INNSENDER, soknad.DATA, soknad.KOMMUNENAVN, status.STATUS
-            FROM V1_SOKNAD AS soknad
-            LEFT JOIN V1_STATUS AS status
-            ON status.ID = (
-                SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
-            )
-            WHERE soknad.SOKNADS_ID = ?
-        """
+                SELECT soknad.SOKNADS_ID, soknad.FNR_BRUKER, soknad.FNR_INNSENDER, soknad.DATA, soknad.KOMMUNENAVN, status.STATUS
+                FROM V1_SOKNAD AS soknad
+                LEFT JOIN V1_STATUS AS status
+                ON status.ID = (
+                    SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
+                )
+                WHERE soknad.SOKNADS_ID = ?
+            """
 
         return time("hent_soknaddata") {
             using(sessionOf(ds)) { session ->
@@ -174,10 +174,10 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     override fun hentFnrForSoknad(soknadsId: UUID): String {
         @Language("PostgreSQL") val statement =
             """
-            SELECT FNR_BRUKER
-            FROM V1_SOKNAD
-            WHERE SOKNADS_ID = ?
-        """
+                SELECT FNR_BRUKER
+                FROM V1_SOKNAD
+                WHERE SOKNADS_ID = ?
+            """
 
         val fnrBruker =
             time("hent_soknad") {
@@ -271,15 +271,15 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     override fun hentSoknaderForBruker(fnrBruker: String): List<SoknadMedStatus> {
         @Language("PostgreSQL") val statement =
             """
-            SELECT soknad.SOKNADS_ID, soknad.CREATED, soknad.UPDATED, soknad.DATA, status.STATUS
-            FROM V1_SOKNAD AS soknad
-            LEFT JOIN V1_STATUS AS status
-            ON status.ID = (
-                SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
-            )
-            WHERE soknad.FNR_BRUKER = ?
-            ORDER BY soknad.CREATED DESC
-        """
+                SELECT soknad.SOKNADS_ID, soknad.CREATED, soknad.UPDATED, soknad.DATA, status.STATUS
+                FROM V1_SOKNAD AS soknad
+                LEFT JOIN V1_STATUS AS status
+                ON status.ID = (
+                    SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
+                )
+                WHERE soknad.FNR_BRUKER = ?
+                ORDER BY soknad.CREATED DESC
+            """
 
         return time("hent_soknader_for_bruker") {
             using(sessionOf(ds)) { session ->
@@ -322,15 +322,15 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     override fun hentSoknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad> {
         @Language("PostgreSQL") val statement =
             """
-            SELECT soknad.SOKNADS_ID, soknad.FNR_BRUKER, status.STATUS
-            FROM V1_SOKNAD AS soknad
-            LEFT JOIN V1_STATUS AS status
-            ON status.ID = (
-                SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
-            )
-            WHERE status.STATUS = ? AND (soknad.CREATED + interval '$dager day') < now()
-            ORDER BY soknad.CREATED DESC
-        """
+                SELECT soknad.SOKNADS_ID, soknad.FNR_BRUKER, status.STATUS
+                FROM V1_SOKNAD AS soknad
+                LEFT JOIN V1_STATUS AS status
+                ON status.ID = (
+                    SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
+                )
+                WHERE status.STATUS = ? AND (soknad.CREATED + interval '$dager day') < now()
+                ORDER BY soknad.CREATED DESC
+            """
 
         return time("utgåtte_søknader") {
             using(sessionOf(ds)) { session ->
