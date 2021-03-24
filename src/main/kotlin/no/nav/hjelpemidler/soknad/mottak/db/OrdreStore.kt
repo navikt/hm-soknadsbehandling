@@ -20,7 +20,7 @@ internal interface OrdreStore {
 internal class OrdreStorePostgres(private val ds: DataSource) : OrdreStore {
 
     override fun save(ordrelinje: OrdrelinjeData): Int {
-        val affectedLines: Int = time("insert_ordrelinje") {
+        return time("insert_ordrelinje") {
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
@@ -41,11 +41,6 @@ internal class OrdreStorePostgres(private val ds: DataSource) : OrdreStore {
                     ).asUpdate
                 )
             }
-        }
-        if (affectedLines == 1) {
-            return affectedLines
-        } else {
-            throw RuntimeException("Kunne ikkje leggje til OEBS-data - mengd affected lines: $affectedLines")
         }
     }
 

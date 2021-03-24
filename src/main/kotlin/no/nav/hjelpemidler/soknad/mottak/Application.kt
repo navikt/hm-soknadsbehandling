@@ -1,5 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak
 
+import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.auth.authenticate
@@ -41,10 +42,11 @@ import kotlin.concurrent.scheduleAtFixedRate
 private val logger = KotlinLogging.logger {}
 
 fun main() {
-    val store = SøknadStorePostgres(dataSourceFrom(Configuration))
-    val storeFormidler = SøknadStoreFormidlerPostgres(dataSourceFrom(Configuration))
-    val ordreStore = OrdreStorePostgres(dataSourceFrom(Configuration))
-    val infotrygdStore = InfotrygdStorePostgres(dataSourceFrom(Configuration))
+    val ds: HikariDataSource = dataSourceFrom(Configuration)
+    val store = SøknadStorePostgres(ds)
+    val storeFormidler = SøknadStoreFormidlerPostgres(ds)
+    val ordreStore = OrdreStorePostgres(ds)
+    val infotrygdStore = InfotrygdStorePostgres(ds)
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .withKtorModule { api(store, storeFormidler) }

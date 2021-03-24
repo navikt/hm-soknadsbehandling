@@ -47,7 +47,7 @@ internal class NyOrdrelinje(
     private val JsonMessage.produktgruppe get() = this["data"]["produktgruppe"].textValue()
     private val JsonMessage.data get() = this["data"]
 
-    // Kun brukt til Infotrygd-matching for å finne soknadId
+    // Kun brukt til Infotrygd-matching for å finne søknadId
     private val JsonMessage.saksblokkOgSaksnummer get() = this["saksblokkOgSaksnummer"].textValue()
     private val JsonMessage.vedtaksdato get() = this["vedtaksdato"].asLocalDate()
 

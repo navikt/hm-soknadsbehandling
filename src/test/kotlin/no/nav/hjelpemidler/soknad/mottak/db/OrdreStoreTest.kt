@@ -5,8 +5,6 @@ import io.kotest.matchers.shouldBe
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import org.junit.jupiter.api.Test
 import java.util.UUID
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 internal class OrdreStoreTest {
 
@@ -32,7 +30,7 @@ internal class OrdreStoreTest {
     }
 
     @Test
-    fun `Forsøk på lagring av identiske ordrelinjer frå OEBS gir exception`() {
+    fun `Forsøk på lagring av identiske ordrelinjer frå OEBS gir ingen endringar for duplikatet`() {
         val ordrelinje = OrdrelinjeData(
             søknadId = UUID.randomUUID(),
             fnrBruker = "15084300133",
@@ -47,14 +45,8 @@ internal class OrdreStoreTest {
         )
         withMigratedDb {
             OrdreStorePostgres(DataSource.instance).apply {
-
-                val exception = assertFailsWith<RuntimeException>(
-                    block = {
-                        this.save(ordrelinje)
-                        this.save(ordrelinje)
-                    }
-                )
-                assertEquals(exception.message, "Kunne ikkje leggje til OEBS-data - mengd affected lines: 0")
+                this.save(ordrelinje).also { it shouldBe 1 }
+                this.save(ordrelinje).also { it shouldBe 0 }
             }
         }
     }
