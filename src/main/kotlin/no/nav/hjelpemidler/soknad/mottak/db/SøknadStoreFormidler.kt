@@ -20,11 +20,17 @@ internal class SøknadStoreFormidlerPostgres(private val ds: DataSource) : Søkn
 
     override fun hentSøknaderForFormidler(fnrFormidler: String, uker: Int): List<SoknadForFormidler> {
         @Language("PostgreSQL") val statement =
-            """SELECT SOKNADS_ID, CREATED, UPDATED, STATUS, DATA, FNR_BRUKER
-                    FROM V1_SOKNAD 
-                    WHERE FNR_INNSENDER = ? 
-                    AND (UPDATED + interval '$uker week') > now()
-                    ORDER BY UPDATED DESC """
+            """
+                SELECT soknad.SOKNADS_ID, soknad.CREATED, soknad.UPDATED, soknad.DATA, soknad.FNR_BRUKER, status.STATUS
+                FROM V1_SOKNAD AS soknad
+                LEFT JOIN V1_STATUS AS status
+                ON status.ID = (
+                    SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
+                )
+                WHERE soknad.FNR_INNSENDER = ?
+                AND (soknad.UPDATED + interval '$uker week') > now()
+                ORDER BY soknad.UPDATED DESC
+            """
 
         return time("hent_soknader_for_formidler") {
             using(sessionOf(ds)) { session ->
