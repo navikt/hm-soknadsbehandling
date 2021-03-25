@@ -11,6 +11,7 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedStatus
 import no.nav.hjelpemidler.soknad.mottak.service.Status
@@ -25,6 +26,7 @@ import javax.sql.DataSource
 
 internal interface SøknadStore {
     fun save(soknadData: SoknadData): Int
+    fun savePapir(soknadData: PapirSøknadData): Int
     fun hentSoknad(soknadsId: UUID): SøknadForBruker?
     fun hentSoknaderForBruker(fnrBruker: String): List<SoknadMedStatus>
     fun hentSoknadData(soknadsId: UUID): SoknadData?
@@ -402,6 +404,21 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
         if (result != status.name) return false
         return true
     }
+
+    override fun savePapir(soknadData: PapirSøknadData): Int =
+        time("insert_soknad") {
+            using(sessionOf(ds)) { session ->
+                session.run(
+                    queryOf(
+                        "INSERT INTO V1_SOKNAD (SOKNADS_ID,FNR_BRUKER, FNR_INNSENDER, STATUS, DATA, KOMMUNENAVN, ER_DIGITAL ) VALUES (?,?,NULL,?,NULL,TRUE,NULL) ON CONFLICT DO NOTHING",
+                        soknadData.soknadId,
+                        soknadData.fnrBruker,
+                        soknadData.status.name,
+                        false,
+                    ).asUpdate
+                )
+            }
+        }
 
     private inline fun <T : Any?> time(queryName: String, function: () -> T) =
         Prometheus.dbTimer.labels(queryName).startTimer().let { timer ->
