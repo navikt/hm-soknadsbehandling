@@ -46,4 +46,10 @@ internal object Prometheus {
         .name("hm_soknad_mottak_sletting_fra_bruker")
         .help("Antall søknader slettet")
         .register(collectorRegistry)
+
+    val papirSøknadMottatt = Counter
+        .build()
+        .name("hm_soknad_papir_mottatt")
+        .help("Antall papirsøknader mottatt")
+        .register(collectorRegistry)
 }
