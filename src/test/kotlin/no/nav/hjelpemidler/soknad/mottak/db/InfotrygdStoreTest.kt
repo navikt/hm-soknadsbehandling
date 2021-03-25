@@ -35,7 +35,7 @@ internal class InfotrygdStoreTest {
                 assertEquals("4703", søknad?.trygdekontorNr)
                 assertEquals("C", søknad?.saksblokk)
                 assertEquals("13", søknad?.saksnr)
-                assertNull(søknad?.resultat)
+                assertNull(søknad?.vedtaksresultat)
                 assertNull(søknad?.vedtaksdato)
             }
         }
@@ -78,7 +78,7 @@ internal class InfotrygdStoreTest {
                 assertEquals("4703", søknad?.trygdekontorNr)
                 assertEquals("C", søknad?.saksblokk)
                 assertEquals("13", søknad?.saksnr)
-                assertEquals("IM", søknad?.resultat)
+                assertEquals("IM", søknad?.vedtaksresultat)
                 assertEquals(LocalDate.of(2021, 5, 31).toString(), søknad?.vedtaksdato.toString())
             }
         }
