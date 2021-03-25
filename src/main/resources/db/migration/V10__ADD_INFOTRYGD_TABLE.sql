@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS V1_INFOTRYGD_DATA
     TRYGDEKONTORNR   CHAR(4)                  NOT NULL,
     SAKSBLOKK        CHAR(1)                  NOT NULL,
     SAKSNR           CHAR(2)                  NOT NULL,
-    RESULTAT         VARCHAR(10)              NULL,
+    VEDTAKSRESULTAT  VARCHAR(10)              NULL,
     VEDTAKSDATO      DATE                     NULL,
     CREATED          TIMESTAMP                NOT NULL default (now()),
     PRIMARY KEY (SOKNADS_ID)

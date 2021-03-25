@@ -15,7 +15,7 @@ internal interface InfotrygdStore {
         søknadId: UUID,
         fnrBruker: String,
         fagsakId: String,
-        resultat: String,
+        vedtaksresultat: String,
         vedtaksdato: LocalDate
     ): Int
 
@@ -31,7 +31,7 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
-                        "INSERT INTO V1_INFOTRYGD_DATA (SOKNADS_ID, FNR_BRUKER, TRYGDEKONTORNR, SAKSBLOKK, SAKSNR, RESULTAT, VEDTAKSDATO ) VALUES (?,?,?,?,?,?,?) ON CONFLICT DO NOTHING",
+                        "INSERT INTO V1_INFOTRYGD_DATA (SOKNADS_ID, FNR_BRUKER, TRYGDEKONTORNR, SAKSBLOKK, SAKSNR, VEDTAKSRESULTAT, VEDTAKSDATO ) VALUES (?,?,?,?,?,?,?) ON CONFLICT DO NOTHING",
                         vedtaksresultatData.søknadId,
                         vedtaksresultatData.fnrBruker,
                         vedtaksresultatData.trygdekontorNr,
@@ -56,7 +56,7 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
-                        "UPDATE V1_INFOTRYGD_DATA SET RESULTAT = ?, VEDTAKSDATO = ? WHERE SOKNADS_ID = ?",
+                        "UPDATE V1_INFOTRYGD_DATA SET VEDTAKSRESULTAT = ?, VEDTAKSDATO = ? WHERE SOKNADS_ID = ?",
                         vedtaksresultat,
                         vedtaksdato,
                         søknadId,
@@ -86,19 +86,16 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
                 )
             }
         }
-        if (uuids.count() != 1) {
-            return null
-        }
+        if (uuids.count() != 1) return null
         return uuids[0]
     }
 
     override fun hentVedtaksresultatForSøknad(søknadId: UUID): VedtaksresultatData? {
-
         return time("hent_søknadid_fra_resultat") {
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
-                        "SELECT SOKNADS_ID, FNR_BRUKER, TRYGDEKONTORNR, SAKSBLOKK, SAKSNR, RESULTAT, VEDTAKSDATO FROM V1_INFOTRYGD_DATA WHERE SOKNADS_ID = ?",
+                        "SELECT SOKNADS_ID, FNR_BRUKER, TRYGDEKONTORNR, SAKSBLOKK, SAKSNR, VEDTAKSRESULTAT, VEDTAKSDATO FROM V1_INFOTRYGD_DATA WHERE SOKNADS_ID = ?",
                         søknadId,
                     ).map {
                         VedtaksresultatData(
@@ -107,7 +104,7 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
                             trygdekontorNr = it.string("TRYGDEKONTORNR"),
                             saksblokk = it.string("SAKSBLOKK"),
                             saksnr = it.string("SAKSNR"),
-                            resultat = it.stringOrNull("RESULTAT"),
+                            vedtaksresultat = it.stringOrNull("VEDTAKSRESULTAT"),
                             vedtaksdato = it.localDateOrNull("VEDTAKSDATO"),
                         )
                     }.asSingle
