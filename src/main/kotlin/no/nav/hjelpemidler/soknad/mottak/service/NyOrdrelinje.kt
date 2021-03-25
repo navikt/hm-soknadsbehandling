@@ -1,9 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -84,7 +81,8 @@ internal class NyOrdrelinje(
 
                         save(ordrelinjeData)
 
-                        forward(ordrelinjeData, context)
+                        // TODO: Kommenter inn linja under for sending til rapid etter at businesslogikk er på plass
+                        // forward(ordrelinjeData, context)
                     } catch (e: Exception) {
                         throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
                     }
@@ -113,21 +111,21 @@ internal class NyOrdrelinje(
             logger.error(it) { "Feil under lagring av ordrelinje for SF ${ordrelinje.serviceforespørsel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
         }.getOrThrow()
 
-    private fun CoroutineScope.forward(ordrelinjeData: OrdrelinjeData, context: RapidsConnection.MessageContext) {
-        launch(Dispatchers.IO + SupervisorJob()) {
-            context.send(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
-            Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
-        }.invokeOnCompletion {
-            when (it) {
-                null -> {
-                    logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
-                    sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
-                }
-                is CancellationException -> logger.warn("Cancelled: ${it.message}")
-                else -> {
-                    logger.error("Failed: ${it.message}")
-                }
-            }
-        }
-    }
+    // TODO: Lag businesslogikk for når vi skal sende melding til Ditt NAV om ny ordrelinje
+//    private fun CoroutineScope.forward(ordrelinjeData: OrdrelinjeData, context: RapidsConnection.MessageContext) {
+//        launch(Dispatchers.IO + SupervisorJob()) {
+//            context.send(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
+//            Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
+//        }.invokeOnCompletion {
+//            when (it) {
+//                null -> {
+//                    logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
+//                    sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
+//                }
+//                is CancellationException -> logger.warn("Cancelled: ${it.message}")
+//                else -> {
+//                    logger.error("Failed: ${it.message}")
+//                }
+//            }
+//        }
 }

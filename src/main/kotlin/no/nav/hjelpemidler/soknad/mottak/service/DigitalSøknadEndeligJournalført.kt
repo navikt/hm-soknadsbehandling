@@ -46,11 +46,9 @@ internal class DigitalSøknadEndeligJournalført(rapidsConnection: RapidsConnect
             getSaksnrFromFagsakId(fagsakId),
         )
 
-        // TODO: Sjå på kombinasjonen av feilhandtering her
         oppdaterStatus(søknadId)
         opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData, fagsakId)
 
-        // TODO: Forward melding til hm-infotrygd-poller
         context.send(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
     }
 
@@ -59,9 +57,9 @@ internal class DigitalSøknadEndeligJournalført(rapidsConnection: RapidsConnect
             store.oppdaterStatus(søknadId, Status.ENDELIG_JOURNALFØRT)
         }.onSuccess {
             if (it > 0) {
-                logger.info("Søknad updated to endelig journalført: $søknadId, it=$it")
+                logger.info("Status på søknad sett til endelig journalført: $søknadId, it=$it")
             } else {
-                logger.error("Ingen søknader oppdatert ved endelig journalførtevent: $søknadId")
+                logger.warn("Status er allereie sett til endelig journalført: $søknadId")
             }
         }.onFailure {
             logger.error("Failed to update søknad to endelig journalført: $søknadId")
@@ -81,7 +79,7 @@ internal class DigitalSøknadEndeligJournalført(rapidsConnection: RapidsConnect
                     Prometheus.knytningMellomSøknadOgInfotrygdOpprettaCounter.inc()
                 }
                 else -> {
-                    logger.warn("Fleire knytningar laga mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId")
+                    logger.error("Fleire knytningar laga mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId")
                     Prometheus.knytningMellomSøknadOgInfotrygdProblemCounter.inc()
                 }
             }
