@@ -49,7 +49,7 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
         søknadId: UUID,
         fnrBruker: String,
         fagsakId: String,
-        resultat: String,
+        vedtaksresultat: String,
         vedtaksdato: LocalDate
     ): Int =
         time("oppdater_vedtaksresultat") {
@@ -57,7 +57,7 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
                 session.run(
                     queryOf(
                         "UPDATE V1_INFOTRYGD_DATA SET RESULTAT = ?, VEDTAKSDATO = ? WHERE SOKNADS_ID = ?",
-                        resultat,
+                        vedtaksresultat,
                         vedtaksdato,
                         søknadId,
                     ).asUpdate
@@ -86,9 +86,7 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
                 )
             }
         }
-        if (uuids.count() > 1) {
-            throw RuntimeException("Fleire søknadar med likt fnr, saksblokk og vedtaksdato!")
-        } else if (uuids.count() == 0) {
+        if (uuids.count() != 1) {
             return null
         }
         return uuids[0]

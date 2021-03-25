@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 internal class InfotrygdStoreTest {
@@ -123,7 +122,7 @@ internal class InfotrygdStoreTest {
 
     // Fleire enn eitt treff gjer det umogleg å matche Oebs-data mot éin søknad
     @Test
-    fun `Hent søknadId frå resultat skal feile viss fleire søknadar matchar`() {
+    fun `Hent søknadId frå resultat skal returnere null viss det ikkje er nøyaktig eitt treff`() {
         val fnrBruker = "15084300133"
         val søknadId1 = UUID.fromString("62f68547-11ae-418c-8ab7-4d2af985bcd9")
         val fagsakId1 = "4703C13"
@@ -170,12 +169,8 @@ internal class InfotrygdStoreTest {
                         }
                 }
                 InfotrygdStorePostgres(DataSource.instance).apply {
-                    val exception = assertFailsWith<RuntimeException>(
-                        block = {
-                            this.hentSøknadIdFraVedtaksresultat(fnrBruker, "C13", LocalDate.of(2021, 5, 31))
-                        }
-                    )
-                    assertEquals(exception.message, "Fleire søknadar med likt fnr, saksblokk og vedtaksdato!")
+                    val alteredLines = this.hentSøknadIdFraVedtaksresultat(fnrBruker, "C13", LocalDate.of(2021, 5, 31))
+                    assertEquals(null, alteredLines)
                 }
             }
         }
