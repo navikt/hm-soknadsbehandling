@@ -11,8 +11,8 @@ internal data class VedtaksresultatData(
     val trygdekontorNr: String?,
     val saksblokk: String?,
     val saksnr: String?,
-    val resultat: String?,
-    val vedtaksdato: LocalDate?,
+    val resultat: String? = null,
+    val vedtaksdato: LocalDate? = null,
 ) {
     internal fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {

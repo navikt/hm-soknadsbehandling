@@ -44,8 +44,6 @@ internal class DigitalSøknadEndeligJournalført(rapidsConnection: RapidsConnect
             getTrygdekontorNrFromFagsakId(fagsakId),
             getSaksblokkFromFagsakId(fagsakId),
             getSaksnrFromFagsakId(fagsakId),
-            null,
-            null
         )
 
         // TODO: Sjå på kombinasjonen av feilhandtering her

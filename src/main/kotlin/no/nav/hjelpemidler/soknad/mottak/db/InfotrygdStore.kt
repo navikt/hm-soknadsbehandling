@@ -19,7 +19,7 @@ internal interface InfotrygdStore {
         vedtaksdato: LocalDate
     ): Int
 
-    fun hentSøknadIdFraVedtaksresultat(fnrBruker: String, saksblokkOgSaksnummer: String, vedtaksdato: LocalDate): UUID
+    fun hentSøknadIdFraVedtaksresultat(fnrBruker: String, saksblokkOgSaksnummer: String, vedtaksdato: LocalDate): UUID?
     fun hentVedtaksresultatForSøknad(søknadId: UUID): VedtaksresultatData?
 }
 
@@ -37,8 +37,8 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
                         vedtaksresultatData.trygdekontorNr,
                         vedtaksresultatData.saksblokk,
                         vedtaksresultatData.saksnr,
-                        vedtaksresultatData.resultat,
-                        vedtaksresultatData.vedtaksdato,
+                        null,
+                        null,
                     ).asUpdate
                 )
             }
@@ -70,7 +70,7 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
         fnrBruker: String,
         saksblokkOgSaksnummer: String,
         vedtaksdato: LocalDate
-    ): UUID {
+    ): UUID? {
         val uuids: List<UUID> = time("hent_søknadid_fra_resultat") {
             using(sessionOf(ds)) { session ->
                 session.run(
@@ -89,7 +89,7 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
         if (uuids.count() > 1) {
             throw RuntimeException("Fleire søknadar med likt fnr, saksblokk og vedtaksdato!")
         } else if (uuids.count() == 0) {
-            throw RuntimeException("Ingen søknadar med korrekt fnr, saksblokk og vedtaksdato!")
+            return null
         }
         return uuids[0]
     }

@@ -67,7 +67,7 @@ internal class NyOrdrelinje(
                             packet.fnrBruker,
                             packet.saksblokkOgSaksnummer,
                             packet.vedtaksdato
-                        )
+                        ) ?: return@launch
 
                         val ordrelinjeData = OrdrelinjeData(
                             søknadId = søknadId,
