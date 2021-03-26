@@ -19,7 +19,7 @@ internal interface InfotrygdStore {
         vedtaksdato: LocalDate
     ): Int
 
-    fun hentSøknadIdFraVedtaksresultat(fnrBruker: String, saksblokkOgSaksnummer: String, vedtaksdato: LocalDate): UUID?
+    fun hentSøknadIdFraVedtaksresultat(fnrBruker: String, saksblokkOgSaksnr: String, vedtaksdato: LocalDate): UUID?
     fun hentVedtaksresultatForSøknad(søknadId: UUID): VedtaksresultatData?
 }
 
@@ -68,7 +68,7 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
     // Brukt for å matche Oebs-data mot eit Infotrygd-resultat
     override fun hentSøknadIdFraVedtaksresultat(
         fnrBruker: String,
-        saksblokkOgSaksnummer: String,
+        saksblokkOgSaksnr: String,
         vedtaksdato: LocalDate
     ): UUID? {
         val uuids: List<UUID> = time("hent_søknadid_fra_resultat") {
@@ -77,8 +77,8 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
                     queryOf(
                         "SELECT SOKNADS_ID FROM V1_INFOTRYGD_DATA WHERE FNR_BRUKER = ? AND SAKSBLOKK = ? AND SAKSNR = ? AND VEDTAKSDATO = ?",
                         fnrBruker,
-                        saksblokkOgSaksnummer.first(),
-                        saksblokkOgSaksnummer.takeLast(2),
+                        saksblokkOgSaksnr.first(),
+                        saksblokkOgSaksnr.takeLast(2),
                         vedtaksdato,
                     ).map {
                         UUID.fromString(it.string("SOKNADS_ID"))

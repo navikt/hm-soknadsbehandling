@@ -2,15 +2,15 @@ package no.nav.hjelpemidler.soknad.mottak.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import mu.KotlinLogging
+import no.nav.hjelpemidler.soknad.mottak.Configuration
+import no.nav.hjelpemidler.soknad.mottak.Profile
+import org.flywaydb.core.Flyway
 import java.lang.Exception
 import java.net.Socket
 import java.time.LocalDateTime
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
-import mu.KotlinLogging
-import no.nav.hjelpemidler.soknad.mottak.Configuration
-import no.nav.hjelpemidler.soknad.mottak.Profile
-import org.flywaydb.core.Flyway
 
 private val logger = KotlinLogging.logger {}
 

@@ -27,8 +27,7 @@ internal class NyOrdrelinje(
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "hm-NyOrdrelinje") }
-            validate { it.requireKey("eventId", "opprettet") }
-            validate { it.requireKey("fnrBruker, data") }
+            validate { it.requireKey("eventId", "opprettet", "fnrBruker", "data") }
         }.register(this)
     }
 
@@ -45,8 +44,8 @@ internal class NyOrdrelinje(
     private val JsonMessage.data get() = this["data"]
 
     // Kun brukt til Infotrygd-matching for å finne søknadId
-    private val JsonMessage.saksblokkOgSaksnummer get() = this["saksblokkOgSaksnummer"].textValue()
-    private val JsonMessage.vedtaksdato get() = this["vedtaksdato"].asLocalDate()
+    private val JsonMessage.saksblokkOgSaksnr get() = this["data"]["saksblokkOgSaksnr"].textValue()
+    private val JsonMessage.vedtaksdato get() = this["data"]["vedtaksdato"].asLocalDate()
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
@@ -62,7 +61,7 @@ internal class NyOrdrelinje(
                         // Match ordrelinje to Infotrygd-table
                         val søknadId = infotrygdStore.hentSøknadIdFraVedtaksresultat(
                             packet.fnrBruker,
-                            packet.saksblokkOgSaksnummer,
+                            packet.saksblokkOgSaksnr,
                             packet.vedtaksdato
                         ) ?: return@launch
 
