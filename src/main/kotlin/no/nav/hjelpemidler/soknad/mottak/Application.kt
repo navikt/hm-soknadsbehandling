@@ -23,6 +23,7 @@ import no.nav.hjelpemidler.soknad.mottak.db.SøknadStoreFormidlerPostgres
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStorePostgres
 import no.nav.hjelpemidler.soknad.mottak.db.dataSourceFrom
 import no.nav.hjelpemidler.soknad.mottak.db.migrate
+import no.nav.hjelpemidler.soknad.mottak.db.waitForDB
 import no.nav.hjelpemidler.soknad.mottak.service.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.service.GodkjennSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.JournalpostSink
@@ -38,10 +39,17 @@ import no.nav.hjelpemidler.soknad.mottak.service.hentSoknaderForFormidler
 import org.slf4j.event.Level
 import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
+import kotlin.time.ExperimentalTime
+import kotlin.time.minutes
 
 private val logger = KotlinLogging.logger {}
 
+@ExperimentalTime
 fun main() {
+    if (!waitForDB(10.minutes, Configuration)) {
+        throw Exception("database never became available within the deadline")
+    }
+
     val ds: HikariDataSource = dataSourceFrom(Configuration)
     val store = SøknadStorePostgres(ds)
     val storeFormidler = SøknadStoreFormidlerPostgres(ds)
