@@ -63,7 +63,10 @@ internal class NyOrdrelinje(
                             packet.fnrBruker,
                             packet.saksblokkOgSaksnr,
                             packet.vedtaksdato
-                        ) ?: return@launch
+                        ) ?: kotlin.run {
+                            logger.warn { "Ordrelinje med eventId ${packet.eventId} kan ikkje matchast mot ein søknadId" }
+                            return@launch
+                        }
 
                         val ordrelinjeData = OrdrelinjeData(
                             søknadId = søknadId,
