@@ -378,7 +378,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                     // Add the new Søknad into the Søknad table
                     transaction.run(
                         queryOf(
-                            "INSERT INTO V1_SOKNAD (SOKNADS_ID, FNR_BRUKER, FNR_INNSENDER, DATA, KOMMUNENAVN) VALUES (?,?,?,?,?) ON CONFLICT DO NOTHING",
+                            "INSERT INTO V1_SOKNAD (SOKNADS_ID, FNR_BRUKER, FNR_INNSENDER, DATA, KOMMUNENAVN, ER_DIGITAL) VALUES (?,?,?,?,?,?) ON CONFLICT DO NOTHING",
                             soknadData.soknadId,
                             soknadData.fnrBruker,
                             soknadData.fnrInnsender,
@@ -387,6 +387,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                                 value = soknadToJsonString(soknadData.soknad)
                             },
                             soknadData.kommunenavn,
+                            true
                         ).asUpdate
                     )
                 }
