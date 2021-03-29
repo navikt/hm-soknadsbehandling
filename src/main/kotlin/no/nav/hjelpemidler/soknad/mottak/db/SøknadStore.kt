@@ -38,6 +38,7 @@ internal interface SøknadStore {
     fun hentSoknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad>
     fun soknadFinnes(soknadsId: UUID): Boolean
     fun hentSoknadOpprettetDato(soknadsId: UUID): Date?
+    fun papirsoknadFinnes(journalpostId: Int): Boolean
 }
 
 internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
@@ -47,7 +48,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
             """
                 SELECT SOKNADS_ID
                 FROM V1_SOKNAD
-                WHERE SOKNADS_ID = ?
+                WHERE SOKNADS_ID = ? AND ER_DIGITAL
             """
 
         val uuid = time("soknad_eksisterer") {
@@ -74,7 +75,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                 ON status.ID = (
                     SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
                 )
-                WHERE soknad.SOKNADS_ID = ?
+                WHERE soknad.SOKNADS_ID = ? AND soknad.ER_DIGITAL
             """
 
         return time("hent_soknad") {
@@ -123,7 +124,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
             """
                 SELECT CREATED
                 FROM V1_SOKNAD
-                WHERE SOKNADS_ID = ?
+                WHERE SOKNADS_ID = ? AND ER_DIGITAL
             """
 
         return using(sessionOf(ds)) { session ->
@@ -147,7 +148,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                 ON status.ID = (
                     SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
                 )
-                WHERE soknad.SOKNADS_ID = ?
+                WHERE soknad.SOKNADS_ID = ? AND soknad.ER_DIGITAL
             """
 
         return time("hent_soknaddata") {
@@ -178,7 +179,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
             """
                 SELECT FNR_BRUKER
                 FROM V1_SOKNAD
-                WHERE SOKNADS_ID = ?
+                WHERE SOKNADS_ID = ? AND ER_DIGITAL
             """
 
         val fnrBruker =
@@ -289,7 +290,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                 ON status.ID = (
                     SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
                 )
-                WHERE soknad.FNR_BRUKER = ?
+                WHERE soknad.FNR_BRUKER = ? AND soknad.ER_DIGITAL
                 ORDER BY soknad.CREATED DESC
             """
 
@@ -340,7 +341,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                 ON status.ID = (
                     SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
                 )
-                WHERE status.STATUS = ? AND (soknad.CREATED + interval '$dager day') < now()
+                WHERE status.STATUS = ? AND (soknad.CREATED + interval '$dager day') < now() AND soknad.ER_DIGITAL
                 ORDER BY soknad.CREATED DESC
             """
 
@@ -406,19 +407,43 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     }
 
     override fun savePapir(soknadData: PapirSøknadData): Int =
-        time("insert_soknad") {
+        time("insert_papirsoknad") {
             using(sessionOf(ds)) { session ->
                 session.run(
                     queryOf(
-                        "INSERT INTO V1_SOKNAD (SOKNADS_ID,FNR_BRUKER, FNR_INNSENDER, STATUS, DATA, KOMMUNENAVN, ER_DIGITAL ) VALUES (?,?,NULL,?,NULL,TRUE,NULL) ON CONFLICT DO NOTHING",
+                        "INSERT INTO V1_SOKNAD (SOKNADS_ID,FNR_BRUKER, STATUS, ER_DIGITAL, JOURNALPOSTID ) VALUES (?,?,?,?,?) ON CONFLICT DO NOTHING",
                         soknadData.soknadId,
                         soknadData.fnrBruker,
                         soknadData.status.name,
                         false,
+                        soknadData.journalpostid,
                     ).asUpdate
                 )
             }
         }
+
+    override fun papirsoknadFinnes(journalpostId: Int): Boolean {
+        @Language("PostgreSQL") val statement =
+            """
+                SELECT SOKNADS_ID
+                FROM V1_SOKNAD
+                WHERE JOURNALPOSTID = ? AND NOT ER_DIGITAL
+            """
+
+        val uuid = time("soknad_eksisterer") {
+            using(sessionOf(ds)) { session ->
+                session.run(
+                    queryOf(
+                        statement,
+                        journalpostId,
+                    ).map {
+                        UUID.fromString(it.string("SOKNADS_ID"))
+                    }.asSingle
+                )
+            }
+        }
+        return uuid != null
+    }
 
     private inline fun <T : Any?> time(queryName: String, function: () -> T) =
         Prometheus.dbTimer.labels(queryName).startTimer().let { timer ->

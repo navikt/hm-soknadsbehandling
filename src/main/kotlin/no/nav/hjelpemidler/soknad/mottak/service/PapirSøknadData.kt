@@ -10,14 +10,16 @@ internal data class PapirSøknadData(
     val fnrBruker: String,
     val soknadId: UUID,
     val status: Status,
+    val journalpostid: Int,
 ) {
     internal fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
             val id = ULID.random()
             it["eventId"] = id
-            it["eventName"] = "hm-$eventName"
+            it["eventName"] = eventName
             it["opprettet"] = LocalDateTime.now()
             it["fnrBruker"] = this.fnrBruker
+            it["journalpostId"] = this.journalpostid
             it["soknadId"] = this.soknadId
         }.toJson()
     }

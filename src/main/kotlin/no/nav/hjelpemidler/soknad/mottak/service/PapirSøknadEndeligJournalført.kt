@@ -1,10 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,32 +18,28 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class PapirSøknad(rapidsConnection: RapidsConnection, private val store: SøknadStore) :
+internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnection, private val store: SøknadStore) :
     River.PacketListener {
-
-    companion object {
-        private val objectMapper = jacksonObjectMapper()
-            .registerModule(JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-    }
-
-    private fun soknadToJson(soknad: JsonNode): String = objectMapper.writeValueAsString(soknad)
-
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "PapirSoeknadEndeligJournalfoert") }
-            validate { it.requireKey("hendelse.avsenderMottaker.id", "fodselNrBruker") }
+            validate { it.requireKey("fodselNrBruker", "hendelse.journalingEvent.journalpostId") }
         }.register(this)
     }
 
     private val JsonMessage.eventId get() = this["eventId"].textValue()
     private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
+    private val JsonMessage.journalpostId get() = this["hendelse"]["journalingEvent"]["journalpostId"].intValue()
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
+
+                    if (skipEvent(UUID.fromString(packet.eventId))) {
+                        logger.info { "Hopper over event i skip-list: ${packet.eventId}" }
+                        return@launch
+                    }
                     // new id for this papirsøknad
                     val søknadId = UUID.randomUUID()
 
@@ -57,6 +48,7 @@ internal class PapirSøknad(rapidsConnection: RapidsConnection, private val stor
                             fnrBruker = packet.fnrBruker,
                             soknadId = søknadId,
                             status = Status.ENDELIG_JOURNALFØRT,
+                            journalpostid = packet.journalpostId
                         )
 
                         if (store.soknadFinnes(soknadData.soknadId)) {
@@ -64,8 +56,8 @@ internal class PapirSøknad(rapidsConnection: RapidsConnection, private val stor
                             return@launch
                         }
 
-                        logger.info { "Papirsøknad mottatt og lagret: $søknadId" }
                         save(soknadData)
+                        logger.info { "Papirsøknad mottatt og lagret: $søknadId" }
 
                         forward(soknadData, context)
                     } catch (e: Exception) {
@@ -85,14 +77,15 @@ internal class PapirSøknad(rapidsConnection: RapidsConnection, private val stor
         kotlin.runCatching {
             store.savePapir(soknadData)
         }.onSuccess {
-            logger.info("Papirsøknad klar til godkjenning saved: ${soknadData.soknadId}")
+            // TODO: Sjekk it
+            logger.info("Papirsøknad klar til godkjenning saved: ${soknadData.soknadId} it=$it")
         }.onFailure {
             logger.error(it) { "Failed to save papirsøknad klar til godkjenning: ${soknadData.soknadId}" }
         }.getOrThrow()
 
     private fun CoroutineScope.forward(søknadData: PapirSøknadData, context: RapidsConnection.MessageContext) {
         launch(Dispatchers.IO + SupervisorJob()) {
-            context.send(søknadData.fnrBruker, søknadData.toJson("papirsøknadMottatt"))
+            context.send(søknadData.fnrBruker, søknadData.toJson("hm-papirsøknadMottatt"))
             Prometheus.papirSøknadMottatt.inc()
         }.invokeOnCompletion {
             when (it) {
