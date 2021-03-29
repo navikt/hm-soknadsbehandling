@@ -24,6 +24,7 @@ import no.nav.hjelpemidler.soknad.mottak.service.DigitalSøknadEndeligJournalfø
 import no.nav.hjelpemidler.soknad.mottak.service.GodkjennSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.JournalpostSink
 import no.nav.hjelpemidler.soknad.mottak.service.OppgaveSink
+import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.service.SlettSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedFullmaktDataSink
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadUtenFullmaktDataSink
@@ -61,6 +62,9 @@ fun main() {
         }
         .apply {
             DigitalSøknadEndeligJournalført(this, store)
+        }
+        .apply {
+            PapirSøknadEndeligJournalført(this, store)
         }
         .apply {
             register(
