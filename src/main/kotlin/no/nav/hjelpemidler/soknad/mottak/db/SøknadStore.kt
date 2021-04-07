@@ -410,16 +410,24 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     override fun savePapir(soknadData: PapirSøknadData): Int =
         time("insert_papirsoknad") {
             using(sessionOf(ds)) { session ->
-                session.run(
-                    queryOf(
-                        "INSERT INTO V1_SOKNAD (SOKNADS_ID,FNR_BRUKER, STATUS, ER_DIGITAL, JOURNALPOSTID ) VALUES (?,?,?,?,?) ON CONFLICT DO NOTHING",
-                        soknadData.soknadId,
-                        soknadData.fnrBruker,
-                        soknadData.status.name,
-                        false,
-                        soknadData.journalpostid,
-                    ).asUpdate
-                )
+                session.transaction { transaction ->
+                    if (!checkIfLastStatusMatches(transaction, soknadData.soknadId, soknadData.status)) transaction.run(
+                        queryOf(
+                            "INSERT INTO V1_STATUS (SOKNADS_ID, STATUS) VALUES (?, ?)",
+                            soknadData.soknadId,
+                            soknadData.status.name,
+                        ).asUpdate
+                    )
+                    transaction.run(
+                        queryOf(
+                            "INSERT INTO V1_SOKNAD (SOKNADS_ID,FNR_BRUKER, ER_DIGITAL, JOURNALPOSTID ) VALUES (?,?,?,?) ON CONFLICT DO NOTHING",
+                            soknadData.soknadId,
+                            soknadData.fnrBruker,
+                            false,
+                            soknadData.journalpostid,
+                        ).asUpdate
+                    )
+                }
             }
         }
 

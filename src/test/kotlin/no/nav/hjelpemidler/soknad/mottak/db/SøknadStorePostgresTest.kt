@@ -7,6 +7,7 @@ import kotliquery.sessionOf
 import no.nav.hjelpemidler.soknad.mottak.mockSøknad
 import no.nav.hjelpemidler.soknad.mottak.service.Bruksarena
 import no.nav.hjelpemidler.soknad.mottak.service.Funksjonsnedsettelse
+import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import org.junit.jupiter.api.Test
@@ -58,8 +59,14 @@ internal class SøknadStorePostgresTest {
                 assertEquals("1", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.rangering)
                 assertEquals(true, hentSoknad?.søknadsdata?.hjelpemidler?.first()?.utlevertFraHjelpemiddelsentralen)
                 assertEquals(1, hentSoknad?.søknadsdata?.hjelpemidler?.first()?.vilkarliste?.size)
-                assertEquals("Vilkår 1", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.vilkarliste?.first()?.vilkaarTekst)
-                assertEquals("Tilleggsinfo", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.vilkarliste?.first()?.tilleggsInfo)
+                assertEquals(
+                    "Vilkår 1",
+                    hentSoknad?.søknadsdata?.hjelpemidler?.first()?.vilkarliste?.first()?.vilkaarTekst
+                )
+                assertEquals(
+                    "Tilleggsinfo",
+                    hentSoknad?.søknadsdata?.hjelpemidler?.first()?.vilkarliste?.first()?.tilleggsInfo
+                )
                 assertEquals(1, hentSoknad?.søknadsdata?.hjelpemidler?.first()?.tilbehorListe?.size)
                 assertEquals("654321", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.tilbehorListe?.first()?.hmsnr)
                 assertEquals("Tilbehør 1", hentSoknad?.søknadsdata?.hjelpemidler?.first()?.tilbehorListe?.first()?.navn)
@@ -319,6 +326,21 @@ internal class SøknadStorePostgresTest {
                     it shouldBe 0
                 }
             }
+        }
+    }
+
+    @Test
+    fun `Papirsøknad lagres i databasen`() {
+        val id = UUID.randomUUID()
+        SøknadStorePostgres(DataSource.instance).apply {
+            this.savePapir(
+                PapirSøknadData(
+                    "12345678910",
+                    id,
+                    Status.ENDELIG_JOURNALFØRT,
+                    1234567
+                )
+            ).also { it.shouldBe(1) }
         }
     }
 }
