@@ -69,8 +69,6 @@ fun main() {
             OppgaveSink(this, store)
             DigitalSøknadEndeligJournalført(this, store, infotrygdStore)
             NyOrdrelinje(this, ordreStore, infotrygdStore)
-        }
-        .apply {
             PapirSøknadEndeligJournalført(this, store)
         }
         .apply {
