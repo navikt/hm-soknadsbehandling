@@ -40,7 +40,7 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
                         logger.info { "Hopper over event i skip-list: ${packet.eventId}" }
                         return@launch
                     }
-                    // new id for this papirsøknad
+
                     val søknadId = UUID.randomUUID()
 
                     try {
@@ -77,8 +77,11 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
         kotlin.runCatching {
             store.savePapir(soknadData)
         }.onSuccess {
-            // TODO: Sjekk it
-            logger.info("Papirsøknad klar til godkjenning saved: ${soknadData.soknadId} it=$it")
+            if (it > 0) {
+                logger.info("Papirsøknad klar til godkjenning saved: ${soknadData.soknadId} it=$it")
+            } else {
+                logger.error("Lagring av papirsøknad feilet. Ingen rader påvirket under lagring.")
+            }
         }.onFailure {
             logger.error(it) { "Failed to save papirsøknad klar til godkjenning: ${soknadData.soknadId}" }
         }.getOrThrow()

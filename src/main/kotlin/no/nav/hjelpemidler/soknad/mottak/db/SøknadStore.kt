@@ -48,7 +48,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
             """
                 SELECT SOKNADS_ID
                 FROM V1_SOKNAD
-                WHERE SOKNADS_ID = ? AND ER_DIGITAL
+                WHERE SOKNADS_ID = ?
             """
 
         val uuid = time("soknad_eksisterer") {
@@ -75,7 +75,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                 ON status.ID = (
                     SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
                 )
-                WHERE soknad.SOKNADS_ID = ? AND soknad.ER_DIGITAL
+                WHERE soknad.SOKNADS_ID = ?
             """
 
         return time("hent_soknad") {
@@ -124,7 +124,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
             """
                 SELECT CREATED
                 FROM V1_SOKNAD
-                WHERE SOKNADS_ID = ? AND ER_DIGITAL
+                WHERE SOKNADS_ID = ?
             """
 
         return using(sessionOf(ds)) { session ->
@@ -148,7 +148,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                 ON status.ID = (
                     SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
                 )
-                WHERE soknad.SOKNADS_ID = ? AND soknad.ER_DIGITAL
+                WHERE soknad.SOKNADS_ID = ?
             """
 
         return time("hent_soknaddata") {
@@ -179,7 +179,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
             """
                 SELECT FNR_BRUKER
                 FROM V1_SOKNAD
-                WHERE SOKNADS_ID = ? AND ER_DIGITAL
+                WHERE SOKNADS_ID = ?
             """
 
         val fnrBruker =
