@@ -343,4 +343,21 @@ internal class SøknadStorePostgresTest {
             ).also { it.shouldBe(1) }
         }
     }
+
+    @Test
+    fun `Papirsøknad lagres 2`() {
+        val id = UUID.randomUUID()
+        val fnr = "12345678910"
+        val journalpostid = 1234567
+        SøknadStorePostgres(DataSource.instance).apply {
+            this.savePapir(
+                PapirSøknadData(
+                    fnr,
+                    id,
+                    Status.ENDELIG_JOURNALFØRT,
+                    journalpostid
+                )
+            ).also { it.shouldBe(1) }
+        }
+    }
 }

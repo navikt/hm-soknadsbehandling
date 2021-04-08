@@ -23,13 +23,21 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "PapirSoeknadEndeligJournalfoert") }
-            validate { it.requireKey("fodselNrBruker", "hendelse.journalingEvent.journalpostId") }
+            validate {
+                it.requireKey(
+                    "fodselNrBruker",
+                    "hendelse",
+                    "hendelse.journalingEvent",
+                    "hendelse.journalingEvent.journalpostId",
+                    "eventId"
+                )
+            }
         }.register(this)
     }
 
     private val JsonMessage.eventId get() = this["eventId"].textValue()
     private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
-    private val JsonMessage.journalpostId get() = this["hendelse"]["journalingEvent"]["journalpostId"].intValue()
+    private val JsonMessage.journalpostId get() = this["hendelse"]["journalingEvent"]["journalpostId"].asInt()
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
