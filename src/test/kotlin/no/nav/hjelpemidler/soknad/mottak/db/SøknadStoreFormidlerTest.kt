@@ -10,6 +10,8 @@ import no.nav.hjelpemidler.soknad.mottak.service.Status
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 internal class SøknadStoreFormidlerTest {
 
@@ -68,6 +70,61 @@ internal class SøknadStoreFormidlerTest {
                 this.hentSøknaderForFormidler("1234567891014", 4).also {
                     it.size shouldBe 0
                 }
+            }
+        }
+    }
+
+    @Test
+    fun `Fullmakt for søknad for formidler`() {
+
+        val soknadId = UUID.randomUUID()
+
+        withMigratedDb {
+            SøknadStorePostgres(DataSource.instance).apply {
+                this.save(
+                    mockSøknad(soknadId, Status.GODKJENT_MED_FULLMAKT)
+                ).also {
+                    it shouldBe 1
+                }
+
+                this.oppdaterStatus(soknadId, Status.ENDELIG_JOURNALFØRT).also {
+                    it shouldBe 1
+                }
+            }
+            SøknadStoreFormidlerPostgres(DataSource.instance).apply {
+                val søknader = this.hentSøknaderForFormidler("12345678910", 4)
+                assertTrue { søknader[0].fullmakt }
+            }
+        }
+    }
+
+    @Test
+    fun `Fullmakt er false hvis bruker skal bekrefte søknaden`() {
+
+        val soknadId = UUID.randomUUID()
+
+        withMigratedDb {
+            SøknadStorePostgres(DataSource.instance).apply {
+                this.save(
+                    mockSøknad(soknadId, Status.VENTER_GODKJENNING)
+                ).also {
+                    it shouldBe 1
+                }
+
+                this.oppdaterStatus(
+                    soknadId,
+                    Status.GODKJENT
+                ).also {
+                    it shouldBe 1
+                }
+
+                this.oppdaterStatus(soknadId, Status.ENDELIG_JOURNALFØRT).also {
+                    it shouldBe 1
+                }
+            }
+            SøknadStoreFormidlerPostgres(DataSource.instance).apply {
+                val søknader = this.hentSøknaderForFormidler("12345678910", 4)
+                assertFalse { søknader[0].fullmakt }
             }
         }
     }
