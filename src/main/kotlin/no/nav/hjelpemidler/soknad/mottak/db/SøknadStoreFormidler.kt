@@ -21,7 +21,10 @@ internal class SøknadStoreFormidlerPostgres(private val ds: DataSource) : Søkn
     override fun hentSøknaderForFormidler(fnrFormidler: String, uker: Int): List<SoknadForFormidler> {
         @Language("PostgreSQL") val statement =
             """
-                SELECT soknad.SOKNADS_ID, soknad.CREATED, soknad.UPDATED, soknad.DATA, soknad.FNR_BRUKER, status.STATUS
+                SELECT soknad.SOKNADS_ID, soknad.CREATED, soknad.UPDATED, soknad.DATA, soknad.FNR_BRUKER, status.STATUS, 
+                (CASE WHEN EXISTS (
+                    SELECT 1 FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID AND STATUS IN  ('GODKJENT_MED_FULLMAKT')
+                ) THEN true ELSE false END) as fullmakt
                 FROM V1_SOKNAD AS soknad
                 LEFT JOIN V1_STATUS AS status
                 ON status.ID = (
@@ -44,6 +47,7 @@ internal class SøknadStoreFormidlerPostgres(private val ds: DataSource) : Søkn
                             SoknadForFormidler.newSøknadUtenBrukersNavn(
                                 soknadId = UUID.fromString(it.string("SOKNADS_ID")),
                                 status = Status.valueOf(it.string("STATUS")),
+                                fullmakt = it.boolean("fullmakt"),
                                 datoOpprettet = it.sqlTimestamp("created"),
                                 datoOppdatert = when {
                                     it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
@@ -55,6 +59,7 @@ internal class SøknadStoreFormidlerPostgres(private val ds: DataSource) : Søkn
                             SoknadForFormidler.newSøknadMedBrukersNavn(
                                 soknadId = UUID.fromString(it.string("SOKNADS_ID")),
                                 status = Status.valueOf(it.string("STATUS")),
+                                fullmakt = it.boolean("fullmakt"),
                                 datoOpprettet = it.sqlTimestamp("created"),
                                 datoOppdatert = when {
                                     it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
@@ -85,15 +90,16 @@ class SoknadForFormidler private constructor(
     val datoOpprettet: Date,
     var datoOppdatert: Date,
     val status: Status,
+    val fullmakt: Boolean,
     val fnrBruker: String,
     val navnBruker: String?
 ) {
     companion object {
-        fun newSøknadUtenBrukersNavn(soknadId: UUID, datoOpprettet: Date, datoOppdatert: Date, status: Status, fnrBruker: String) =
-            SoknadForFormidler(soknadId, datoOpprettet, datoOppdatert, status, fnrBruker, null)
+        fun newSøknadUtenBrukersNavn(soknadId: UUID, datoOpprettet: Date, datoOppdatert: Date, status: Status, fullmakt: Boolean, fnrBruker: String) =
+            SoknadForFormidler(soknadId, datoOpprettet, datoOppdatert, status, fullmakt, fnrBruker, null)
 
-        fun newSøknadMedBrukersNavn(soknadId: UUID, datoOpprettet: Date, datoOppdatert: Date, status: Status, fnrBruker: String, søknad: JsonNode) =
-            SoknadForFormidler(soknadId, datoOpprettet, datoOppdatert, status, fnrBruker, brukersNavn(søknad))
+        fun newSøknadMedBrukersNavn(soknadId: UUID, datoOpprettet: Date, datoOppdatert: Date, status: Status, fullmakt: Boolean, fnrBruker: String, søknad: JsonNode) =
+            SoknadForFormidler(soknadId, datoOpprettet, datoOppdatert, status, fullmakt, fnrBruker, brukersNavn(søknad))
     }
 }
 
