@@ -33,6 +33,7 @@ import no.nav.hjelpemidler.soknad.mottak.service.SlettSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedFullmaktDataSink
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadUtenFullmaktDataSink
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadsgodkjenningService
+import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatFraInfotrygd
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknaderForBruker
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknaderForFormidler
@@ -68,6 +69,7 @@ fun main() {
             OppgaveSink(this, store)
             DigitalSøknadEndeligJournalført(this, store, infotrygdStore)
             NyOrdrelinje(this, ordreStore, infotrygdStore)
+            VedtaksresultatFraInfotrygd(this, infotrygdStore)
         }
         .apply {
             register(
