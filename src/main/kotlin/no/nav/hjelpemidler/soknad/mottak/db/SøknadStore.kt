@@ -69,8 +69,11 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     override fun hentSoknad(soknadsId: UUID): SøknadForBruker? {
         @Language("PostgreSQL") val statement =
             """
-                SELECT soknad.SOKNADS_ID, soknad.DATA, soknad.CREATED, soknad.KOMMUNENAVN, soknad.FNR_BRUKER, soknad.UPDATED, status.STATUS
-                FROM V1_SOKNAD AS soknad
+                SELECT soknad.SOKNADS_ID, soknad.DATA, soknad.CREATED, soknad.KOMMUNENAVN, soknad.FNR_BRUKER, soknad.UPDATED, status.STATUS, 
+                (CASE WHEN EXISTS (
+                    SELECT 1 FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID AND STATUS IN  ('GODKJENT_MED_FULLMAKT')
+                ) THEN true ELSE false END) as fullmakt
+                FROM V1_SOKNAD AS soknad 
                 LEFT JOIN V1_STATUS AS status
                 ON status.ID = (
                     SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
@@ -90,6 +93,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                             SøknadForBruker.newEmptySøknad(
                                 søknadId = UUID.fromString(it.string("SOKNADS_ID")),
                                 status = Status.valueOf(it.string("STATUS")),
+                                fullmakt = it.boolean("fullmakt"),
                                 datoOpprettet = it.sqlTimestamp("created"),
                                 datoOppdatert = when {
                                     it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
@@ -101,6 +105,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                             SøknadForBruker.new(
                                 søknadId = UUID.fromString(it.string("SOKNADS_ID")),
                                 status = Status.valueOf(it.string("STATUS")),
+                                fullmakt = it.boolean("fullmakt"),
                                 datoOpprettet = it.sqlTimestamp("created"),
                                 datoOppdatert = when {
                                     it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
@@ -284,7 +289,10 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
     override fun hentSoknaderForBruker(fnrBruker: String): List<SoknadMedStatus> {
         @Language("PostgreSQL") val statement =
             """
-                SELECT soknad.SOKNADS_ID, soknad.CREATED, soknad.UPDATED, soknad.DATA, status.STATUS
+                SELECT soknad.SOKNADS_ID, soknad.CREATED, soknad.UPDATED, soknad.DATA, status.STATUS,
+                (CASE WHEN EXISTS (
+                    SELECT 1 FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID AND STATUS IN  ('GODKJENT_MED_FULLMAKT')
+                ) THEN true ELSE false END) as fullmakt
                 FROM V1_SOKNAD AS soknad
                 LEFT JOIN V1_STATUS AS status
                 ON status.ID = (
@@ -306,6 +314,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                             SoknadMedStatus.newSøknadUtenFormidlernavn(
                                 soknadId = UUID.fromString(it.string("SOKNADS_ID")),
                                 status = Status.valueOf(it.string("STATUS")),
+                                fullmakt = it.boolean("fullmakt"),
                                 datoOpprettet = it.sqlTimestamp("created"),
                                 datoOppdatert = when {
                                     it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
@@ -316,6 +325,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                             SoknadMedStatus.newSøknadMedFormidlernavn(
                                 soknadId = UUID.fromString(it.string("SOKNADS_ID")),
                                 status = Status.valueOf(it.string("STATUS")),
+                                fullmakt = it.boolean("fullmakt"),
                                 datoOpprettet = it.sqlTimestamp("created"),
                                 datoOppdatert = when {
                                     it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")

@@ -67,7 +67,7 @@ internal class InfotrygdStoreTest {
                 this.lagKnytningMellomFagsakOgSøknad(vedtaksresultatData)
             }
             InfotrygdStorePostgres(DataSource.instance).apply {
-                this.lagreVedtaksresultat(søknadId, fnrBruker, fagsakId, resultat, vedtaksdato)
+                this.lagreVedtaksresultat(søknadId, resultat, vedtaksdato)
                     .also {
                         it shouldBe (1)
                     }
@@ -108,7 +108,7 @@ internal class InfotrygdStoreTest {
                 this.lagKnytningMellomFagsakOgSøknad(vedtaksresultatData)
             }
             InfotrygdStorePostgres(DataSource.instance).apply {
-                this.lagreVedtaksresultat(søknadId, fnrBruker, fagsakId, resultat, vedtaksdato)
+                this.lagreVedtaksresultat(søknadId, resultat, vedtaksdato)
                     .also {
                         it shouldBe (1)
                     }
@@ -159,11 +159,11 @@ internal class InfotrygdStoreTest {
                 this.lagKnytningMellomFagsakOgSøknad(vedtaksresultatData2)
 
                 InfotrygdStorePostgres(DataSource.instance).apply {
-                    this.lagreVedtaksresultat(søknadId1, fnrBruker, fagsakId1, resultat, vedtaksdato)
+                    this.lagreVedtaksresultat(søknadId1, resultat, vedtaksdato)
                         .also {
                             it shouldBe (1)
                         }
-                    this.lagreVedtaksresultat(søknadId2, fnrBruker, fagsakId2, resultat, vedtaksdato)
+                    this.lagreVedtaksresultat(søknadId2, resultat, vedtaksdato)
                         .also {
                             it shouldBe (1)
                         }
