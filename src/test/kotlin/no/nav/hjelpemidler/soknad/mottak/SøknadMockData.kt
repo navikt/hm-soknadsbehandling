@@ -5,7 +5,7 @@ import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import java.util.UUID
 
-internal fun mockSøknad(id: UUID) = SoknadData(
+internal fun mockSøknad(id: UUID, status: Status = Status.VENTER_GODKJENNING) = SoknadData(
     "15084300133",
     "12345678910",
     id,
@@ -87,6 +87,6 @@ internal fun mockSøknad(id: UUID) = SoknadData(
                           }
                         } """
     ),
-    status = Status.VENTER_GODKJENNING,
+    status = status,
     kommunenavn = null
 )
