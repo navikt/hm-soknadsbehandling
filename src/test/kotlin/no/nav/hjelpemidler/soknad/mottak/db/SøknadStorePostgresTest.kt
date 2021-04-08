@@ -12,7 +12,9 @@ import no.nav.hjelpemidler.soknad.mottak.service.Status
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 internal class SøknadStorePostgresTest {
 
@@ -211,6 +213,58 @@ internal class SøknadStorePostgresTest {
                 ).also {
                     it shouldBe 1
                 }
+            }
+        }
+    }
+
+    @Test
+    fun `Fullmakt for søknad innsendt av formidler`() {
+
+        val soknadId = UUID.randomUUID()
+
+        withMigratedDb {
+            SøknadStorePostgres(DataSource.instance).apply {
+                this.save(
+                    mockSøknad(soknadId, Status.GODKJENT_MED_FULLMAKT)
+                ).also {
+                    it shouldBe 1
+                }
+
+                this.oppdaterStatus(soknadId, Status.ENDELIG_JOURNALFØRT).also {
+                    it shouldBe 1
+                }
+
+                val soknader = this.hentSoknaderForBruker("15084300133")
+                assertEquals(1, soknader.size)
+                assertTrue { soknader[0].fullmakt }
+            }
+        }
+    }
+
+    @Test
+    fun `Ikke fullmakt for søknad med brukers godkjenning`() {
+
+        val soknadId = UUID.randomUUID()
+
+        withMigratedDb {
+            SøknadStorePostgres(DataSource.instance).apply {
+                this.save(
+                    mockSøknad(soknadId, Status.VENTER_GODKJENNING)
+                ).also {
+                    it shouldBe 1
+                }
+
+                this.oppdaterStatus(soknadId, Status.GODKJENT).also {
+                    it shouldBe 1
+                }
+
+                this.oppdaterStatus(soknadId, Status.ENDELIG_JOURNALFØRT).also {
+                    it shouldBe 1
+                }
+
+                val soknader = this.hentSoknaderForBruker("15084300133")
+                assertEquals(1, soknader.size)
+                assertFalse { soknader[0].fullmakt }
             }
         }
     }

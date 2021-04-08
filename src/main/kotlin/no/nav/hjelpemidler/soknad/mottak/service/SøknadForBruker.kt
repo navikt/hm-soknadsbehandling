@@ -9,15 +9,17 @@ class SøknadForBruker private constructor(
     val datoOpprettet: Date,
     var datoOppdatert: Date,
     val status: Status,
+    val fullmakt: Boolean,
     val fnrBruker: String,
-    val søknadsdata: Søknadsdata?
+    val søknadsdata: Søknadsdata?,
+
 ) {
 
     companion object {
-        fun new(søknadId: UUID, datoOpprettet: Date, datoOppdatert: Date, søknad: JsonNode, status: Status, kommunenavn: String?, fnrBruker: String) =
-            SøknadForBruker(søknadId, datoOpprettet, datoOppdatert, status, fnrBruker, Søknadsdata(søknad, kommunenavn))
-        fun newEmptySøknad(søknadId: UUID, datoOpprettet: Date, datoOppdatert: Date, status: Status, fnrBruker: String) =
-            SøknadForBruker(søknadId, datoOpprettet, datoOppdatert, status, fnrBruker, null)
+        fun new(søknadId: UUID, datoOpprettet: Date, datoOppdatert: Date, søknad: JsonNode, status: Status, fullmakt: Boolean, kommunenavn: String?, fnrBruker: String) =
+            SøknadForBruker(søknadId, datoOpprettet, datoOppdatert, status, fullmakt, fnrBruker, Søknadsdata(søknad, kommunenavn))
+        fun newEmptySøknad(søknadId: UUID, datoOpprettet: Date, datoOppdatert: Date, status: Status, fullmakt: Boolean, fnrBruker: String) =
+            SøknadForBruker(søknadId, datoOpprettet, datoOppdatert, status, fullmakt, fnrBruker, null)
     }
 }
 
