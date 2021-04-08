@@ -30,10 +30,6 @@ internal class VedtaksresultatFraInfotrygd(
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         val søknadsId = UUID.fromString(packet.søknadID)
-        if (søknadsId.toString() == "6b6f88b4-48eb-4b67-8c67-161240ddadc7") {
-            logger.info { "Hopper over event i skip-list: $søknadsId" }
-            return
-        }
 
         kotlin.runCatching {
             infotrygdStore.lagreVedtaksresultat(søknadsId, packet.vedtaksResultat, packet.vedtaksDato)
