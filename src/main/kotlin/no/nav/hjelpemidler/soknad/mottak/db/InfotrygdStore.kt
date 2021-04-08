@@ -13,8 +13,6 @@ internal interface InfotrygdStore {
     fun lagKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData): Int
     fun lagreVedtaksresultat(
         søknadId: UUID,
-        fnrBruker: String,
-        fagsakId: String,
         vedtaksresultat: String,
         vedtaksdato: LocalDate
     ): Int
@@ -47,8 +45,6 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
     // Vedtaksresultat vil bli gitt av Infotrygd-poller som har oversikt over søknadId, fnr og fagsakId
     override fun lagreVedtaksresultat(
         søknadId: UUID,
-        fnrBruker: String,
-        fagsakId: String,
         vedtaksresultat: String,
         vedtaksdato: LocalDate
     ): Int =
