@@ -11,6 +11,7 @@ internal data class PapirSøknadData(
     val soknadId: UUID,
     val status: Status,
     val journalpostid: Int,
+    val navnBruker: String,
 ) {
     internal fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {

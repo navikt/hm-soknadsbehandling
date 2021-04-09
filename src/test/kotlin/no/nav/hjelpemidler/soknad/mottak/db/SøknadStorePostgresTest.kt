@@ -397,7 +397,8 @@ internal class SøknadStorePostgresTest {
                     "12345678910",
                     id,
                     Status.ENDELIG_JOURNALFØRT,
-                    1234567
+                    1234567,
+                    "Person"
                 )
             ).also { it.shouldBe(1) }
         }
@@ -408,13 +409,15 @@ internal class SøknadStorePostgresTest {
         val id = UUID.randomUUID()
         val fnr = "12345678910"
         val journalpostid = 1234567
+        val navnBruker = "En Person"
         SøknadStorePostgres(DataSource.instance).apply {
             this.savePapir(
                 PapirSøknadData(
                     fnr,
                     id,
                     Status.ENDELIG_JOURNALFØRT,
-                    journalpostid
+                    journalpostid,
+                    navnBruker
                 )
             ).also { it.shouldBe(1) }
         }

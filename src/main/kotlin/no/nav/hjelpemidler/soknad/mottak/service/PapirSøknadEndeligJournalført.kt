@@ -33,7 +33,9 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
                     "eventId",
                     "hendelse.journalingEventSAF",
                     "hendelse.journalingEventSAF.sak",
-                    "hendelse.journalingEventSAF.sak.fagsakId"
+                    "hendelse.journalingEventSAF.sak.fagsakId",
+                    "hendelse.journalingEventSAF.avsenderMottaker",
+                    "hendelse.journalingEventSAF.avsenderMottaker.navn"
                 )
             }
         }.register(this)
@@ -43,6 +45,7 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
     private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
     private val JsonMessage.journalpostId get() = this["hendelse"]["journalingEvent"]["journalpostId"].asInt()
     private val JsonMessage.fagsakId get() = this["hendelse"]["journalingEventSAF"]["sak"]["fagsakId"].textValue()
+    private val JsonMessage.navnBruker get() = this["hendelse"]["journalingEventSAF"]["avsenderMottaker"]["navn"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
@@ -71,7 +74,8 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
                             fnrBruker = fnrBruker,
                             soknadId = soknadId,
                             status = Status.ENDELIG_JOURNALFØRT,
-                            journalpostid = packet.journalpostId
+                            journalpostid = packet.journalpostId,
+                            navnBruker = packet.navnBruker
                         )
 
                         if (store.fnrOgJournalpostIdFinnes(soknadData.fnrBruker, soknadData.journalpostid)) {
