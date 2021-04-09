@@ -96,6 +96,7 @@ internal class PapirsøknadEndeligJournalførtTest {
         capturedSoknadData.captured.fnrBruker shouldBe "10127622634"
         capturedSoknadData.captured.journalpostid shouldBe 453647364
         capturedSoknadData.captured.status shouldBe Status.ENDELIG_JOURNALFØRT
+        capturedSoknadData.captured.navnBruker shouldBe "KRAFTIG ERT"
 
         capturedInfotrygdMock.captured.trygdekontorNr shouldBe "4203"
         capturedInfotrygdMock.captured.saksblokk shouldBe "A"
