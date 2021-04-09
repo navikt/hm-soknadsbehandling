@@ -31,7 +31,8 @@ internal interface SøknadStore {
     fun hentSoknaderForBruker(fnrBruker: String): List<SoknadMedStatus>
     fun hentSoknadData(soknadsId: UUID): SoknadData?
     fun oppdaterStatus(soknadsId: UUID, status: Status): Int
-    fun oppdaterUtgåttSøknad(soknadsId: UUID): Int
+    fun slettSøknad(soknadsId: UUID): Int
+    fun slettUtløptSøknad(soknadsId: UUID): Int
     fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String): Int
     fun oppdaterOppgaveId(soknadsId: UUID, oppgaveId: String): Int
     fun hentFnrForSoknad(soknadsId: UUID): String
@@ -190,6 +191,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                     ).map {
                         SoknadData(
                             fnrBruker = it.string("FNR_BRUKER"),
+                            navnBruker = it.string("NAVN_BRUKER"),
                             fnrInnsender = it.string("FNR_INNSENDER"),
                             soknadId = UUID.fromString(it.string("SOKNADS_ID")),
                             status = Status.valueOf(it.string("STATUS")),
@@ -257,20 +259,22 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
             }
         }
 
-    override fun oppdaterUtgåttSøknad(soknadsId: UUID): Int =
-        time("oppdater_utgaatt_soknad") {
+    override fun slettSøknad(soknadsId: UUID) = slettSøknad(soknadsId, Status.SLETTET)
+
+    override fun slettUtløptSøknad(soknadsId: UUID) = slettSøknad(soknadsId, Status.UTLØPT)
+
+    private fun slettSøknad(soknadsId: UUID, status: Status): Int =
+        time("slett_soknad") {
             using(sessionOf(ds)) { session ->
-                if (checkIfLastStatusMatches(session, soknadsId, Status.UTLØPT)) return@using 0
+                if (checkIfLastStatusMatches(session, soknadsId, status)) return@using 0
                 session.transaction { transaction ->
-                    // Add the new status to the status table
                     transaction.run(
                         queryOf(
                             "INSERT INTO V1_STATUS (SOKNADS_ID, STATUS) VALUES (?, ?)",
                             soknadsId,
-                            Status.UTLØPT.name
+                            status.name
                         ).asUpdate
                     )
-                    // Null-out the data field in the Søknad table
                     transaction.run(
                         queryOf(
                             "UPDATE V1_SOKNAD SET UPDATED = now(), DATA = NULL WHERE SOKNADS_ID = ?",
@@ -413,9 +417,10 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                     // Add the new Søknad into the Søknad table
                     transaction.run(
                         queryOf(
-                            "INSERT INTO V1_SOKNAD (SOKNADS_ID, FNR_BRUKER, FNR_INNSENDER, DATA, KOMMUNENAVN, ER_DIGITAL) VALUES (?,?,?,?,?,?) ON CONFLICT DO NOTHING",
+                            "INSERT INTO V1_SOKNAD (SOKNADS_ID, FNR_BRUKER, NAVN_BRUKER, FNR_INNSENDER, DATA, KOMMUNENAVN) VALUES (?,?,?,?,?,?) ON CONFLICT DO NOTHING",
                             soknadData.soknadId,
                             soknadData.fnrBruker,
+                            soknadData.navnBruker,
                             soknadData.fnrInnsender,
                             PGobject().apply {
                                 type = "jsonb"

@@ -89,6 +89,7 @@ internal class SøknadStorePostgresTest {
                 this.save(
                     SoknadData(
                         "15084300133",
+                        "fornavn etternavn",
                         "id2",
                         soknadsId,
                         ObjectMapper().readTree(
@@ -210,6 +211,7 @@ internal class SøknadStorePostgresTest {
                 this.save(
                     SoknadData(
                         "id",
+                        "fornavn etternavn",
                         "id2",
                         UUID.randomUUID(),
                         ObjectMapper().readTree(""" {"key": "value"} """),
@@ -286,6 +288,7 @@ internal class SøknadStorePostgresTest {
                 this.save(
                     SoknadData(
                         "id",
+                        "fornavn etternavn",
                         "id2",
                         id,
                         ObjectMapper().readTree(""" {"key": "value"} """),
@@ -328,6 +331,7 @@ internal class SøknadStorePostgresTest {
                 this.save(
                     SoknadData(
                         "id",
+                        "fornavn etternavn",
                         "id2",
                         id,
                         ObjectMapper().readTree(""" {"key": "value"} """),
@@ -360,6 +364,7 @@ internal class SøknadStorePostgresTest {
                 this.save(
                     SoknadData(
                         "id",
+                        "fornavn etternavn",
                         "id2",
                         id,
                         ObjectMapper().readTree(""" {"key": "value"} """),
