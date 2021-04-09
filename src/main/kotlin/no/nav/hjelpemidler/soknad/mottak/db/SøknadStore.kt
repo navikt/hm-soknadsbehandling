@@ -11,6 +11,7 @@ import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedStatus
 import no.nav.hjelpemidler.soknad.mottak.service.Status
@@ -25,6 +26,7 @@ import javax.sql.DataSource
 
 internal interface SøknadStore {
     fun save(soknadData: SoknadData): Int
+    fun savePapir(soknadData: PapirSøknadData): Int
     fun hentSoknad(soknadsId: UUID): SøknadForBruker?
     fun hentSoknaderForBruker(fnrBruker: String): List<SoknadMedStatus>
     fun hentSoknadData(soknadsId: UUID): SoknadData?
@@ -37,6 +39,8 @@ internal interface SøknadStore {
     fun hentSoknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad>
     fun soknadFinnes(soknadsId: UUID): Boolean
     fun hentSoknadOpprettetDato(soknadsId: UUID): Date?
+    fun papirsoknadFinnes(journalpostId: Int): Boolean
+    fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean
 }
 
 internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
@@ -55,6 +59,30 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                     queryOf(
                         statement,
                         soknadsId,
+                    ).map {
+                        UUID.fromString(it.string("SOKNADS_ID"))
+                    }.asSingle
+                )
+            }
+        }
+        return uuid != null
+    }
+
+    override fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean {
+        @Language("PostgreSQL") val statement =
+            """
+                SELECT SOKNADS_ID
+                FROM V1_SOKNAD
+                WHERE FNR_BRUKER = ? AND JOURNALPOSTID = ?
+            """
+
+        val uuid = time("soknad_eksisterer") {
+            using(sessionOf(ds)) { session ->
+                session.run(
+                    queryOf(
+                        statement,
+                        fnrBruker,
+                        journalpostId,
                     ).map {
                         UUID.fromString(it.string("SOKNADS_ID"))
                     }.asSingle
@@ -299,7 +327,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                 ON status.ID = (
                     SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
                 )
-                WHERE soknad.FNR_BRUKER = ?
+                WHERE soknad.FNR_BRUKER = ? AND soknad.ER_DIGITAL
                 ORDER BY soknad.CREATED DESC
             """
 
@@ -352,7 +380,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                 ON status.ID = (
                     SELECT MAX(ID) FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID
                 )
-                WHERE status.STATUS = ? AND (soknad.CREATED + interval '$dager day') < now()
+                WHERE status.STATUS = ? AND (soknad.CREATED + interval '$dager day') < now() AND soknad.ER_DIGITAL
                 ORDER BY soknad.CREATED DESC
             """
 
@@ -389,7 +417,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                     // Add the new Søknad into the Søknad table
                     transaction.run(
                         queryOf(
-                            "INSERT INTO V1_SOKNAD (SOKNADS_ID, FNR_BRUKER, NAVN_BRUKER, FNR_INNSENDER, DATA, KOMMUNENAVN) VALUES (?,?,?,?,?,?) ON CONFLICT DO NOTHING",
+                            "INSERT INTO V1_SOKNAD (SOKNADS_ID, FNR_BRUKER, NAVN_BRUKER, FNR_INNSENDER, DATA, KOMMUNENAVN, ER_DIGITAL) VALUES (?,?,?,?,?,?,?) ON CONFLICT DO NOTHING",
                             soknadData.soknadId,
                             soknadData.fnrBruker,
                             soknadData.navnBruker,
@@ -399,6 +427,7 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                                 value = soknadToJsonString(soknadData.soknad)
                             },
                             soknadData.kommunenavn,
+                            true
                         ).asUpdate
                     )
                 }
@@ -416,6 +445,54 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
         ) ?: return false /* special case where there is no status in the database (søknad is being added now) */
         if (result != status.name) return false
         return true
+    }
+
+    override fun savePapir(soknadData: PapirSøknadData): Int =
+        time("insert_papirsoknad") {
+            using(sessionOf(ds)) { session ->
+                session.transaction { transaction ->
+                    if (!checkIfLastStatusMatches(transaction, soknadData.soknadId, soknadData.status)) transaction.run(
+                        queryOf(
+                            "INSERT INTO V1_STATUS (SOKNADS_ID, STATUS) VALUES (?, ?)",
+                            soknadData.soknadId,
+                            soknadData.status.name,
+                        ).asUpdate
+                    )
+                    transaction.run(
+                        queryOf(
+                            "INSERT INTO V1_SOKNAD (SOKNADS_ID,FNR_BRUKER, ER_DIGITAL, JOURNALPOSTID, NAVN_BRUKER ) VALUES (?,?,?,?,?) ON CONFLICT DO NOTHING",
+                            soknadData.soknadId,
+                            soknadData.fnrBruker,
+                            false,
+                            soknadData.journalpostid,
+                            soknadData.navnBruker
+                        ).asUpdate
+                    )
+                }
+            }
+        }
+
+    override fun papirsoknadFinnes(journalpostId: Int): Boolean {
+        @Language("PostgreSQL") val statement =
+            """
+                SELECT SOKNADS_ID
+                FROM V1_SOKNAD
+                WHERE JOURNALPOSTID = ? AND NOT ER_DIGITAL
+            """
+
+        val uuid = time("soknad_eksisterer") {
+            using(sessionOf(ds)) { session ->
+                session.run(
+                    queryOf(
+                        statement,
+                        journalpostId,
+                    ).map {
+                        UUID.fromString(it.string("SOKNADS_ID"))
+                    }.asSingle
+                )
+            }
+        }
+        return uuid != null
     }
 
     private inline fun <T : Any?> time(queryName: String, function: () -> T) =
