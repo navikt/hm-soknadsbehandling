@@ -19,7 +19,10 @@ internal class SøknadStoreFormidlerPostgres(private val ds: DataSource) : Søkn
     override fun hentSøknaderForFormidler(fnrFormidler: String, uker: Int): List<SoknadForFormidler> {
         @Language("PostgreSQL") val statement =
             """
-                SELECT soknad.SOKNADS_ID, soknad.CREATED, soknad.UPDATED, soknad.FNR_BRUKER, status.STATUS, soknad.NAVN_BRUKER
+                SELECT soknad.SOKNADS_ID, soknad.CREATED, soknad.UPDATED, soknad.DATA, soknad.FNR_BRUKER, soknad.NAVN_BRUKER, status.STATUS, 
+                (CASE WHEN EXISTS (
+                    SELECT 1 FROM V1_STATUS WHERE SOKNADS_ID = soknad.SOKNADS_ID AND STATUS IN  ('GODKJENT_MED_FULLMAKT')
+                ) THEN true ELSE false END) as fullmakt
                 FROM V1_SOKNAD AS soknad
                 LEFT JOIN V1_STATUS AS status
                 ON status.ID = (
@@ -41,6 +44,7 @@ internal class SøknadStoreFormidlerPostgres(private val ds: DataSource) : Søkn
                         SoknadForFormidler(
                             søknadId = UUID.fromString(it.string("SOKNADS_ID")),
                             status = Status.valueOf(it.string("STATUS")),
+                            fullmakt = it.boolean("fullmakt"),
                             datoOpprettet = it.sqlTimestamp("created"),
                             datoOppdatert = when {
                                 it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
@@ -68,6 +72,7 @@ class SoknadForFormidler constructor(
     val datoOpprettet: Date,
     var datoOppdatert: Date,
     val status: Status,
+    val fullmakt: Boolean,
     val fnrBruker: String,
     val navnBruker: String?
 )

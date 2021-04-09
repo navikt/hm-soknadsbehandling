@@ -53,6 +53,12 @@ internal object Prometheus {
         .help("Antall OEBS-ordrelinjer lagret")
         .register(collectorRegistry)
 
+    val vedtaksresultatLagretCounter = Counter
+        .build()
+        .name("hm_vedtaksresultat_lagret")
+        .help("Antall vedtaksresultat fra infotrygd lagret")
+        .register(collectorRegistry)
+
     val ordrelinjeLagretOgSendtTilRapidCounter = Counter
         .build()
         .name("hm_oebs_ordrelinje_sendt_til_rapid")
