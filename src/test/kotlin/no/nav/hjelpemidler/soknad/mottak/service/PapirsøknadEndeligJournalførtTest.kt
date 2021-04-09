@@ -15,6 +15,7 @@ internal class PapirsøknadEndeligJournalførtTest {
     private val mock = mockk<SøknadStore>().apply {
         every { savePapir(capture(capturedSoknadData)) } returns 1
         every { soknadFinnes(any()) } returns false
+        every { fnrOgJournalpostIdFinnes(any(), any()) } returns false
     }
     private val capturedInfotrygdMock = slot<VedtaksresultatData>()
     private val mockInfotrygd = mockk<InfotrygdStore>().apply {
@@ -37,45 +38,66 @@ internal class PapirsøknadEndeligJournalførtTest {
         val okPacket =
             """ 
                 {
-                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
-                    "eventName": "PapirSoeknadEndeligJournalfoert",
-                    "opprettet": "123",
-                    "fodselNrBruker": "fnrBruker",
-                    "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
-                    "hendelse": 
-                        {
-                            "journalingEvent": 
+                    "eventId":"6040ede0-e926-4642-9251-fa04dc5f6e7d",
+                    "eventName":"PapirSoeknadEndeligJournalfoert",
+                    "fodselNrBruker":"10127622634",
+                    "hendelse":{
+                        "journalingEvent":{
+                            "behandlingstema":"",
+                            "hendelsesId":"f7bbf681-4ae9-4874-8fd1-5a6bf656ebcb",
+                            "hendelsesType":"EndeligJournalført",
+                            "journalpostId":453647364,
+                            "journalpostStatus":"J",
+                            "kanalReferanseId":"081b4dbf-602a-448d-97c7-3a0126fb8d3eHJE-DIGITAL-SOKNAD",
+                            "mottaksKanal":"NAV_NO",
+                            "temaGammelt":"HJE",
+                            "temaNytt":"HJE",
+                            "versjon":1
+                        },
+                        "journalingEventSAF":{
+                            "avsenderMottaker":{
+                                "erLikBruker":true,
+                                "id":"10127622634",
+                                "land":"NORGE",
+                                "navn":"KRAFTIG ERT",
+                                "type":"FNR"
+                            },
+                            "bruker":{
+                                "id":"10127622634",
+                                "type":"FNR"
+                            },
+                            "dokumenter":[
                                 {
-                                    "hendelsesId":"hendelsesId",
-                                    "versjon": 1,
-                                    "hendelsesType": "type",
-                                    "journalpostId": 1234567,
-                                    "journalpostStatus": "status",
-                                    "temaGammelt": "temaGammelt",
-                                    "temaNytt": "HJE",
-                                    "mottaksKanal": "kanal",
-                                    "kanalReferanseId": "refid",
-                                    "behandlingstema": "tema"
-                                },
-                            "journalingEventSAF": 
-                                {
-                                    "journalpostId":1234567,
-                                    "sak":
-                                        {
-                                            "fagsakId":"4703A05"
-                                        }
+                                    "brevkode":"NAV 10-07.03"
                                 }
+                            ],
+                            "journalfoerendeEnhet":"4703",
+                            "journalpostId":"453647364",
+                            "journalposttype":"I",
+                            "journalstatus":"JOURNALFOERT",
+                            "kanal":"NAV_NO",
+                            "sak":{
+                                "arkivsaksnummer":"140267930",
+                                "arkivsaksystem":"GSAK",
+                                "fagsakId":"4203A05",
+                                "fagsaksystem":"IT01"
+                            },
+                            "tema":"HJE",
+                            "tittel":"Søknad om hjelpemidler"
                         }
+                    },
+                    "opprettet":"2021-04-08T15:56:11.457073862",
+                    "soknadId":"081b4dbf-602a-448d-97c7-3a0126fb8d3e"
                 }
             """.trimMargin()
 
         rapid.sendTestMessage(okPacket)
 
-        capturedSoknadData.captured.fnrBruker shouldBe "fnrBruker"
-        capturedSoknadData.captured.journalpostid shouldBe 1234567
+        capturedSoknadData.captured.fnrBruker shouldBe "10127622634"
+        capturedSoknadData.captured.journalpostid shouldBe 453647364
         capturedSoknadData.captured.status shouldBe Status.ENDELIG_JOURNALFØRT
 
-        capturedInfotrygdMock.captured.trygdekontorNr shouldBe "4703"
+        capturedInfotrygdMock.captured.trygdekontorNr shouldBe "4203"
         capturedInfotrygdMock.captured.saksblokk shouldBe "A"
         capturedInfotrygdMock.captured.saksnr shouldBe "05"
     }

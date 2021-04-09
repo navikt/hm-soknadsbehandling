@@ -39,6 +39,7 @@ internal interface SøknadStore {
     fun soknadFinnes(soknadsId: UUID): Boolean
     fun hentSoknadOpprettetDato(soknadsId: UUID): Date?
     fun papirsoknadFinnes(journalpostId: Int): Boolean
+    fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean
 }
 
 internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
@@ -57,6 +58,30 @@ internal class SøknadStorePostgres(private val ds: DataSource) : SøknadStore {
                     queryOf(
                         statement,
                         soknadsId,
+                    ).map {
+                        UUID.fromString(it.string("SOKNADS_ID"))
+                    }.asSingle
+                )
+            }
+        }
+        return uuid != null
+    }
+
+    override fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean {
+        @Language("PostgreSQL") val statement =
+            """
+                SELECT SOKNADS_ID
+                FROM V1_SOKNAD
+                WHERE FNR_BRUKER = ? AND JOURNALPOSTID = ?
+            """
+
+        val uuid = time("soknad_eksisterer") {
+            using(sessionOf(ds)) { session ->
+                session.run(
+                    queryOf(
+                        statement,
+                        fnrBruker,
+                        journalpostId,
                     ).map {
                         UUID.fromString(it.string("SOKNADS_ID"))
                     }.asSingle

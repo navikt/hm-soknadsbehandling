@@ -74,8 +74,8 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
                             journalpostid = packet.journalpostId
                         )
 
-                        if (store.soknadFinnes(soknadData.soknadId)) {
-                            logger.warn { "En søknad med denne id-en er allerede lagret i databasen: $soknadId" }
+                        if (store.fnrOgJournalpostIdFinnes(soknadData.fnrBruker, soknadData.journalpostid)) {
+                            logger.warn { "En søknad med dette fødselsnummeret og journalpostIden er allerede lagret i databasen: $soknadId, journalpostId: ${soknadData.journalpostid}, eventId: ${packet.eventId}" }
                             return@launch
                         }
 
