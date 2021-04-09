@@ -71,7 +71,7 @@ fun main() {
             DigitalSøknadEndeligJournalført(this, store, infotrygdStore)
             NyOrdrelinje(this, ordreStore, infotrygdStore)
             VedtaksresultatFraInfotrygd(this, infotrygdStore)
-            PapirSøknadEndeligJournalført(this, store)
+            PapirSøknadEndeligJournalført(this, store, infotrygdStore)
         }
         .apply {
             register(

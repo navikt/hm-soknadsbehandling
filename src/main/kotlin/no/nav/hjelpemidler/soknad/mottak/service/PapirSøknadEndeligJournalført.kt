@@ -11,6 +11,7 @@ import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.hjelpemidler.soknad.mottak.db.InfotrygdStore
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.util.UUID
@@ -18,7 +19,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnection, private val store: SøknadStore) :
+internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnection, private val store: SøknadStore, private val infotrygdStore: InfotrygdStore) :
     River.PacketListener {
     init {
         River(rapidsConnection).apply {
@@ -29,7 +30,10 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
                     "hendelse",
                     "hendelse.journalingEvent",
                     "hendelse.journalingEvent.journalpostId",
-                    "eventId"
+                    "eventId",
+                    "hendelse.journalingEventSAF",
+                    "hendelse.journalingEventSAF.sak",
+                    "hendelse.journalingEventSAF.sak.fagsakId"
                 )
             }
         }.register(this)
@@ -38,6 +42,7 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
     private val JsonMessage.eventId get() = this["eventId"].textValue()
     private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
     private val JsonMessage.journalpostId get() = this["hendelse"]["journalingEvent"]["journalpostId"].asInt()
+    private val JsonMessage.fagsakId get() = this["hendelse"]["journalingEventSAF"]["sak"]["fagsakId"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
@@ -49,23 +54,34 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
                         return@launch
                     }
 
-                    val søknadId = UUID.randomUUID()
+                    val soknadId = UUID.randomUUID()
+                    val fnrBruker = packet.fnrBruker
+                    val fagsakId = packet.fagsakId
+
+                    val vedtaksresultatData = VedtaksresultatData(
+                        soknadId,
+                        fnrBruker,
+                        VedtaksresultatData.getTrygdekontorNrFromFagsakId(fagsakId),
+                        VedtaksresultatData.getSaksblokkFromFagsakId(fagsakId),
+                        VedtaksresultatData.getSaksnrFromFagsakId(fagsakId),
+                    )
 
                     try {
                         val soknadData = PapirSøknadData(
-                            fnrBruker = packet.fnrBruker,
-                            soknadId = søknadId,
+                            fnrBruker = fnrBruker,
+                            soknadId = soknadId,
                             status = Status.ENDELIG_JOURNALFØRT,
                             journalpostid = packet.journalpostId
                         )
 
                         if (store.soknadFinnes(soknadData.soknadId)) {
-                            logger.warn { "En søknad med denne id-en er allerede lagret i databasen: $søknadId" }
+                            logger.warn { "En søknad med denne id-en er allerede lagret i databasen: $soknadId" }
                             return@launch
                         }
 
                         save(soknadData)
-                        logger.info { "Papirsøknad mottatt og lagret: $søknadId" }
+                        opprettKnytningMellomFagsakOgSøknad(fagsakId = fagsakId, vedtaksresultatData = vedtaksresultatData)
+                        logger.info { "Papirsøknad mottatt og lagret: $soknadId" }
 
                         forward(soknadData, context)
                     } catch (e: Exception) {
@@ -86,7 +102,7 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
             store.savePapir(soknadData)
         }.onSuccess {
             if (it > 0) {
-                logger.info("Papirsøknad klar til godkjenning saved: ${soknadData.soknadId} it=$it")
+                logger.info("Endelig journalført papirsøknad saved: ${soknadData.soknadId} it=$it")
             } else {
                 logger.error("Lagring av papirsøknad feilet. Ingen rader påvirket under lagring.")
             }
@@ -111,4 +127,26 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
             }
         }
     }
+
+    private fun opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData, fagsakId: String) =
+        kotlin.runCatching {
+            infotrygdStore.lagKnytningMellomFagsakOgSøknad(vedtaksresultatData)
+        }.onSuccess {
+            when (it) {
+                0 -> {
+                    logger.warn("Inga knytning laga mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId")
+                    Prometheus.knytningMellomSøknadOgInfotrygdProblemCounter.inc()
+                }
+                1 -> {
+                    logger.info("Knytning lagra mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId")
+                    Prometheus.knytningMellomSøknadOgInfotrygdOpprettaCounter.inc()
+                }
+                else -> {
+                    logger.error("Fleire knytningar laga mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId")
+                    Prometheus.knytningMellomSøknadOgInfotrygdProblemCounter.inc()
+                }
+            }
+        }.onFailure {
+            logger.error(it) { "Feila med å lage knytning mellom søknadId ${vedtaksresultatData.søknadId} og fagsakId $fagsakId" }
+        }.getOrThrow()
 }
