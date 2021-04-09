@@ -1,10 +1,8 @@
 package no.nav.hjelpemidler.soknad.mottak.db
 
-import com.fasterxml.jackson.databind.JsonNode
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
-import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import org.intellij.lang.annotations.Language
@@ -21,7 +19,7 @@ internal class SøknadStoreFormidlerPostgres(private val ds: DataSource) : Søkn
     override fun hentSøknaderForFormidler(fnrFormidler: String, uker: Int): List<SoknadForFormidler> {
         @Language("PostgreSQL") val statement =
             """
-                SELECT soknad.SOKNADS_ID, soknad.CREATED, soknad.UPDATED, soknad.DATA, soknad.FNR_BRUKER, status.STATUS
+                SELECT soknad.SOKNADS_ID, soknad.CREATED, soknad.UPDATED, soknad.FNR_BRUKER, status.STATUS, soknad.NAVN_BRUKER
                 FROM V1_SOKNAD AS soknad
                 LEFT JOIN V1_STATUS AS status
                 ON status.ID = (
@@ -40,32 +38,17 @@ internal class SøknadStoreFormidlerPostgres(private val ds: DataSource) : Søkn
                         fnrFormidler,
                     ).map {
                         val status = Status.valueOf(it.string("STATUS"))
-                        if (status.isSlettetEllerUtløpt()) {
-                            SoknadForFormidler.newSøknadUtenBrukersNavn(
-                                soknadId = UUID.fromString(it.string("SOKNADS_ID")),
-                                status = Status.valueOf(it.string("STATUS")),
-                                datoOpprettet = it.sqlTimestamp("created"),
-                                datoOppdatert = when {
-                                    it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
-                                    else -> it.sqlTimestamp("created")
-                                },
-                                fnrBruker = it.string("FNR_BRUKER")
-                            )
-                        } else {
-                            SoknadForFormidler.newSøknadMedBrukersNavn(
-                                soknadId = UUID.fromString(it.string("SOKNADS_ID")),
-                                status = Status.valueOf(it.string("STATUS")),
-                                datoOpprettet = it.sqlTimestamp("created"),
-                                datoOppdatert = when {
-                                    it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
-                                    else -> it.sqlTimestamp("created")
-                                },
-                                fnrBruker = it.string("FNR_BRUKER"),
-                                søknad = JacksonMapper.objectMapper.readTree(
-                                    it.string("DATA")
-                                )
-                            )
-                        }
+                        SoknadForFormidler(
+                            søknadId = UUID.fromString(it.string("SOKNADS_ID")),
+                            status = Status.valueOf(it.string("STATUS")),
+                            datoOpprettet = it.sqlTimestamp("created"),
+                            datoOppdatert = when {
+                                it.sqlTimestampOrNull("updated") != null -> it.sqlTimestamp("updated")
+                                else -> it.sqlTimestamp("created")
+                            },
+                            fnrBruker = it.string("FNR_BRUKER"),
+                            navnBruker = it.stringOrNull("NAVN_BRUKER")
+                        )
                     }.asList
                 )
             }
@@ -80,24 +63,11 @@ private inline fun <T : Any?> time(queryName: String, function: () -> T) =
         }
     }
 
-class SoknadForFormidler private constructor(
+class SoknadForFormidler constructor(
     val søknadId: UUID,
     val datoOpprettet: Date,
     var datoOppdatert: Date,
     val status: Status,
     val fnrBruker: String,
     val navnBruker: String?
-) {
-    companion object {
-        fun newSøknadUtenBrukersNavn(soknadId: UUID, datoOpprettet: Date, datoOppdatert: Date, status: Status, fnrBruker: String) =
-            SoknadForFormidler(soknadId, datoOpprettet, datoOppdatert, status, fnrBruker, null)
-
-        fun newSøknadMedBrukersNavn(soknadId: UUID, datoOpprettet: Date, datoOppdatert: Date, status: Status, fnrBruker: String, søknad: JsonNode) =
-            SoknadForFormidler(soknadId, datoOpprettet, datoOppdatert, status, fnrBruker, brukersNavn(søknad))
-    }
-}
-
-private fun brukersNavn(soknad: JsonNode): String {
-    val brukerNode = soknad["soknad"]["bruker"]
-    return "${brukerNode["fornavn"].textValue()} ${brukerNode["etternavn"].textValue()}"
-}
+)

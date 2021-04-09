@@ -36,6 +36,7 @@ internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, pri
     private val JsonMessage.soknadId get() = this["soknad"]["soknad"]["id"].textValue()
     private val JsonMessage.soknad get() = this["soknad"]
     private val JsonMessage.kommunenavn get() = this["kommunenavn"].textValue()
+    private val JsonMessage.navnBruker get() = this["soknad"]["soknad"]["bruker"]["fornavn"].textValue() + " " + this["soknad"]["soknad"]["bruker"]["etternavn"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
@@ -48,11 +49,12 @@ internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, pri
                     try {
                         val soknadData = SoknadData(
                             fnrBruker = packet.fnrBruker,
+                            navnBruker = packet.navnBruker,
                             fnrInnsender = packet.fnrInnsender,
                             soknad = packet.soknad,
                             soknadId = UUID.fromString(packet.soknadId),
                             status = Status.GODKJENT_MED_FULLMAKT,
-                            kommunenavn = packet.kommunenavn
+                            kommunenavn = packet.kommunenavn,
                         )
                         if (store.soknadFinnes(soknadData.soknadId)) {
                             logger.warn { "Søknaden er allerede lagret i databasen: ${packet.soknadId}" }

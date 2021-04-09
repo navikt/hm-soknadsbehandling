@@ -9,6 +9,7 @@ import java.util.UUID
 
 internal data class SoknadData(
     val fnrBruker: String,
+    val navnBruker: String,
     val fnrInnsender: String,
     val soknadId: UUID,
     val soknad: JsonNode,
