@@ -32,6 +32,31 @@ internal class SøknadStoreFormidlerTest {
     }
 
     @Test
+    fun `Navn på bruker fjernes ikke ved sletting`() {
+
+        val soknadId = UUID.randomUUID()
+
+        withMigratedDb {
+            SøknadStorePostgres(DataSource.instance).apply {
+                this.save(
+                    mockSøknad(soknadId, Status.VENTER_GODKJENNING)
+                ).also {
+                    it shouldBe 1
+                }
+
+                this.slettSøknad(soknadId).also {
+                    it shouldBe 1
+                }
+
+                SøknadStoreFormidlerPostgres(DataSource.instance).apply {
+                    val formidlersSøknad = this.hentSøknaderForFormidler("12345678910", 4)[0]
+                    assertEquals("fornavn etternavn", formidlersSøknad.navnBruker)
+                }
+            }
+        }
+    }
+
+    @Test
     fun `Henter ikke søknad som er 4 uker gammel`() {
 
         val id = UUID.randomUUID()
@@ -41,6 +66,7 @@ internal class SøknadStoreFormidlerTest {
                 this.save(
                     SoknadData(
                         "id",
+                        "fornavn etternavn",
                         "12345678910",
                         id,
                         ObjectMapper().readTree(""" {"key": "value"} """),

@@ -23,6 +23,7 @@ internal class GodkjennSoknadTest {
         every { oppdaterStatus(capture(capturedSoknadId), capture(capturedStatus)) } returns 1
         every { hentSoknadData(any()) } returns SoknadData(
             "fnrBruker",
+            "fornavn etternavn",
             "fnrInnsender",
             UUID.fromString(soknadId),
             ObjectMapper().readTree(

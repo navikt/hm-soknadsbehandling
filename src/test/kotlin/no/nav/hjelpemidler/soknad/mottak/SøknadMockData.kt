@@ -7,7 +7,9 @@ import java.util.UUID
 
 internal fun mockSøknad(id: UUID, status: Status = Status.VENTER_GODKJENNING) = SoknadData(
     "15084300133",
+    "fornavn etternavn",
     "12345678910",
+
     id,
     ObjectMapper().readTree(
         """ {

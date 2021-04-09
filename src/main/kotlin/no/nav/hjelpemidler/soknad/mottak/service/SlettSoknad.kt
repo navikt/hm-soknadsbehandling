@@ -56,7 +56,7 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val store
 
     private fun update(soknadId: UUID, status: Status) =
         kotlin.runCatching {
-            store.oppdaterStatus(soknadId, status)
+            store.slettSøknad(soknadId)
         }.onSuccess {
             logger.info("Søknad $soknadId oppdatert med status $status")
         }.onFailure {
