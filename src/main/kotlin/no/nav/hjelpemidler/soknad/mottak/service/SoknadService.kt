@@ -10,19 +10,21 @@ import io.ktor.routing.get
 import io.ktor.util.pipeline.PipelineContext
 import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.UserPrincipal
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStoreFormidler
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForBrukerClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForFormidlerClient
+import no.nav.hjelpemidler.soknad.mottak.idportenUser
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
-internal fun Route.hentSoknad(store: SøknadStore) {
+internal fun Route.hentSoknad(søknadForBrukerClient: SøknadForBrukerClient) {
     get("/soknad/bruker/{soknadsId}") {
         try {
             val soknadsId = UUID.fromString(soknadsId())
             val fnr = call.principal<UserPrincipal>()?.getFnr()
                 ?: call.respond(HttpStatusCode.BadRequest, "Fnr mangler i token claim")
-            val soknad = store.hentSoknad(soknadsId)
+
+            val soknad = søknadForBrukerClient.hentSoknad(soknadsId, idportenUser)
 
             when {
                 soknad == null -> {
@@ -42,13 +44,13 @@ internal fun Route.hentSoknad(store: SøknadStore) {
     }
 }
 
-internal fun Route.hentSoknaderForBruker(store: SøknadStore) {
+internal fun Route.hentSoknaderForBruker(søknadForBrukerClient: SøknadForBrukerClient) {
     get("/soknad/bruker") {
 
         val fnr = call.principal<UserPrincipal>()?.getFnr() ?: throw RuntimeException("Fnr mangler i token claim")
 
         try {
-            val soknaderTilGodkjenning = store.hentSoknaderForBruker(fnr)
+            val soknaderTilGodkjenning = søknadForBrukerClient.hentSoknaderForBruker(fnr, idportenUser)
             call.respond(soknaderTilGodkjenning)
         } catch (e: Exception) {
             logger.error(e) { "Error on fetching søknader til godkjenning" }
@@ -57,13 +59,13 @@ internal fun Route.hentSoknaderForBruker(store: SøknadStore) {
     }
 }
 
-internal fun Route.hentSoknaderForFormidler(store: SøknadStoreFormidler) {
+internal fun Route.hentSoknaderForFormidler(søknadForFormidlerClient: SøknadForFormidlerClient) {
     get("/soknad/formidler") {
 
         val fnr = call.principal<UserPrincipal>()?.getFnr() ?: throw RuntimeException("Fnr mangler i token claim")
 
         try {
-            val formidlersSøknader = store.hentSøknaderForFormidler(fnr, 4)
+            val formidlersSøknader = søknadForFormidlerClient.hentSøknaderForFormidler(fnr, 4, idportenUser)
             call.respond(formidlersSøknader)
         } catch (e: Exception) {
             logger.error(e) { "Error on fetching formidlers søknader" }

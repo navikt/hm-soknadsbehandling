@@ -267,3 +267,14 @@ object Graphql {
     val client = library("client")
     fun library(name: String) = "com.expediagroup:graphql-kotlin-$name:$version"
 }
+
+object Tms {
+    object KtorTokenSupport {
+        private const val version = "2021.03.19-14.14-a176dc99d3a5"
+        private const val groupId = "com.github.navikt.tms-ktor-token-support"
+
+        const val idporten = "$groupId:token-support-idporten:$version"
+        const val tokendingsExchange = "$groupId:token-support-tokendings-exchange:$version"
+    }
+}
+

@@ -2,6 +2,8 @@ package no.nav.hjelpemidler.soknad.mottak
 
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
+import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.authenticate
 import io.ktor.features.CallLogging
@@ -11,15 +13,16 @@ import io.ktor.jackson.JacksonConverter
 import io.ktor.request.path
 import io.ktor.routing.route
 import io.ktor.routing.routing
+import io.ktor.util.pipeline.PipelineContext
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForBrukerClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForBrukerClientImpl
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForFormidlerClientImpl
 import no.nav.hjelpemidler.soknad.mottak.db.InfotrygdStorePostgres
 import no.nav.hjelpemidler.soknad.mottak.db.OrdreStorePostgres
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStoreFormidler
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStoreFormidlerPostgres
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStorePostgres
 import no.nav.hjelpemidler.soknad.mottak.db.dataSourceFrom
 import no.nav.hjelpemidler.soknad.mottak.db.migrate
@@ -38,6 +41,9 @@ import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatFraInfotrygd
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknaderForBruker
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknaderForFormidler
+import no.nav.hjelpemidler.soknad.mottak.tokenx.TokendingsServiceWrapper
+import no.nav.tms.token.support.idporten.user.IdportenUserFactory
+import no.nav.tms.token.support.tokendings.exchange.TokendingsServiceBuilder
 import org.slf4j.event.Level
 import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
@@ -52,14 +58,18 @@ fun main() {
         throw Exception("database never became available within the deadline")
     }
 
+    val tokendingsService = TokendingsServiceBuilder.buildTokendingsService()
+    val tokendingsServiceWrapper = TokendingsServiceWrapper(tokendingsService, "clientId")
+    val søknadForBrukerClient = SøknadForBrukerClientImpl("url", tokendingsServiceWrapper)
+    val søknadForFormidlerClient = SøknadForFormidlerClientImpl("url", tokendingsServiceWrapper)
+
     val ds: HikariDataSource = dataSourceFrom(Configuration)
     val store = SøknadStorePostgres(ds)
-    val storeFormidler = SøknadStoreFormidlerPostgres(ds)
     val ordreStore = OrdreStorePostgres(ds)
     val infotrygdStore = InfotrygdStorePostgres(ds)
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
-        .withKtorModule { api(store, storeFormidler) }
+        .withKtorModule { api(søknadForBrukerClient, søknadForFormidlerClient) }
         .build().apply {
             SoknadMedFullmaktDataSink(this, store)
             SoknadUtenFullmaktDataSink(this, store)
@@ -84,7 +94,7 @@ fun main() {
         }.start()
 }
 
-internal fun Application.api(store: SøknadStore, storeFormidler: SøknadStoreFormidler) {
+internal fun Application.api(søknadForBrukerClient: SøknadForBrukerClient, søknadForFormidlerClient: SøknadForFormidlerClientImpl) {
 
     install(CallLogging) {
         level = Level.INFO
@@ -101,11 +111,9 @@ internal fun Application.api(store: SøknadStore, storeFormidler: SøknadStoreFo
     routing {
         route("/api") {
             authenticate("tokenX") {
-                hentSoknad(store)
-                hentSoknaderForBruker(store)
-
-                // todo: altinn auth
-                hentSoknaderForFormidler(storeFormidler)
+                hentSoknad(søknadForBrukerClient)
+                hentSoknaderForBruker(søknadForBrukerClient)
+                hentSoknaderForFormidler(søknadForFormidlerClient)
             }
         }
     }
@@ -120,3 +128,5 @@ private fun startSøknadUtgåttScheduling(søknadsgodkjenningService: Søknadsgo
         logger.info("Antall utgåtte søknader: $antallUtgåtte")
     }
 }
+
+val PipelineContext<*, ApplicationCall>.idportenUser get() = IdportenUserFactory.createIdportenUser(call)
