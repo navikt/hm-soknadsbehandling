@@ -37,8 +37,9 @@ internal class VedtaksresultatFraInfotrygd(
             if (it == 0) {
                 logger.warn("Ingenting ble endret når vi forsøkte å lagre vedtaksresultat for søknadsId=$søknadsId")
             } else {
-                logger.info("Vedtaksresultat er nå lagra for søknadsId=$søknadsId")
+                logger.info("Vedtaksresultat er nå lagra for søknadsId=$søknadsId vedtaksResultat=${packet.vedtaksResultat} vedtaksDato=${packet.vedtaksDato}")
                 Prometheus.vedtaksresultatLagretCounter.inc()
+                // TODO: Set new status for application
             }
         }.onFailure {
             logger.error(it) { "Feil under lagring av vedtaksresultat for søknadsId=$søknadsId" }
