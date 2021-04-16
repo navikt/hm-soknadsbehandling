@@ -16,15 +16,17 @@ import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class SoknadUtenFullmaktDataSink(rapidsConnection: RapidsConnection, private val store: SøknadStore) :
-    River.PacketListener {
+internal class SoknadUtenFullmaktDataSink(
+    rapidsConnection: RapidsConnection,
+    private val søknadForRiverClient: SøknadForRiverClient
+) : River.PacketListener {
 
     companion object {
         private val objectMapper = jacksonObjectMapper()
@@ -70,7 +72,7 @@ internal class SoknadUtenFullmaktDataSink(rapidsConnection: RapidsConnection, pr
                             status = Status.VENTER_GODKJENNING,
                             kommunenavn = packet.kommunenavn
                         )
-                        if (store.soknadFinnes(soknadData.soknadId)) {
+                        if (søknadForRiverClient.soknadFinnes(soknadData.soknadId)) {
                             logger.warn { "Søknaden er allerede lagret i databasen: ${packet.soknadId}" }
                             return@launch
                         }
@@ -92,9 +94,9 @@ internal class SoknadUtenFullmaktDataSink(rapidsConnection: RapidsConnection, pr
         return skipList.any { it == eventId }
     }
 
-    private fun save(soknadData: SoknadData) =
+    private suspend fun save(soknadData: SoknadData) =
         kotlin.runCatching {
-            store.save(soknadData)
+            søknadForRiverClient.save(soknadData)
         }.onSuccess {
             logger.info("Søknad klar til godkjenning saved: ${soknadData.soknadId}")
         }.onFailure {

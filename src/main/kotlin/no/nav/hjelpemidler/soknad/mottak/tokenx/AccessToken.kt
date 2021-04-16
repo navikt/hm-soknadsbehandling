@@ -1,4 +1,4 @@
-package no.nav.personbruker.minesaker.api.tokenx
+package no.nav.hjelpemidler.soknad.mottak.tokenx
 
 inline class AccessToken(val value: String) {
     override fun toString(): String {

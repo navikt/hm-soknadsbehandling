@@ -25,6 +25,7 @@ repositories {
     jcenter()
     maven("http://packages.confluent.io/maven/")
     maven("https://jitpack.io")
+    mavenLocal()
 }
 
 application {
@@ -71,7 +72,7 @@ dependencies {
     testImplementation(Ktor.ktorTest)
     testImplementation(Mockk.mockk)
     testImplementation(TestContainers.postgresql)
-    testImplementation(Wiremock.standalone)
+    implementation(Wiremock.standalone)
     testRuntimeOnly(Junit5.engine)
 }
 

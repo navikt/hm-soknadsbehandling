@@ -12,6 +12,7 @@ import java.net.InetAddress
 import java.net.UnknownHostException
 
 private val localProperties = ConfigurationMap(
+
     mapOf(
         "application.httpPort" to "8082",
         "application.profile" to "LOCAL",
@@ -28,7 +29,14 @@ private val localProperties = ConfigurationMap(
         "kafka.truststore.password" to "foo",
         "kafka.brokers" to "host.docker.internal:9092",
         "userclaim" to "sub",
-
+        "TOKEN_X_WELL_KNOWN_URL" to "http://host.docker.internal:8080/default/.well-known/openid-configuration",
+        "TOKEN_X_CLIENT_ID" to "debugger",
+        "TOKEN_X_PRIVATE_JWK" to File("./src/main/resources/TOKEN_X_PRIVATE_JWK_MOCK").readText(Charsets.UTF_8),
+        "AZURE_TENANT_BASEURL" to "http://localhost:9098",
+        "AZURE_APP_TENANT_ID" to "123",
+        "AZURE_APP_CLIENT_ID" to "123",
+        "AZURE_APP_CLIENT_SECRET" to "dummy",
+        "DBAPI_SCOPE" to "123",
     )
 )
 private val devProperties = ConfigurationMap(
@@ -37,7 +45,10 @@ private val devProperties = ConfigurationMap(
         "application.profile" to "DEV",
         "kafka.reset.policy" to "earliest",
         "kafka.topic" to "teamdigihot.hm-soknadsbehandling-v1",
+        "AZURE_TENANT_BASEURL" to "https://login.microsoftonline.com",
         "userclaim" to "pid",
+        "DBAPI_SCOPE" to "api://dev-gcp.teamdigihot.hm-soknadsbehandling-db/.default",
+
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -46,7 +57,9 @@ private val prodProperties = ConfigurationMap(
         "application.profile" to "PROD",
         "kafka.reset.policy" to "earliest",
         "kafka.topic" to "teamdigihot.hm-soknadsbehandling-v1",
+        "AZURE_TENANT_BASEURL" to "https://login.microsoftonline.com",
         "userclaim" to "pid",
+        "DBAPI_SCOPE" to "api://prod-gcp.teamdigihot.hm-soknadsbehandling-db/.default",
     )
 )
 
@@ -60,6 +73,8 @@ private fun config() = when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getPro
 
 internal object Configuration {
     val database: Database = Database()
+    val tokenX: TokenX = TokenX()
+    val azure: Azure = Azure()
     val application: Application = Application()
     val rapidApplication: Map<String, String> = mapOf(
         "RAPID_KAFKA_CLUSTER" to "gcp",
@@ -88,6 +103,20 @@ internal object Configuration {
         val profile: Profile = config()[Key("application.profile", stringType)].let { Profile.valueOf(it) },
         val httpPort: Int = config()[Key("application.httpPort", intType)],
         val userclaim: String = config()[Key("userclaim", stringType)]
+    )
+
+    data class TokenX(
+        val wellKnownUrl: String = config()[Key("TOKEN_X_WELL_KNOWN_URL", stringType)],
+        val clientId: String = config()[Key("TOKEN_X_CLIENT_ID", stringType)],
+        val privateJwk: String = config()[Key("TOKEN_X_PRIVATE_JWK", stringType)],
+    )
+
+    data class Azure(
+        val tenantBaseUrl: String = config()[Key("AZURE_TENANT_BASEURL", stringType)],
+        val tenantId: String = config()[Key("AZURE_APP_TENANT_ID", stringType)],
+        val clientId: String = config()[Key("AZURE_APP_CLIENT_ID", stringType)],
+        val clientSecret: String = config()[Key("AZURE_APP_CLIENT_SECRET", stringType)],
+        val dbApiScope: String = config()[Key("DBAPI_SCOPE", stringType)]
     )
 }
 

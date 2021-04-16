@@ -11,7 +11,7 @@ import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -20,7 +20,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val store: SøknadStore) :
+internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) :
     River.PacketListener {
 
     init {
@@ -41,6 +41,7 @@ internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val st
                         val rowsUpdated = update(UUID.fromString(packet.soknadId), Status.GODKJENT)
                         if (rowsUpdated> 0) {
                             val soknad = hentSoknadData(UUID.fromString(packet.soknadId))
+                            loggTidBruktForGodkjenning(soknad)
                             forward(soknad, context)
                         } else {
                             logger.info { "Søknad som godkjennes er allerede godkjent, søknadId: ${packet.soknadId}" }
@@ -53,21 +54,31 @@ internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val st
         }
     }
 
-    private fun update(soknadId: UUID, status: Status) =
+    private suspend fun update(soknadId: UUID, status: Status) =
         kotlin.runCatching {
-            store.oppdaterStatus(soknadId, status)
+            søknadForRiverClient.oppdaterStatus(soknadId, status)
         }.onSuccess {
             logger.info("Søknad $soknadId oppdatert med status $status")
         }.onFailure {
             logger.error(it) { "Failed to update søknad $soknadId med status $status" }
         }.getOrThrow()
 
-    private fun hentSoknadData(soknadId: UUID): SoknadData =
+    private suspend fun hentSoknadData(soknadId: UUID): SoknadData =
         kotlin.runCatching {
-            store.hentSoknadData(soknadId)!!
+            søknadForRiverClient.hentSoknadData(soknadId)!!
         }.onFailure {
             logger.error(it) { "Failed to retrieve søknad $soknadId" }
         }.getOrThrow()
+
+    private suspend fun loggTidBruktForGodkjenning(soknadData: SoknadData) {
+        try {
+            val opprettetDato = søknadForRiverClient.hentSoknadOpprettetDato(soknadData.soknadId)
+            val tid = periodeMellomDatoer(LocalDateTime.ofInstant(opprettetDato!!.toInstant(), ZoneId.systemDefault()), LocalDateTime.now())
+            logger.info("Tid brukt fra opprettelse til godkjenning av søknad med ID ${soknadData.soknadId} var: $tid")
+        } catch (e: Exception) {
+            logger.info { "Klarte ikke å måle tidbruk mellom opprettelse og godkjenning" }
+        }
+    }
 
     private fun CoroutineScope.forward(soknadData: SoknadData, context: RapidsConnection.MessageContext) {
         val fnrBruker = soknadData.fnrBruker
@@ -82,13 +93,6 @@ internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val st
                 null -> {
                     logger.info("Søknad er godkjent av bruker: $soknadId - Det tok ")
                     sikkerlogg.info("Søknad er godkjent med søknadsId: $soknadId, fnr: $fnrBruker)")
-                    try {
-                        val opprettetDato = store.hentSoknadOpprettetDato(soknadData.soknadId)
-                        val tid = periodeMellomDatoer(LocalDateTime.ofInstant(opprettetDato!!.toInstant(), ZoneId.systemDefault()), LocalDateTime.now())
-                        logger.info("Tid brukt fra opprettelse til godkjenning av søknad med ID $soknadId var: $tid")
-                    } catch (e: Exception) {
-                        logger.info { "Klarte ikke å måle tidbruk mellom opprettelse og godkjenning" }
-                    }
                 }
                 is CancellationException -> logger.warn("Cancelled: ${it.message}")
                 else -> {

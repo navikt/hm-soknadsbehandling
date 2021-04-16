@@ -8,18 +8,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedStatus
-import no.nav.hjelpemidler.soknad.mottak.service.SøknadForBruker
+import no.nav.hjelpemidler.soknad.mottak.service.Status
+import no.nav.hjelpemidler.soknad.mottak.service.SøknadForBrukerDto
+import no.nav.hjelpemidler.soknad.mottak.tokenx.AccessToken
 import no.nav.hjelpemidler.soknad.mottak.tokenx.TokendingsServiceWrapper
-import no.nav.personbruker.minesaker.api.tokenx.AccessToken
-import no.nav.tms.token.support.idporten.user.IdportenUser
+import java.util.Date
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
 internal interface SøknadForBrukerClient {
 
-    suspend fun hentSoknad(soknadsId: UUID, user: IdportenUser): SøknadForBruker?
-    suspend fun hentSoknaderForBruker(fnrBruker: String, user: IdportenUser): List<SoknadMedStatus>
+    suspend fun hentSoknad(soknadsId: UUID, tokenForExchange: String): SøknadForBrukerDto?
+    suspend fun hentSoknaderForBruker(fnrBruker: String, tokenForExchange: String): List<SoknadMedStatus>
 }
 
 internal class SøknadForBrukerClientImpl(
@@ -27,19 +28,20 @@ internal class SøknadForBrukerClientImpl(
     private val tokendingsWrapper: TokendingsServiceWrapper
 ) : SøknadForBrukerClient {
 
-    override suspend fun hentSoknad(soknadsId: UUID, user: IdportenUser): SøknadForBruker? {
+    override suspend fun hentSoknad(soknadsId: UUID, tokenForExchange: String): SøknadForBrukerDto? {
         return withContext(Dispatchers.IO) {
+
             kotlin.runCatching {
 
                 "$baseUrl/soknad/bruker/$soknadsId".httpGet()
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${exchangeToken(user).value}")
+                    .header("Authorization", "Bearer ${exchangeToken(tokenForExchange).value}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
                     .awaitObjectResponse(
-                        object : ResponseDeserializable<SøknadForBruker> {
-                            override fun deserialize(content: String): SøknadForBruker {
-                                return ObjectMapper().readValue(content, SøknadForBruker::class.java)
+                        object : ResponseDeserializable<SøknadForBrukerDto> {
+                            override fun deserialize(content: String): SøknadForBrukerDto {
+                                return ObjectMapper().readValue(content, SøknadForBrukerDto::class.java)
                             }
                         }
                     ).third
@@ -51,14 +53,16 @@ internal class SøknadForBrukerClientImpl(
             .getOrThrow()
     }
 
-    override suspend fun hentSoknaderForBruker(fnrBruker: String, user: IdportenUser): List<SoknadMedStatus> {
+    override suspend fun hentSoknaderForBruker(fnrBruker: String, tokenForExchange: String): List<SoknadMedStatus> {
         return withContext(Dispatchers.IO) {
+
+            SoknadMedStatus(UUID.randomUUID(), Date(), Date(), Status.UTLØPT, true, "")
             kotlin.runCatching {
 
                 "$baseUrl/soknad/bruker".httpGet()
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${exchangeToken(user).value}")
+                    .header("Authorization", "Bearer ${exchangeToken(tokenForExchange).value}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
                     .awaitObjectResponse(
                         object : ResponseDeserializable<List<SoknadMedStatus>> {
@@ -75,7 +79,7 @@ internal class SøknadForBrukerClientImpl(
             .getOrThrow()
     }
 
-    private suspend fun exchangeToken(user: IdportenUser): AccessToken {
-        return tokendingsWrapper.exchangeTokenForSoknadsbehandlingDb(user.tokenString)
+    private suspend fun exchangeToken(tokenForExchange: String): AccessToken {
+        return tokendingsWrapper.exchangeTokenForSoknadsbehandlingDb(tokenForExchange)
     }
 }

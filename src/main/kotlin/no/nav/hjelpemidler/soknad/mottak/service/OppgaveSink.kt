@@ -8,13 +8,14 @@ import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class OppgaveSink(rapidsConnection: RapidsConnection, private val store: SøknadStore) :
+internal class OppgaveSink(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) :
     River.PacketListener {
 
     init {
@@ -49,9 +50,9 @@ internal class OppgaveSink(rapidsConnection: RapidsConnection, private val store
         }
     }
 
-    private fun update(soknadId: UUID, oppgaveId: String) =
+    private suspend fun update(soknadId: UUID, oppgaveId: String) =
         kotlin.runCatching {
-            store.oppdaterOppgaveId(soknadId, oppgaveId)
+            søknadForRiverClient.oppdaterOppgaveId(soknadId, oppgaveId)
         }.onFailure {
             logger.error(it) { "Kunne ikke oppdatere søknad $soknadId med oppgaveId $oppgaveId" }
         }.getOrThrow()

@@ -16,6 +16,26 @@ internal data class SoknadData(
     val status: Status,
     val kommunenavn: String?
 ) {
+
+    companion object {
+        fun mapFraDto(soknadDataDto: SoknadDataDto): SoknadData {
+            requireNotNull(soknadDataDto.fnrBruker)
+            requireNotNull(soknadDataDto.navnBruker)
+            requireNotNull(soknadDataDto.fnrInnsender)
+            requireNotNull(soknadDataDto.soknadId)
+            requireNotNull(soknadDataDto.soknad)
+            requireNotNull(soknadDataDto.status)
+            return SoknadData(
+                soknadDataDto.fnrBruker,
+                soknadDataDto.navnBruker,
+                soknadDataDto.fnrInnsender,
+                soknadDataDto.soknadId,
+                soknadDataDto.soknad,
+                soknadDataDto.status,
+                soknadDataDto.kommunenavn
+            )
+        }
+    }
     internal fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
             val id = ULID.random()

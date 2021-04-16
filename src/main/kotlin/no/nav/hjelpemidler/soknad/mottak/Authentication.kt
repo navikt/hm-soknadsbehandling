@@ -28,7 +28,6 @@ internal fun Application.installAuthentication(config: TokenXConfig, application
                 require(credentials.payload.audience.contains(config.clientId)) {
                     "Auth: Valid audience not found in claims"
                 }
-
                 require(credentials.payload.getClaim("acr").asString() == ("Level4")) { "Auth: Level4 required" }
                 UserPrincipal(credentials.payload.getClaim(applicationConfig.application.userclaim).asString())
             }

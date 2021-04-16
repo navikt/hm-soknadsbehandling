@@ -1,11 +1,15 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
-import no.nav.hjelpemidler.soknad.mottak.db.InfotrygdStore
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.util.UUID
 
@@ -14,7 +18,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class VedtaksresultatFraInfotrygd(
     rapidsConnection: RapidsConnection,
-    private val infotrygdStore: InfotrygdStore
+    private val søknadForRiverClient: SøknadForRiverClient
 ) : River.PacketListener {
 
     init {
@@ -29,19 +33,28 @@ internal class VedtaksresultatFraInfotrygd(
     private val JsonMessage.vedtaksDato get() = this["vedtaksDato"].asLocalDate()
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
-        val søknadsId = UUID.fromString(packet.søknadID)
+        runBlocking {
+            withContext(Dispatchers.IO) {
+                launch {
+                    val søknadsId = UUID.fromString(packet.søknadID)
 
-        kotlin.runCatching {
-            infotrygdStore.lagreVedtaksresultat(søknadsId, packet.vedtaksResultat, packet.vedtaksDato)
-        }.onSuccess {
-            if (it == 0) {
-                logger.warn("Ingenting ble endret når vi forsøkte å lagre vedtaksresultat for søknadsId=$søknadsId")
-            } else {
-                logger.info("Vedtaksresultat er nå lagra for søknadsId=$søknadsId")
-                Prometheus.vedtaksresultatLagretCounter.inc()
+                    kotlin.runCatching {
+                        søknadForRiverClient.lagreVedtaksresultat(søknadsId, packet.vedtaksResultat, packet.vedtaksDato)
+                    }.onSuccess {
+                        if (it == 0) {
+                            logger.warn("Ingenting ble endret når vi forsøkte å lagre vedtaksresultat for søknadsId=$søknadsId")
+                        } else {
+                            logger.info("Vedtaksresultat er nå lagra for søknadsId=$søknadsId")
+                            Prometheus.vedtaksresultatLagretCounter.inc()
+                        }
+                    }.onFailure {
+                        logger.error(it) { "Feil under lagring av vedtaksresultat for søknadsId=$søknadsId" }
+                    }.getOrThrow()
+
+                }
             }
-        }.onFailure {
-            logger.error(it) { "Feil under lagring av vedtaksresultat for søknadsId=$søknadsId" }
-        }.getOrThrow()
+        }
+
+
     }
 }

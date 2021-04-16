@@ -9,6 +9,7 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.db.InfotrygdStore
 import no.nav.hjelpemidler.soknad.mottak.db.OrdreStore
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
@@ -19,8 +20,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class NyOrdrelinje(
     rapidsConnection: RapidsConnection,
-    private val ordreStore: OrdreStore,
-    private val infotrygdStore: InfotrygdStore
+    private val søknadForRiverClient: SøknadForRiverClient
 ) :
     River.PacketListener {
 
@@ -59,7 +59,7 @@ internal class NyOrdrelinje(
                         logger.info { "Ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
 
                         // Match ordrelinje to Infotrygd-table
-                        val søknadId = infotrygdStore.hentSøknadIdFraVedtaksresultat(
+                        val søknadId = søknadForRiverClient.hentSøknadIdFraVedtaksresultat(
                             packet.fnrBruker,
                             packet.saksblokkOgSaksnr,
                             packet.vedtaksdato
@@ -99,9 +99,9 @@ internal class NyOrdrelinje(
         return skipList.any { it == eventId }
     }
 
-    private fun save(ordrelinje: OrdrelinjeData) =
+    private suspend fun save(ordrelinje: OrdrelinjeData) =
         kotlin.runCatching {
-            ordreStore.save(ordrelinje)
+            søknadForRiverClient.save(ordrelinje)
         }.onSuccess {
             if (it == 0) {
                 logger.warn("Duplikat av ordrelinje for SF ${ordrelinje.serviceforespørsel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra")

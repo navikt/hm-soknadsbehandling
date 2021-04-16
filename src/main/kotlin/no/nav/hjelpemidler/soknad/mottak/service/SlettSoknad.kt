@@ -13,7 +13,7 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.time.LocalDateTime
 import java.util.UUID
@@ -21,7 +21,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class SlettSoknad(rapidsConnection: RapidsConnection, private val store: SøknadStore) :
+internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) :
     River.PacketListener {
 
     init {
@@ -40,8 +40,8 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val store
                     try {
                         logger.info { "Bruker har slettet søknad: ${packet.soknadId}" }
                         val rowsUpdated = update(UUID.fromString(packet.soknadId), Status.SLETTET)
-                        if (rowsUpdated> 0) {
-                            val fnrBruker = store.hentFnrForSoknad(UUID.fromString(packet.soknadId))
+                        if (rowsUpdated > 0) {
+                            val fnrBruker = søknadForRiverClient.hentFnrForSoknad(UUID.fromString(packet.soknadId))
                             forward(UUID.fromString(packet.soknadId), fnrBruker, context)
                         } else {
                             logger.info { "Søknad som slettes er allerede slettet eller stod ikke til godkjenning, søknadId: ${packet.soknadId}" }
@@ -54,9 +54,9 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val store
         }
     }
 
-    private fun update(soknadId: UUID, status: Status) =
+    private suspend fun update(soknadId: UUID, status: Status) =
         kotlin.runCatching {
-            store.slettSøknad(soknadId)
+            søknadForRiverClient.slettSøknad(soknadId)
         }.onSuccess {
             logger.info("Søknad $soknadId oppdatert med status $status")
         }.onFailure {

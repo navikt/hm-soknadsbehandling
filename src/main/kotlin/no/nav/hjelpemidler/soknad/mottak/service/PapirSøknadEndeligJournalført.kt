@@ -11,15 +11,14 @@ import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.hjelpemidler.soknad.mottak.db.InfotrygdStore
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnection, private val store: SøknadStore, private val infotrygdStore: InfotrygdStore) :
+internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) :
     River.PacketListener {
     init {
         River(rapidsConnection).apply {
@@ -78,7 +77,7 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
                             navnBruker = packet.navnBruker
                         )
 
-                        if (store.fnrOgJournalpostIdFinnes(soknadData.fnrBruker, soknadData.journalpostid)) {
+                        if (søknadForRiverClient.fnrOgJournalpostIdFinnes(soknadData.fnrBruker, soknadData.journalpostid)) {
                             logger.warn { "En søknad med dette fødselsnummeret og journalpostIden er allerede lagret i databasen: $soknadId, journalpostId: ${soknadData.journalpostid}, eventId: ${packet.eventId}" }
                             return@launch
                         }
@@ -101,9 +100,9 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
         return skipList.any { it == eventId }
     }
 
-    private fun save(soknadData: PapirSøknadData) =
+    private suspend fun save(soknadData: PapirSøknadData) =
         kotlin.runCatching {
-            store.savePapir(soknadData)
+            søknadForRiverClient.savePapir(soknadData)
         }.onSuccess {
             if (it > 0) {
                 logger.info("Endelig journalført papirsøknad saved: ${soknadData.soknadId} it=$it")
@@ -132,9 +131,9 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
         }
     }
 
-    private fun opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData, fagsakId: String) =
+    private suspend fun opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData, fagsakId: String) =
         kotlin.runCatching {
-            infotrygdStore.lagKnytningMellomFagsakOgSøknad(vedtaksresultatData)
+            søknadForRiverClient.lagKnytningMellomFagsakOgSøknad(vedtaksresultatData)
         }.onSuccess {
             when (it) {
                 0 -> {

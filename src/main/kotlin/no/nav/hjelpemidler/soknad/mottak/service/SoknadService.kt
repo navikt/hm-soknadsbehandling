@@ -12,7 +12,7 @@ import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.UserPrincipal
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForBrukerClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForFormidlerClient
-import no.nav.hjelpemidler.soknad.mottak.idportenUser
+import no.nav.hjelpemidler.soknad.mottak.token
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -24,7 +24,7 @@ internal fun Route.hentSoknad(søknadForBrukerClient: SøknadForBrukerClient) {
             val fnr = call.principal<UserPrincipal>()?.getFnr()
                 ?: call.respond(HttpStatusCode.BadRequest, "Fnr mangler i token claim")
 
-            val soknad = søknadForBrukerClient.hentSoknad(soknadsId, idportenUser)
+            val soknad = søknadForBrukerClient.hentSoknad(soknadsId, call.token())
 
             when {
                 soknad == null -> {
@@ -50,7 +50,7 @@ internal fun Route.hentSoknaderForBruker(søknadForBrukerClient: SøknadForBruke
         val fnr = call.principal<UserPrincipal>()?.getFnr() ?: throw RuntimeException("Fnr mangler i token claim")
 
         try {
-            val soknaderTilGodkjenning = søknadForBrukerClient.hentSoknaderForBruker(fnr, idportenUser)
+            val soknaderTilGodkjenning = søknadForBrukerClient.hentSoknaderForBruker(fnr, call.token())
             call.respond(soknaderTilGodkjenning)
         } catch (e: Exception) {
             logger.error(e) { "Error on fetching søknader til godkjenning" }
@@ -65,7 +65,7 @@ internal fun Route.hentSoknaderForFormidler(søknadForFormidlerClient: SøknadFo
         val fnr = call.principal<UserPrincipal>()?.getFnr() ?: throw RuntimeException("Fnr mangler i token claim")
 
         try {
-            val formidlersSøknader = søknadForFormidlerClient.hentSøknaderForFormidler(fnr, 4, idportenUser)
+            val formidlersSøknader = søknadForFormidlerClient.hentSøknaderForFormidler(fnr, 4, call.token())
             call.respond(formidlersSøknader)
         } catch (e: Exception) {
             logger.error(e) { "Error on fetching formidlers søknader" }

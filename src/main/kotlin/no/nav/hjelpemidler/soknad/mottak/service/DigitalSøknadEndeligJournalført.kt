@@ -1,11 +1,14 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.hjelpemidler.soknad.mottak.db.InfotrygdStore
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData.Companion.getSaksblokkFromFagsakId
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData.Companion.getSaksnrFromFagsakId
@@ -14,7 +17,10 @@ import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
-internal class DigitalSøknadEndeligJournalført(rapidsConnection: RapidsConnection, private val store: SøknadStore, private val infotrygdStore: InfotrygdStore) :
+internal class DigitalSøknadEndeligJournalført(
+    rapidsConnection: RapidsConnection,
+    private val søknadForRiverClient: SøknadForRiverClient
+) :
     River.PacketListener {
 
     init {
@@ -46,15 +52,21 @@ internal class DigitalSøknadEndeligJournalført(rapidsConnection: RapidsConnect
             getSaksnrFromFagsakId(fagsakId),
         )
 
-        oppdaterStatus(søknadId)
-        opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData, fagsakId)
+        runBlocking {
+            withContext(Dispatchers.IO) {
+                launch {
+                    oppdaterStatus(søknadId)
+                    opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData, fagsakId)
+                }
+            }
+        }
 
         context.send(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
     }
 
-    private fun oppdaterStatus(søknadId: UUID) =
+    private suspend fun oppdaterStatus(søknadId: UUID) =
         kotlin.runCatching {
-            store.oppdaterStatus(søknadId, Status.ENDELIG_JOURNALFØRT)
+            søknadForRiverClient.oppdaterStatus(søknadId, Status.ENDELIG_JOURNALFØRT)
         }.onSuccess {
             if (it > 0) {
                 logger.info("Status på søknad sett til endelig journalført: $søknadId, it=$it")
@@ -65,9 +77,9 @@ internal class DigitalSøknadEndeligJournalført(rapidsConnection: RapidsConnect
             logger.error("Failed to update søknad to endelig journalført: $søknadId")
         }.getOrThrow()
 
-    private fun opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData, fagsakId: String) =
+    private suspend fun opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData, fagsakId: String) =
         kotlin.runCatching {
-            infotrygdStore.lagKnytningMellomFagsakOgSøknad(vedtaksresultatData)
+            søknadForRiverClient.lagKnytningMellomFagsakOgSøknad(vedtaksresultatData)
         }.onSuccess {
             when (it) {
                 0 -> {
