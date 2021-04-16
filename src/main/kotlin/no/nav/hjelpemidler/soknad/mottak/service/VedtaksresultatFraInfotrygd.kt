@@ -30,8 +30,7 @@ internal class VedtaksresultatFraInfotrygd(
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         val søknadsId = UUID.fromString(packet.søknadID)
-
-        if (søknadsId.equals("f00e62cd-0e2d-415f-9d67-93f07aa74e01")) {
+        if (søknadsId.toString() == "f00e62cd-0e2d-415f-9d67-93f07aa74e01") {
             logger.info("skipping søknadsID=$søknadsId")
             return
         }
