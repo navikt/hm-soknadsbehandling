@@ -52,8 +52,6 @@ internal class VedtaksresultatFraInfotrygd(
                     }.getOrThrow()
                 }
             }
-
         }
     }
-
 }

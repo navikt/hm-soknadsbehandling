@@ -66,7 +66,6 @@ fun main() {
     val søknadForRiverClient =
         SøknadForRiverClientImpl(baseUrlSoknadsbehandlingDb, azureClient, Configuration.azure.dbApiScope)
 
-
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .withKtorModule { api(søknadForBrukerClient, søknadForFormidlerClient) }
         .build().apply {
