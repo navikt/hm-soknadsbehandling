@@ -16,11 +16,6 @@ private val localProperties = ConfigurationMap(
     mapOf(
         "application.httpPort" to "8082",
         "application.profile" to "LOCAL",
-        "db.host" to "host.docker.internal",
-        "db.database" to "soknadsbehandling",
-        "db.password" to "postgres",
-        "db.port" to "5434",
-        "db.username" to "postgres",
         "kafka.reset.policy" to "earliest",
         "kafka.topic" to "teamdigihot.hm-soknadsbehandling-v1",
         "KAFKA_TRUSTSTORE_PATH" to "",
@@ -85,7 +80,6 @@ private fun config() = when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getPro
 
 internal object Configuration {
     val soknadsbehandlingDb: SoknadsbehandlingDb = SoknadsbehandlingDb()
-    val database: Database = Database()
     val tokenX: TokenX = TokenX()
     val azure: Azure = Azure()
     val application: Application = Application()
@@ -102,14 +96,6 @@ internal object Configuration {
         "KAFKA_KEYSTORE_PASSWORD" to config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
         "HTTP_PORT" to config()[Key("application.httpPort", stringType)],
     ) + System.getenv().filter { it.key.startsWith("NAIS_") }
-
-    data class Database(
-        val host: String = config()[Key("db.host", stringType)],
-        val port: String = config()[Key("db.port", stringType)],
-        val name: String = config()[Key("db.database", stringType)],
-        val user: String? = config().getOrNull(Key("db.username", stringType)),
-        val password: String? = config().getOrNull(Key("db.password", stringType))
-    )
 
     data class Application(
         val id: String = config().getOrElse(Key("", stringType), "hm-soknadsbehandling-v1"),
