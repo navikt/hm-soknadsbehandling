@@ -16,7 +16,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForBrukerClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForBrukerClientImpl
@@ -73,7 +72,6 @@ fun main() {
     val søknadForFormidlerClient = SøknadForFormidlerClientImpl(baseUrlSoknadsbehandlingDb, tokendingsServiceWrapper)
     val søknadForRiverClient =
         SøknadForRiverClientImpl(baseUrlSoknadsbehandlingDb, azureClient, Configuration.azure.dbApiScope)
-
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .withKtorModule { api(søknadForBrukerClient, søknadForFormidlerClient) }

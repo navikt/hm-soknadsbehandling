@@ -10,8 +10,6 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.db.InfotrygdStore
-import no.nav.hjelpemidler.soknad.mottak.db.OrdreStore
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.util.UUID
 

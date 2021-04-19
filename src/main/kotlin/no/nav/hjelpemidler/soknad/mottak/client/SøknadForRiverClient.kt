@@ -310,20 +310,20 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/infotrygd/vedtaksresultat".httpPost()
-            .header("Content-Type", "application/json")
-            .header("Accept", "application/json")
-            .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-            .header("X-Correlation-ID", UUID.randomUUID().toString())
-            .jsonBody(
-                ObjectMapper().writeValueAsString(
-                    VedtaksresultatDto(
-                        søknadId,
-                        vedtaksresultat,
-                        vedtaksdato
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
+                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .jsonBody(
+                        ObjectMapper().writeValueAsString(
+                            VedtaksresultatDto(
+                                søknadId,
+                                vedtaksresultat,
+                                vedtaksdato
+                            )
+                        )
                     )
-                )
-            )
-            .awaitStringResponse().third.toInt()
+                    .awaitStringResponse().third.toInt()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -373,13 +373,10 @@ internal class SøknadForRiverClientImpl(
         }
     }
 
-
-
     data class FnrOgJournalpostIdFinnesDto(
         val fnrBruker: String,
         val journalpostId: Int
     )
-
 
     override suspend fun oppdaterStatus(soknadsId: UUID, status: Status): Int {
         return withContext(Dispatchers.IO) {
@@ -476,6 +473,4 @@ internal class SøknadForRiverClientImpl(
         }
             .getOrThrow()
     }
-
-
 }
