@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test
 internal class SoknadUtenFullmaktDataSinkTest {
     private val capturedSoknadData = slot<SoknadData>()
     private val mock = mockk<SøknadForRiverClient>().apply {
-        coEvery { save(capture(capturedSoknadData)) }
+        coEvery { save(capture(capturedSoknadData)) } returns Unit
         coEvery { soknadFinnes(any()) } returns false
     }
 

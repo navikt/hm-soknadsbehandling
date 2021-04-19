@@ -1,29 +1,26 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
 import io.kotest.matchers.shouldBe
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.slot
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.hjelpemidler.soknad.mottak.db.InfotrygdStore
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-internal class PapirsøknadEndeligJournalførtTest {
-    private val capturedSoknadData = slot<PapirSøknadData>()
-    private val mock = mockk<SøknadStore>().apply {
-        every { savePapir(capture(capturedSoknadData)) } returns 1
-        every { soknadFinnes(any()) } returns false
-        every { fnrOgJournalpostIdFinnes(any(), any()) } returns false
-    }
+internal class PapirsoknadEndeligJournalfortTest {
     private val capturedInfotrygdMock = slot<VedtaksresultatData>()
-    private val mockInfotrygd = mockk<InfotrygdStore>().apply {
-        every { lagKnytningMellomFagsakOgSøknad(capture(capturedInfotrygdMock)) } returns 1
+    private val capturedSoknadData = slot<PapirSøknadData>()
+    private val mock = mockk<SøknadForRiverClient>().apply {
+        coEvery { savePapir(capture(capturedSoknadData)) } returns 1
+        coEvery { soknadFinnes(any()) } returns false
+        coEvery { fnrOgJournalpostIdFinnes(any(), any()) } returns false
+        coEvery { lagKnytningMellomFagsakOgSøknad(capture(capturedInfotrygdMock)) } returns 1
     }
 
     private val rapid = TestRapid().apply {
-        PapirSøknadEndeligJournalført(this, mock, mockInfotrygd)
+        PapirSøknadEndeligJournalført(this, mock)
     }
 
     @BeforeEach
