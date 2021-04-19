@@ -16,13 +16,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForBrukerClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForBrukerClientImpl
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForFormidlerClientImpl
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClientImpl
-import no.nav.hjelpemidler.soknad.mottak.db.waitForDB
 import no.nav.hjelpemidler.soknad.mottak.service.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.service.GodkjennSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.JournalpostSink
@@ -44,17 +42,11 @@ import org.slf4j.event.Level
 import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.time.ExperimentalTime
-import kotlin.time.minutes
 
 private val logger = KotlinLogging.logger {}
 
 @ExperimentalTime
 fun main() {
-    if (!waitForDB(10.minutes, Configuration)) {
-        throw Exception("database never became available within the deadline")
-    }
-
-    // todo: Fikse clientID og baseUrl og lokal mocking av db-api
 
     if (Configuration.application.profile == Profile.LOCAL) {
         WiremockServer(Configuration).startServer()
@@ -66,9 +58,9 @@ fun main() {
         clientSecret = Configuration.azure.clientSecret
     )
 
-    val baseUrlSoknadsbehandlingDb = "http://localhost:8079/api"
+    val baseUrlSoknadsbehandlingDb = Configuration.soknadsbehandlingDb.baseUrl
     val tokendingsService = TokendingsServiceBuilder.buildTokendingsService()
-    val tokendingsServiceWrapper = TokendingsServiceWrapper(tokendingsService, "local:hm-soknadsbehandling-db")
+    val tokendingsServiceWrapper = TokendingsServiceWrapper(tokendingsService, Configuration.tokenX.clientIdSoknadsbehandlingDb)
     val søknadForBrukerClient = SøknadForBrukerClientImpl(baseUrlSoknadsbehandlingDb, tokendingsServiceWrapper)
     val søknadForFormidlerClient = SøknadForFormidlerClientImpl(baseUrlSoknadsbehandlingDb, tokendingsServiceWrapper)
     val søknadForRiverClient =

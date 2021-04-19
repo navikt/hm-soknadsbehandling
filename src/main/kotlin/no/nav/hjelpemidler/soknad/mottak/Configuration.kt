@@ -37,6 +37,7 @@ private val localProperties = ConfigurationMap(
         "AZURE_APP_CLIENT_ID" to "123",
         "AZURE_APP_CLIENT_SECRET" to "dummy",
         "DBAPI_SCOPE" to "123",
+        "SOKNADSBEHANDLING_DB_CLIENT_ID" to "local:hm-soknadsbehandling-db",
     )
 )
 private val devProperties = ConfigurationMap(
@@ -48,6 +49,7 @@ private val devProperties = ConfigurationMap(
         "AZURE_TENANT_BASEURL" to "https://login.microsoftonline.com",
         "userclaim" to "pid",
         "DBAPI_SCOPE" to "api://dev-gcp.teamdigihot.hm-soknadsbehandling-db/.default",
+        "SOKNADSBEHANDLING_DB_CLIENT_ID" to "dev-gcp:teamdigihot:hm-soknadsbehandling-db",
 
     )
 )
@@ -60,6 +62,7 @@ private val prodProperties = ConfigurationMap(
         "AZURE_TENANT_BASEURL" to "https://login.microsoftonline.com",
         "userclaim" to "pid",
         "DBAPI_SCOPE" to "api://prod-gcp.teamdigihot.hm-soknadsbehandling-db/.default",
+        "SOKNADSBEHANDLING_DB_CLIENT_ID" to "prod-gcp:teamdigihot:hm-soknadsbehandling-db",
     )
 )
 
@@ -72,6 +75,7 @@ private fun config() = when (System.getenv("NAIS_CLUSTER_NAME") ?: System.getPro
 }
 
 internal object Configuration {
+    val soknadsbehandlingDb: SoknadsbehandlingDb = SoknadsbehandlingDb()
     val database: Database = Database()
     val tokenX: TokenX = TokenX()
     val azure: Azure = Azure()
@@ -106,9 +110,7 @@ internal object Configuration {
     )
 
     data class TokenX(
-        val wellKnownUrl: String = config()[Key("TOKEN_X_WELL_KNOWN_URL", stringType)],
-        val clientId: String = config()[Key("TOKEN_X_CLIENT_ID", stringType)],
-        val privateJwk: String = config()[Key("TOKEN_X_PRIVATE_JWK", stringType)],
+        val clientIdSoknadsbehandlingDb: String = config()[Key("SOKNADSBEHANDLING_DB_CLIENT_ID", stringType)],
     )
 
     data class Azure(
@@ -117,6 +119,10 @@ internal object Configuration {
         val clientId: String = config()[Key("AZURE_APP_CLIENT_ID", stringType)],
         val clientSecret: String = config()[Key("AZURE_APP_CLIENT_SECRET", stringType)],
         val dbApiScope: String = config()[Key("DBAPI_SCOPE", stringType)]
+    )
+
+    data class SoknadsbehandlingDb(
+        val baseUrl: String = config()[Key("SOKNADSBEHANDLING_DB_BASEURL", stringType)],
     )
 }
 

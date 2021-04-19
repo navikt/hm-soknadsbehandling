@@ -40,18 +40,7 @@ spec:
     enabled: true
   kafka:
     pool: nav-dev
-  gcp:
-    sqlInstances:
-      - name: hm-soknadsbehandling-db-dev
-        type: POSTGRES_12
-        tier: db-custom-1-3840
-        diskType: SSD
-        highAvailability: true
-        diskSize: 10
-        diskAutoresize: true
-        autoBackupTime: "03:00"
-        databases:
-          - name: soknadsbehandling
-            envVarPrefix: DB
-        cascadingDelete: false
+  env:
+    - name: SOKNADSBEHANDLING_DB_BASEURL
+      value: http://hm-soknadsbehandling-db.teamdigihot.svc.cluster.local/api
 
