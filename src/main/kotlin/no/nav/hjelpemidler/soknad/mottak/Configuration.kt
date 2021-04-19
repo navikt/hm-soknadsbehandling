@@ -41,10 +41,10 @@ private val localProperties = ConfigurationMap(
     )
 )
 
-private fun getFileText(path: String): String{
+private fun getFileText(path: String): String {
     return try {
         File("./src/main/resources/TOKEN_X_PRIVATE_JWK_MOCK")?.readText(Charsets.UTF_8)
-    } catch (e: Exception){
+    } catch (e: Exception) {
         ""
     }
 }
