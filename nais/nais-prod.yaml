@@ -27,6 +27,9 @@ spec:
       rules:
         - application: hm-brukerbekreftelse
         - application: hm-formidler
+    outbound:
+      rules:
+        - application: hm-soknadsbehandling-db
   tokenx:
     enabled: true
   azure:
