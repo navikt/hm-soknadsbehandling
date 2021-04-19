@@ -87,6 +87,7 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
                         logger.info { "Papirsøknad mottatt og lagret: $soknadId" }
 
                         forward(soknadData, context)
+                        context.send(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
                     } catch (e: Exception) {
                         throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
                     }

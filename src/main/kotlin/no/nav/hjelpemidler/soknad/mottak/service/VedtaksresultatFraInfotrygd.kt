@@ -50,11 +50,10 @@ internal class VedtaksresultatFraInfotrygd(
                     }.onFailure {
                         logger.error(it) { "Feil under lagring av vedtaksresultat for søknadsId=$søknadsId" }
                     }.getOrThrow()
-
                 }
             }
+
         }
-
-
     }
+
 }

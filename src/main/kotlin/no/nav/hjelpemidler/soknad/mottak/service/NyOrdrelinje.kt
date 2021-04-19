@@ -63,7 +63,8 @@ internal class NyOrdrelinje(
                             packet.fnrBruker,
                             packet.saksblokkOgSaksnr,
                             packet.vedtaksdato
-                        ) ?: kotlin.run {
+                        )
+                        if (søknadId == null) {
                             logger.warn { "Ordrelinje med eventId ${packet.eventId} kan ikkje matchast mot ein søknadId" }
                             return@launch
                         }

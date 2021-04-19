@@ -3,6 +3,7 @@ package no.nav.hjelpemidler.soknad.mottak.db
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import kotliquery.using
+import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
 import java.time.LocalDate
@@ -20,6 +21,8 @@ internal interface InfotrygdStore {
     fun hentSøknadIdFraVedtaksresultat(fnrBruker: String, saksblokkOgSaksnr: String, vedtaksdato: LocalDate): UUID?
     fun hentVedtaksresultatForSøknad(søknadId: UUID): VedtaksresultatData?
 }
+
+private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdStore {
 
@@ -82,7 +85,14 @@ internal class InfotrygdStorePostgres(private val ds: DataSource) : InfotrygdSto
                 )
             }
         }
-        if (uuids.count() != 1) return null
+        if (uuids.count() != 1) {
+            if (uuids.count() > 1) {
+                sikkerlogg.info("Fant flere søknader med matchende fnr,saksnr og vedtaksdato, saksblokkogsaksnr: $saksblokkOgSaksnr, vedtaksdato: $vedtaksdato, antall=${uuids.count()} ids: [$uuids]")
+            } else {
+                sikkerlogg.info("Kan ikke knytte ordrelinje til søknad. saksblokkogsaksnr: $saksblokkOgSaksnr, vedtaksdato: $vedtaksdato")
+            }
+            return null
+        }
         return uuids[0]
     }
 
