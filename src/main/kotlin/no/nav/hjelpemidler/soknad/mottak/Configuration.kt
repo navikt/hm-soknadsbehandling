@@ -31,7 +31,7 @@ private val localProperties = ConfigurationMap(
         "userclaim" to "sub",
         "TOKEN_X_WELL_KNOWN_URL" to "http://host.docker.internal:8080/default/.well-known/openid-configuration",
         "TOKEN_X_CLIENT_ID" to "debugger",
-        "TOKEN_X_PRIVATE_JWK" to File("./src/main/resources/TOKEN_X_PRIVATE_JWK_MOCK").readText(Charsets.UTF_8),
+        "TOKEN_X_PRIVATE_JWK" to File("./src/main/resources/TOKEN_X_PRIVATE_JWK_MOCK")?.readText(Charsets.UTF_8),
         "AZURE_TENANT_BASEURL" to "http://localhost:9098",
         "AZURE_APP_TENANT_ID" to "123",
         "AZURE_APP_CLIENT_ID" to "123",
