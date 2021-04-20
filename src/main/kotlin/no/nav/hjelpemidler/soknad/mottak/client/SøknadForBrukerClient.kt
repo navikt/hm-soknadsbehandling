@@ -20,7 +20,7 @@ private val logger = KotlinLogging.logger {}
 internal interface SøknadForBrukerClient {
 
     suspend fun hentSoknad(soknadsId: UUID, tokenForExchange: String): SøknadForBrukerDto?
-    suspend fun hentSoknaderForBruker(fnrBruker: String, tokenForExchange: String): List<SoknadForFormidler>
+    suspend fun hentSoknaderForBruker(fnrBruker: String, tokenForExchange: String): List<SoknadMedStatus>
 }
 
 internal class SøknadForBrukerClientImpl(
@@ -53,7 +53,7 @@ internal class SøknadForBrukerClientImpl(
             .getOrThrow()
     }
 
-    override suspend fun hentSoknaderForBruker(fnrBruker: String, tokenForExchange: String): List<SoknadForFormidler> {
+    override suspend fun hentSoknaderForBruker(fnrBruker: String, tokenForExchange: String): List<SoknadMedStatus> {
         return withContext(Dispatchers.IO) {
 
             SoknadMedStatus(UUID.randomUUID(), Date(), Date(), Status.UTLØPT, true, "")
@@ -65,9 +65,9 @@ internal class SøknadForBrukerClientImpl(
                     .header("Authorization", "Bearer ${exchangeToken(tokenForExchange).value}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
                     .awaitObjectResponse(
-                        object : ResponseDeserializable<List<SoknadForFormidler>> {
-                            override fun deserialize(content: String): List<SoknadForFormidler> {
-                                return ObjectMapper().readValue(content, Array<SoknadForFormidler>::class.java).toList()
+                        object : ResponseDeserializable<List<SoknadMedStatus>> {
+                            override fun deserialize(content: String): List<SoknadMedStatus> {
+                                return ObjectMapper().readValue(content, Array<SoknadMedStatus>::class.java).toList()
                             }
                         }
                     ).third

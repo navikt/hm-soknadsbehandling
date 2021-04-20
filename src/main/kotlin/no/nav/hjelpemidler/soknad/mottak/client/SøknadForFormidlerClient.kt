@@ -7,7 +7,6 @@ import com.github.kittinunf.fuel.httpGet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedStatus
 import no.nav.hjelpemidler.soknad.mottak.tokenx.AccessToken
 import no.nav.hjelpemidler.soknad.mottak.tokenx.TokendingsServiceWrapper
 import java.util.UUID
@@ -16,7 +15,7 @@ private val logger = KotlinLogging.logger {}
 
 internal interface SøknadForFormidlerClient {
 
-    suspend fun hentSøknaderForFormidler(fnrFormidler: String, uker: Int, tokenForExchange: String): List<SoknadMedStatus>
+    suspend fun hentSøknaderForFormidler(fnrFormidler: String, uker: Int, tokenForExchange: String): List<SoknadForFormidler>
 }
 
 internal class SøknadForFormidlerClientImpl(
@@ -24,7 +23,7 @@ internal class SøknadForFormidlerClientImpl(
     private val tokendingsWrapper: TokendingsServiceWrapper
 ) : SøknadForFormidlerClient {
 
-    override suspend fun hentSøknaderForFormidler(fnrFormidler: String, uker: Int, tokenForExchange: String): List<SoknadMedStatus> {
+    override suspend fun hentSøknaderForFormidler(fnrFormidler: String, uker: Int, tokenForExchange: String): List<SoknadForFormidler> {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
 
@@ -34,9 +33,9 @@ internal class SøknadForFormidlerClientImpl(
                     .header("Authorization", "Bearer ${exchangeToken(tokenForExchange).value}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
                     .awaitObjectResponse(
-                        object : ResponseDeserializable<List<SoknadMedStatus>> {
-                            override fun deserialize(content: String): List<SoknadMedStatus> {
-                                return ObjectMapper().readValue(content, Array<SoknadMedStatus>::class.java).toList()
+                        object : ResponseDeserializable<List<SoknadForFormidler>> {
+                            override fun deserialize(content: String): List<SoknadForFormidler> {
+                                return ObjectMapper().readValue(content, Array<SoknadForFormidler>::class.java).toList()
                             }
                         }
                     ).third
