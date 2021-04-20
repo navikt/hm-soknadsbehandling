@@ -236,7 +236,7 @@ internal class SøknadForRiverClientImpl(
                     .header("Accept", "application/json")
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
-                    .jsonBody(ObjectMapper().writeValueAsString("oppgaveId" to oppgaveId))
+                    .jsonBody(ObjectMapper().writeValueAsString(mapOf("oppgaveId" to oppgaveId)))
                     .awaitStringResponse().third.toInt()
             }
                 .onFailure {
