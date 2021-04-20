@@ -85,11 +85,11 @@ internal class SøknadForBrukerClientImpl(
 }
 
 class SoknadForFormidler constructor(
-    val søknadId: UUID,
-    val datoOpprettet: Date,
-    var datoOppdatert: Date,
-    val status: Status,
-    val fullmakt: Boolean,
-    val fnrBruker: String,
-    val navnBruker: String?
+    val søknadId: UUID? = null,
+    val datoOpprettet: Date? = null,
+    var datoOppdatert: Date? = null,
+    val status: Status? = null,
+    val fullmakt: Boolean? = null,
+    val fnrBruker: String? = null,
+    val navnBruker: String? = null
 )
