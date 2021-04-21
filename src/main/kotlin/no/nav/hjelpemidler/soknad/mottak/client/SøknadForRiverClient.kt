@@ -287,9 +287,19 @@ internal class SøknadForRiverClientImpl(
                             )
                         )
                     )
-                    .awaitStringResponse()
+                    .awaitObject(
+                        object : ResponseDeserializable<JsonNode> {
+                            override fun deserialize(content: String): JsonNode {
+                                return JacksonMapper.objectMapper.readTree(content)
+                            }
+                        }
+                    )
                     .let {
-                        UUID.fromString(it.third)
+                        if (it.get("soknadId") !== null) {
+                            UUID.fromString(it.get("soknadId").textValue())
+                        } else {
+                            null
+                        }
                     }
             }
                 .onFailure {
