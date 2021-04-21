@@ -14,6 +14,7 @@ import com.github.kittinunf.fuel.httpPut
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
+import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
@@ -75,7 +76,7 @@ internal class SøknadForRiverClientImpl(
                     .header("Accept", "application/json")
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
-                    .jsonBody(ObjectMapper().writeValueAsString(soknadData))
+                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadData))
                     .awaitStringResponse()
             }
                 .onFailure {
@@ -93,7 +94,7 @@ internal class SøknadForRiverClientImpl(
                     .header("Accept", "application/json")
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
-                    .jsonBody(ObjectMapper().writeValueAsString(papirSøknadData))
+                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(papirSøknadData))
                     .awaitStringResponse().third.toInt()
             }
                 .onFailure {

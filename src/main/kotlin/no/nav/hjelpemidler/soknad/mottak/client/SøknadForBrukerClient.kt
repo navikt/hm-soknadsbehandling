@@ -1,12 +1,12 @@
 package no.nav.hjelpemidler.soknad.mottak.client
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.kittinunf.fuel.core.ResponseDeserializable
 import com.github.kittinunf.fuel.coroutines.awaitObjectResponse
 import com.github.kittinunf.fuel.httpGet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
+import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedStatus
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadForBrukerDto
@@ -41,7 +41,7 @@ internal class SøknadForBrukerClientImpl(
                     .awaitObjectResponse(
                         object : ResponseDeserializable<SøknadForBrukerDto> {
                             override fun deserialize(content: String): SøknadForBrukerDto {
-                                return ObjectMapper().readValue(content, SøknadForBrukerDto::class.java)
+                                return JacksonMapper.objectMapper.readValue(content, SøknadForBrukerDto::class.java)
                             }
                         }
                     ).third
@@ -67,7 +67,7 @@ internal class SøknadForBrukerClientImpl(
                     .awaitObjectResponse(
                         object : ResponseDeserializable<List<SoknadMedStatus>> {
                             override fun deserialize(content: String): List<SoknadMedStatus> {
-                                return ObjectMapper().readValue(content, Array<SoknadMedStatus>::class.java).toList()
+                                return JacksonMapper.objectMapper.readValue(content, Array<SoknadMedStatus>::class.java).toList()
                             }
                         }
                     ).third
