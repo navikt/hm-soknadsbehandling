@@ -16,6 +16,7 @@ import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.util.UUID
@@ -28,14 +29,7 @@ internal class SoknadUtenFullmaktDataSink(
     private val søknadForRiverClient: SøknadForRiverClient
 ) : River.PacketListener {
 
-    companion object {
-        private val objectMapper = jacksonObjectMapper()
-            .registerModule(JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-    }
-
-    private fun soknadToJson(soknad: JsonNode): String = objectMapper.writeValueAsString(soknad)
+    private fun soknadToJson(soknad: JsonNode): String = JacksonMapper.objectMapper.writeValueAsString(soknad)
 
     init {
         River(rapidsConnection).apply {

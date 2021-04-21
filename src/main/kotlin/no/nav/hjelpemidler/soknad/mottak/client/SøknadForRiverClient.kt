@@ -113,7 +113,7 @@ internal class SøknadForRiverClientImpl(
                     .header("Accept", "application/json")
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
-                    .jsonBody(ObjectMapper().writeValueAsString(ordrelinje))
+                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(ordrelinje))
                     .awaitStringResponse().third.toInt()
             }
                 .onFailure {
@@ -135,7 +135,7 @@ internal class SøknadForRiverClientImpl(
                     .awaitObject(
                         object : ResponseDeserializable<JsonNode> {
                             override fun deserialize(content: String): JsonNode {
-                                return ObjectMapper().readTree(content)
+                                return JacksonMapper.objectMapper.readTree(content)
                             }
                         }
                     )
@@ -180,7 +180,7 @@ internal class SøknadForRiverClientImpl(
                     .header("Accept", "application/json")
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
-                    .jsonBody(ObjectMapper().writeValueAsString(soknadsId))
+                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadsId))
                     .awaitStringResponse().third.toInt()
             }
                 .onFailure {
@@ -199,7 +199,7 @@ internal class SøknadForRiverClientImpl(
                     .header("Accept", "application/json")
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
-                    .jsonBody(ObjectMapper().writeValueAsString(soknadsId))
+                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadsId))
                     .awaitStringResponse().third.toInt()
             }
                 .onFailure {
@@ -218,7 +218,7 @@ internal class SøknadForRiverClientImpl(
                     .header("Accept", "application/json")
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
-                    .jsonBody(ObjectMapper().writeValueAsString(mapOf("journalpostId" to journalpostId)))
+                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(mapOf("journalpostId" to journalpostId)))
                     .awaitStringResponse().third.toInt()
             }
                 .onFailure {
@@ -237,7 +237,7 @@ internal class SøknadForRiverClientImpl(
                     .header("Accept", "application/json")
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
-                    .jsonBody(ObjectMapper().writeValueAsString(mapOf("oppgaveId" to oppgaveId)))
+                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(mapOf("oppgaveId" to oppgaveId)))
                     .awaitStringResponse().third.toInt()
             }
                 .onFailure {
@@ -256,7 +256,7 @@ internal class SøknadForRiverClientImpl(
                     .header("Accept", "application/json")
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
-                    .jsonBody(ObjectMapper().writeValueAsString(vedtaksresultatData))
+                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(vedtaksresultatData))
                     .awaitStringResponse().third.toInt()
             }
                 .onFailure {
@@ -280,7 +280,7 @@ internal class SøknadForRiverClientImpl(
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
                     .jsonBody(
-                        ObjectMapper().writeValueAsString(
+                        JacksonMapper.objectMapper.writeValueAsString(
                             SoknadFraVedtaksresultatDto(
                                 fnrBruker,
                                 saksblokkOgSaksnr,
@@ -316,7 +316,7 @@ internal class SøknadForRiverClientImpl(
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
                     .jsonBody(
-                        ObjectMapper().writeValueAsString(
+                        JacksonMapper.objectMapper.writeValueAsString(
                             VedtaksresultatDto(
                                 søknadId,
                                 vedtaksresultat,
@@ -349,7 +349,7 @@ internal class SøknadForRiverClientImpl(
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
                     .jsonBody(
-                        ObjectMapper().writeValueAsString(
+                        JacksonMapper.objectMapper.writeValueAsString(
                             FnrOgJournalpostIdFinnesDto(
                                 fnrBruker,
                                 journalpostId
@@ -359,7 +359,7 @@ internal class SøknadForRiverClientImpl(
                     .awaitObject(
                         object : ResponseDeserializable<JsonNode> {
                             override fun deserialize(content: String): JsonNode {
-                                return ObjectMapper().readTree(content)
+                                return JacksonMapper.objectMapper.readTree(content)
                             }
                         }
                     )
@@ -388,7 +388,7 @@ internal class SøknadForRiverClientImpl(
                     .header("Accept", "application/json")
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
                     .header("X-Correlation-ID", UUID.randomUUID().toString())
-                    .jsonBody(ObjectMapper().writeValueAsString(status))
+                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(status))
                     .awaitStringResponse().third.toInt()
             }
                 .onFailure {
@@ -411,7 +411,7 @@ internal class SøknadForRiverClientImpl(
                     .awaitObjectResponse(
                         object : ResponseDeserializable<SoknadDataDto> {
                             override fun deserialize(content: String): SoknadDataDto {
-                                return ObjectMapper().readValue(content, SoknadDataDto::class.java)
+                                return JacksonMapper.objectMapper.readValue(content, SoknadDataDto::class.java)
                             }
                         }
                     ).third
@@ -437,7 +437,7 @@ internal class SøknadForRiverClientImpl(
                     .awaitObjectResponse(
                         object : ResponseDeserializable<Date> {
                             override fun deserialize(content: String): Date {
-                                return ObjectMapper().readValue(content, Date::class.java)
+                                return JacksonMapper.objectMapper.readValue(content, Date::class.java)
                             }
                         }
                     ).third
@@ -463,7 +463,7 @@ internal class SøknadForRiverClientImpl(
                     .awaitObjectResponse(
                         object : ResponseDeserializable<List<UtgåttSøknad>> {
                             override fun deserialize(content: String): List<UtgåttSøknad> {
-                                return ObjectMapper().readValue(content, Array<UtgåttSøknad>::class.java).toList()
+                                return JacksonMapper.objectMapper.readValue(content, Array<UtgåttSøknad>::class.java).toList()
                             }
                         }
                     ).third
