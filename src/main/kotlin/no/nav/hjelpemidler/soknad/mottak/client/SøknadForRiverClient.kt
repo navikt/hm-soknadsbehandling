@@ -295,7 +295,7 @@ internal class SøknadForRiverClientImpl(
                         }
                     )
                     .let {
-                        if (it.get("soknadId") != null) {
+                        if (it.get("soknadId").textValue() != null) {
                             UUID.fromString(it.get("soknadId").textValue())
                         } else {
                             null
