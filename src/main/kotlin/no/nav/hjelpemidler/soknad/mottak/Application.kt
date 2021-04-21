@@ -70,7 +70,7 @@ fun main() {
             OppgaveSink(this, store)
             DigitalSøknadEndeligJournalført(this, store, infotrygdStore)
             NyOrdrelinje(this, ordreStore, infotrygdStore)
-            VedtaksresultatFraInfotrygd(this, infotrygdStore)
+            VedtaksresultatFraInfotrygd(this, infotrygdStore, store)
             PapirSøknadEndeligJournalført(this, store, infotrygdStore)
         }
         .apply {
