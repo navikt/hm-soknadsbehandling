@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.river.PapirSøknadEndeligJournalført
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

@@ -1,4 +1,4 @@
-package no.nav.hjelpemidler.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.river
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -11,6 +11,7 @@ import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}

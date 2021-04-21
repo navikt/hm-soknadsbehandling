@@ -1,4 +1,4 @@
-package no.nav.hjelpemidler.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.river
 
 import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.CancellationException
@@ -15,6 +15,8 @@ import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
+import no.nav.hjelpemidler.soknad.mottak.service.Status
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}

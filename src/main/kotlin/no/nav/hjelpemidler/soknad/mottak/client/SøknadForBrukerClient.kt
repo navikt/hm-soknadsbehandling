@@ -56,7 +56,6 @@ internal class SøknadForBrukerClientImpl(
     override suspend fun hentSoknaderForBruker(fnrBruker: String, tokenForExchange: String): List<SoknadMedStatus> {
         return withContext(Dispatchers.IO) {
 
-            SoknadMedStatus(UUID.randomUUID(), Date(), Date(), Status.UTLØPT, true, "")
             kotlin.runCatching {
 
                 "$baseUrl/soknad/bruker".httpGet()

@@ -1,4 +1,4 @@
-package no.nav.hjelpemidler.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.river
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -10,6 +10,8 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import no.nav.hjelpemidler.soknad.mottak.service.Status
+import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData.Companion.getSaksblokkFromFagsakId
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData.Companion.getSaksnrFromFagsakId
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData.Companion.getTrygdekontorNrFromFagsakId

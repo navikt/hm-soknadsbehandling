@@ -1,4 +1,4 @@
-package no.nav.hjelpemidler.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.river
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -13,6 +13,8 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
+import no.nav.hjelpemidler.soknad.mottak.service.Status
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}

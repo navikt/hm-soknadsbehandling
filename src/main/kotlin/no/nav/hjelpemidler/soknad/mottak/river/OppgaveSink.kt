@@ -1,4 +1,4 @@
-package no.nav.hjelpemidler.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.river
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

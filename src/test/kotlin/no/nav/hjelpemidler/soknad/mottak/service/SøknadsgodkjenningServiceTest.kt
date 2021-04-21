@@ -1,51 +1,72 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import org.testcontainers.containers.PostgreSQLContainer
+import com.fasterxml.jackson.databind.ObjectMapper
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
+import io.mockk.slot
+import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSoknad
+import org.junit.jupiter.api.Test
+import java.util.UUID
 
-internal object PostgresContainer {
-    val instance by lazy {
-        PostgreSQLContainer<Nothing>("postgres:13.1").apply {
-            start()
-        }
-    }
-}
-
-// TODO Fix test sånn at den funker med mock av http klient
 internal class SøknadsgodkjenningServiceTest {
+    private val capturedSoknadsId = slot<UUID>()
 
-/*
+    val soknadId = UUID.fromString("62f68547-11ae-418c-8ab7-4d2af985bcd8")
+
+    private val mockSoknad =
+        ObjectMapper().readTree(
+            """
+                        {
+                            "soknad":
+                                {
+                                    "date": "2020-06-19",
+                                    "bruker": 
+                                        {
+                                            "fornavn": "fornavn",
+                                            "etternavn": "etternavn"
+                                        },
+                                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
+                                }
+                        }
+        """
+        )
+
+    private val mock = mockk<SøknadForRiverClient>().apply {
+        coEvery { oppdaterStatus(soknadId, Status.GODKJENT) } returns 1
+        coEvery { hentSoknadData(capture(capturedSoknadsId)) } returns SoknadData(
+            "123",
+            "navn",
+            "234",
+            soknadId,
+            mockSoknad,
+            Status.VENTER_GODKJENNING,
+            "oslo"
+        )
+    }
+
+    private val rapid = TestRapid().apply {
+        GodkjennSoknad(this, mock)
+    }
+
     @Test
-    fun `Søknad is markert som utløpt`() {
+    fun `Søknad blir godkjent`() {
 
-        val id = UUID.randomUUID()
-        var søknadsgodkjenningService: SøknadsgodkjenningService
-
-        withMigratedDb {
-            SøknadStorePostgres(DataSource.instance).apply {
-
-                this.save(
-                    mockSøknad(id)
-                ).also {
-                    it shouldBe 1
+        val okPacket =
+            """
+                {
+                    "eventName": "godkjentAvBruker",
+                    "soknadId": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                 }
+        """.trimMargin()
 
-                val storePostgres = this
-                TestRapid().apply {
-                    søknadsgodkjenningService = SøknadsgodkjenningService(storePostgres, this)
-                }
-            }
-            DataSource.instance.apply {
-                sessionOf(this).run(queryOf("UPDATE V1_SOKNAD SET CREATED = (now() - interval '15 day') WHERE SOKNADS_ID = '$id' ").asExecute)
-            }
+        rapid.sendTestMessage(okPacket)
 
-            val utgåtteSøknader = søknadsgodkjenningService.slettUtgåtteSøknader()
-            assertEquals(1, utgåtteSøknader)
-
-            SøknadStorePostgres(DataSource.instance).apply {
-                val søknad = this.hentSoknad(id)
-                assertEquals(Status.UTLØPT, søknad!!.status)
-            }
+        coVerify {
+            mock.oppdaterStatus(soknadId, Status.GODKJENT)
+            mock.hentSoknadData(soknadId)
         }
     }
-*/
 }
