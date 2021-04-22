@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
@@ -26,6 +27,11 @@ internal class OppgaveSink(rapidsConnection: RapidsConnection, private val søkn
 
     private val JsonMessage.soknadId get() = this["soknadId"].textValue()
     private val JsonMessage.oppgaveId get() = this["oppgaveId"].textValue()
+
+    override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {
+        sikkerlogg.info("River required keys had problems in parsing message from rapid: ${problems.toExtendedReport()}")
+        throw Exception("River required keys had problems in parsing message from rapid, see Kibana index tjenestekall-* (sikkerlogg) for details")
+    }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {

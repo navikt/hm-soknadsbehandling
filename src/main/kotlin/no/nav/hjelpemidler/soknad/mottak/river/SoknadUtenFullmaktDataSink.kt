@@ -10,6 +10,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
@@ -31,10 +32,9 @@ internal class SoknadUtenFullmaktDataSink(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.requireValue("eventName", "nySoknad") }
-            validate { it.requireValue("signatur", "BRUKER_BEKREFTER") }
-            validate { it.forbid("soknadId") }
-            validate { it.interestedIn("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId", "kommunenavn") }
+            validate { it.demandValue("eventName", "nySoknad") }
+            validate { it.demandValue("signatur", "BRUKER_BEKREFTER") }
+            validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId", "kommunenavn") }
         }.register(this)
     }
 
@@ -45,6 +45,11 @@ internal class SoknadUtenFullmaktDataSink(
     private val JsonMessage.soknad get() = this["soknad"]
     private val JsonMessage.kommunenavn get() = this["kommunenavn"].textValue()
     private val JsonMessage.navnBruker get() = this["soknad"]["soknad"]["bruker"]["fornavn"].textValue() + " " + this["soknad"]["soknad"]["bruker"]["etternavn"].textValue()
+
+    override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {
+        sikkerlogg.info("River required keys had problems in parsing message from rapid: ${problems.toExtendedReport()}")
+        throw Exception("River required keys had problems in parsing message from rapid, see Kibana index tjenestekall-* (sikkerlogg) for details")
+    }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {
