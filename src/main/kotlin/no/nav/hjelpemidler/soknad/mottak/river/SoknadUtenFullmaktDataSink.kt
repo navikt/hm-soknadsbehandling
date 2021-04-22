@@ -35,6 +35,7 @@ internal class SoknadUtenFullmaktDataSink(
             validate { it.demandValue("eventName", "nySoknad") }
             validate { it.demandValue("signatur", "BRUKER_BEKREFTER") }
             validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId", "kommunenavn") }
+            validate { it.forbid("soknadId") }
         }.register(this)
     }
 

@@ -55,7 +55,8 @@ internal class SoknadMedFullmaktDataSinkTest {
                                         },
                                     "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                                 }
-                        }
+                        },
+                    "kommunenavn": "Oslo"
                 }
         """.trimMargin()
 
@@ -152,7 +153,8 @@ internal class SoknadMedFullmaktDataSinkTest {
                                         },
                                     "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                                 }
-                        }
+                        },
+                    "kommunenavn": "Oslo"
                 }
         """.trimMargin()
 
@@ -183,7 +185,8 @@ internal class SoknadMedFullmaktDataSinkTest {
                                         },
                                     "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                                 }
-                        }
+                        },
+                    "kommunenavn": "Oslo"
                 }
         """.trimMargin()
 
@@ -229,12 +232,14 @@ internal class SoknadMedFullmaktDataSinkTest {
                                         },
                                     "id": "62f68547-11ae-418c-8ab7-4d2af985bcd9"
                                 }
-                        }
+                        },
+                    "kommunenavn": "Oslo"
                 }
         """.trimMargin()
 
-        rapid.sendTestMessage(forbiddenPacket)
-        verify { mock wasNot Called }
+        assertThrows(Exception::class.java) {
+            rapid.sendTestMessage(forbiddenPacket)
+        }.toString().contains("River required keys had problems in parsing message from rapid").shouldBe(true)
     }
 
     @Test
@@ -259,12 +264,13 @@ internal class SoknadMedFullmaktDataSinkTest {
                                         },
                                     "id": "62f68547-11ae-418c-8ab7-4d2af985bcd9"
                                 }
-                        }
+                        },
+                    "kommunenavn": "Oslo"
                 }
         """.trimMargin()
 
-        assertThrows(RuntimeException::class.java) {
+        assertThrows(Exception::class.java) {
             rapid.sendTestMessage(forbiddenPacket)
-        }
+        }.toString().contains("River required keys had problems in parsing message from rapid").shouldBe(true)
     }
 }

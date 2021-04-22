@@ -29,6 +29,7 @@ internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, pri
             validate { it.demandValue("eventName", "nySoknad") }
             validate { it.demandValue("signatur", "FULLMAKT") }
             validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId", "kommunenavn") }
+            validate { it.forbid("soknadId") }
         }.register(this)
     }
 
