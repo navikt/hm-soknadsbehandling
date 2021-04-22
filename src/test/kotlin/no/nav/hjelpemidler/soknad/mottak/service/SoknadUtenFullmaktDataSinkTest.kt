@@ -4,21 +4,22 @@ import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.Called
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.river.SoknadUtenFullmaktDataSink
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class SoknadUtenFullmaktDataSinkTest {
     private val capturedSoknadData = slot<SoknadData>()
-    private val mock = mockk<SøknadStore>().apply {
-        every { save(capture(capturedSoknadData)) } returns 1
-        every { soknadFinnes(any()) } returns false
+    private val mock = mockk<SøknadForRiverClient>().apply {
+        coEvery { save(capture(capturedSoknadData)) } returns Unit
+        coEvery { soknadFinnes(any()) } returns false
     }
 
     private val rapid = TestRapid().apply {

@@ -1,90 +1,93 @@
 package no.nav.hjelpemidler.soknad.mottak
 
-import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
 import io.ktor.application.install
 import io.ktor.auth.authenticate
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.jackson.JacksonConverter
 import io.ktor.request.path
 import io.ktor.routing.route
 import io.ktor.routing.routing
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.hjelpemidler.soknad.mottak.db.InfotrygdStorePostgres
-import no.nav.hjelpemidler.soknad.mottak.db.OrdreStorePostgres
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStoreFormidler
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStoreFormidlerPostgres
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStorePostgres
-import no.nav.hjelpemidler.soknad.mottak.db.dataSourceFrom
-import no.nav.hjelpemidler.soknad.mottak.db.migrate
-import no.nav.hjelpemidler.soknad.mottak.db.waitForDB
-import no.nav.hjelpemidler.soknad.mottak.service.DigitalSøknadEndeligJournalført
-import no.nav.hjelpemidler.soknad.mottak.service.GodkjennSoknad
-import no.nav.hjelpemidler.soknad.mottak.service.JournalpostSink
-import no.nav.hjelpemidler.soknad.mottak.service.NyOrdrelinje
-import no.nav.hjelpemidler.soknad.mottak.service.OppgaveSink
-import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadEndeligJournalført
-import no.nav.hjelpemidler.soknad.mottak.service.SlettSoknad
-import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedFullmaktDataSink
-import no.nav.hjelpemidler.soknad.mottak.service.SoknadUtenFullmaktDataSink
+import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForBrukerClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForBrukerClientImpl
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForFormidlerClientImpl
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClientImpl
+import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalført
+import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSoknad
+import no.nav.hjelpemidler.soknad.mottak.river.JournalpostSink
+import no.nav.hjelpemidler.soknad.mottak.river.NyOrdrelinje
+import no.nav.hjelpemidler.soknad.mottak.river.OppgaveSink
+import no.nav.hjelpemidler.soknad.mottak.river.PapirSøknadEndeligJournalført
+import no.nav.hjelpemidler.soknad.mottak.river.SlettSoknad
+import no.nav.hjelpemidler.soknad.mottak.river.SoknadMedFullmaktDataSink
+import no.nav.hjelpemidler.soknad.mottak.river.SoknadUtenFullmaktDataSink
+import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadsgodkjenningService
-import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatFraInfotrygd
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknad
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknaderForBruker
 import no.nav.hjelpemidler.soknad.mottak.service.hentSoknaderForFormidler
+import no.nav.hjelpemidler.soknad.mottak.tokenx.TokendingsServiceWrapper
+import no.nav.hjelpemidler.soknad.mottak.wiremock.WiremockServer
+import no.nav.tms.token.support.tokendings.exchange.TokendingsServiceBuilder
 import org.slf4j.event.Level
 import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.time.ExperimentalTime
-import kotlin.time.minutes
 
 private val logger = KotlinLogging.logger {}
 
 @ExperimentalTime
 fun main() {
-    if (!waitForDB(10.minutes, Configuration)) {
-        throw Exception("database never became available within the deadline")
+
+    if (Configuration.application.profile == Profile.LOCAL) {
+        WiremockServer(Configuration).startServer()
     }
 
-    val ds: HikariDataSource = dataSourceFrom(Configuration)
-    val store = SøknadStorePostgres(ds)
-    val storeFormidler = SøknadStoreFormidlerPostgres(ds)
-    val ordreStore = OrdreStorePostgres(ds)
-    val infotrygdStore = InfotrygdStorePostgres(ds)
+    val azureClient = AzureClient(
+        tenantUrl = "${Configuration.azure.tenantBaseUrl}/${Configuration.azure.tenantId}",
+        clientId = Configuration.azure.clientId,
+        clientSecret = Configuration.azure.clientSecret
+    )
+
+    val baseUrlSoknadsbehandlingDb = Configuration.soknadsbehandlingDb.baseUrl
+    val tokendingsService = TokendingsServiceBuilder.buildTokendingsService()
+    val tokendingsServiceWrapper = TokendingsServiceWrapper(tokendingsService, Configuration.tokenX.clientIdSoknadsbehandlingDb)
+    val søknadForBrukerClient = SøknadForBrukerClientImpl(baseUrlSoknadsbehandlingDb, tokendingsServiceWrapper)
+    val søknadForFormidlerClient = SøknadForFormidlerClientImpl(baseUrlSoknadsbehandlingDb, tokendingsServiceWrapper)
+    val søknadForRiverClient =
+        SøknadForRiverClientImpl(baseUrlSoknadsbehandlingDb, azureClient, Configuration.azure.dbApiScope)
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
-        .withKtorModule { api(store, storeFormidler) }
+        .withKtorModule { api(søknadForBrukerClient, søknadForFormidlerClient) }
         .build().apply {
-            SoknadMedFullmaktDataSink(this, store)
-            SoknadUtenFullmaktDataSink(this, store)
-            SlettSoknad(this, store)
-            GodkjennSoknad(this, store)
-            startSøknadUtgåttScheduling(SøknadsgodkjenningService(store, this))
-            JournalpostSink(this, store)
-            OppgaveSink(this, store)
-            DigitalSøknadEndeligJournalført(this, store, infotrygdStore)
-            NyOrdrelinje(this, ordreStore, infotrygdStore)
-            VedtaksresultatFraInfotrygd(this, infotrygdStore, store)
-            PapirSøknadEndeligJournalført(this, store, infotrygdStore)
+            SoknadMedFullmaktDataSink(this, søknadForRiverClient)
+            SoknadUtenFullmaktDataSink(this, søknadForRiverClient)
+            SlettSoknad(this, søknadForRiverClient)
+            GodkjennSoknad(this, søknadForRiverClient)
+            startSøknadUtgåttScheduling(SøknadsgodkjenningService(søknadForRiverClient, this))
+            JournalpostSink(this, søknadForRiverClient)
+            OppgaveSink(this, søknadForRiverClient)
+            DigitalSøknadEndeligJournalført(this, søknadForRiverClient)
+            NyOrdrelinje(this, søknadForRiverClient)
+            VedtaksresultatFraInfotrygd(this, søknadForRiverClient)
+            PapirSøknadEndeligJournalført(this, søknadForRiverClient)
         }
-        .apply {
-            register(
-                object : RapidsConnection.StatusListener {
-                    override fun onStartup(rapidsConnection: RapidsConnection) {
-                        migrate(Configuration)
-                    }
-                }
-            )
-        }.start()
+        .start()
 }
 
-internal fun Application.api(store: SøknadStore, storeFormidler: SøknadStoreFormidler) {
+internal fun Application.api(
+    søknadForBrukerClient: SøknadForBrukerClient,
+    søknadForFormidlerClient: SøknadForFormidlerClientImpl
+) {
 
     install(CallLogging) {
         level = Level.INFO
@@ -101,11 +104,9 @@ internal fun Application.api(store: SøknadStore, storeFormidler: SøknadStoreFo
     routing {
         route("/api") {
             authenticate("tokenX") {
-                hentSoknad(store)
-                hentSoknaderForBruker(store)
-
-                // todo: altinn auth
-                hentSoknaderForFormidler(storeFormidler)
+                hentSoknad(søknadForBrukerClient)
+                hentSoknaderForBruker(søknadForBrukerClient)
+                hentSoknaderForFormidler(søknadForFormidlerClient)
             }
         }
     }
@@ -115,8 +116,19 @@ private fun startSøknadUtgåttScheduling(søknadsgodkjenningService: Søknadsgo
     val timer = Timer("utgatt-soknader-task", true)
 
     timer.scheduleAtFixedRate(60000, 1000 * 60 * 60) {
-        logger.info("markerer utgåtte søknader...")
-        val antallUtgåtte = søknadsgodkjenningService.slettUtgåtteSøknader()
-        logger.info("Antall utgåtte søknader: $antallUtgåtte")
+        runBlocking {
+            launch {
+                logger.info("markerer utgåtte søknader...")
+                val antallUtgåtte = søknadsgodkjenningService.slettUtgåtteSøknader()
+                logger.info("Antall utgåtte søknader: $antallUtgåtte")
+            }
+        }
     }
+}
+
+fun ApplicationCall.token() = when {
+    request.headers.contains(HttpHeaders.Authorization) -> {
+        request.headers[HttpHeaders.Authorization]!!.substringAfter(" ")
+    }
+    else -> throw RuntimeException("")
 }

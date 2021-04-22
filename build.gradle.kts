@@ -25,6 +25,7 @@ repositories {
     jcenter()
     maven("http://packages.confluent.io/maven/")
     maven("https://jitpack.io")
+    mavenLocal()
 }
 
 application {
@@ -62,6 +63,8 @@ dependencies {
     implementation("io.ktor:ktor-auth-jwt:$ktor_version")
     implementation("io.ktor:ktor-client-apache:$ktor_version")
     implementation("io.ktor:ktor-client-jackson:$ktor_version")
+    implementation(Tms.KtorTokenSupport.tokendingsExchange)
+    implementation(Tms.KtorTokenSupport.idporten)
 
     testImplementation(Junit5.api)
     testImplementation(KoTest.assertions)
@@ -69,7 +72,7 @@ dependencies {
     testImplementation(Ktor.ktorTest)
     testImplementation(Mockk.mockk)
     testImplementation(TestContainers.postgresql)
-    testImplementation(Wiremock.standalone)
+    implementation(Wiremock.standalone)
     testRuntimeOnly(Junit5.engine)
 }
 

@@ -27,8 +27,14 @@ spec:
       rules:
         - application: hm-brukerbekreftelse
         - application: hm-formidler
+    outbound:
+      rules:
+        - application: hm-soknadsbehandling-db
   tokenx:
     enabled: true
+  azure:
+    application:
+      enabled: true
   resources:
     limits:
       cpu: 500m
@@ -40,18 +46,7 @@ spec:
     enabled: true
   kafka:
     pool: nav-prod
-  gcp:
-    sqlInstances:
-      - name: hm-soknadsbehandling-db-prod
-        type: POSTGRES_12
-        tier: db-custom-4-15360
-        diskType: SSD
-        highAvailability: true
-        diskSize: 20
-        diskAutoresize: true
-        autoBackupTime: "03:00"
-        databases:
-          - name: soknadsbehandling
-            envVarPrefix: DB
-        cascadingDelete: false
+  env:
+    - name: SOKNADSBEHANDLING_DB_BASEURL
+      value: http://hm-soknadsbehandling-db.teamdigihot.svc.cluster.local/api
 

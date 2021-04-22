@@ -1,11 +1,12 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
 import io.kotest.matchers.shouldBe
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.slot
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.hjelpemidler.soknad.mottak.db.SøknadStore
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.river.OppgaveSink
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
@@ -15,8 +16,8 @@ internal class OppgaveSinkTest {
     private val oppgaveId = "57983"
     private val capturedOppgaveId = slot<String>()
     private val capturedSoknadId = slot<UUID>()
-    private val mock = mockk<SøknadStore>().apply {
-        every { oppdaterOppgaveId(capture(capturedSoknadId), capture(capturedOppgaveId)) } returns 1
+    private val mock = mockk<SøknadForRiverClient>().apply {
+        coEvery { oppdaterOppgaveId(capture(capturedSoknadId), capture(capturedOppgaveId)) } returns 1
     }
 
     private val rapid = TestRapid().apply {
