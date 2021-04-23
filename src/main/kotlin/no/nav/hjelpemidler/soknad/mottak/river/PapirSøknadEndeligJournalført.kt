@@ -9,7 +9,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
@@ -22,8 +21,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) :
-    River.PacketListener {
+internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) : PacketListenerAbstract {
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "PapirSoeknadEndeligJournalfoert") }
@@ -49,11 +47,6 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
     private val JsonMessage.journalpostId get() = this["hendelse"]["journalingEvent"]["journalpostId"].asInt()
     private val JsonMessage.fagsakId get() = this["hendelse"]["journalingEventSAF"]["sak"]["fagsakId"].textValue()
     private val JsonMessage.navnBruker get() = this["hendelse"]["journalingEventSAF"]["avsenderMottaker"]["navn"].textValue()
-
-    override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {
-        sikkerlogg.info("River required keys had problems in parsing message from rapid: ${problems.toExtendedReport()}")
-        throw Exception("River required keys had problems in parsing message from rapid, see Kibana index tjenestekall-* (sikkerlogg) for details")
-    }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {

@@ -9,7 +9,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
@@ -24,8 +23,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) :
-    River.PacketListener {
+internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) : PacketListenerAbstract {
 
     init {
         River(rapidsConnection).apply {
@@ -35,11 +33,6 @@ internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val s�
     }
 
     private val JsonMessage.soknadId get() = this["soknadId"].textValue()
-
-    override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {
-        sikkerlogg.info("River required keys had problems in parsing message from rapid: ${problems.toExtendedReport()}")
-        throw Exception("River required keys had problems in parsing message from rapid, see Kibana index tjenestekall-* (sikkerlogg) for details")
-    }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         runBlocking {

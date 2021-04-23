@@ -12,6 +12,7 @@ import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSoknad
+import no.nav.hjelpemidler.soknad.mottak.river.RiverRequiredKeyMissingException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -113,9 +114,9 @@ internal class GodkjennSoknadTest {
                 }
         """.trimMargin()
 
-        Assertions.assertThrows(Exception::class.java) {
+        Assertions.assertThrows(RiverRequiredKeyMissingException::class.java) {
             rapid.sendTestMessage(invalidPacket)
-        }.toString().contains("River required keys had problems in parsing message from rapid").shouldBe(true)
+        }
     }
 
     @Test

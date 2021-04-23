@@ -6,7 +6,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
@@ -24,8 +23,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 internal class DigitalSøknadEndeligJournalført(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient
-) :
-    River.PacketListener {
+) : PacketListenerAbstract {
 
     init {
         River(rapidsConnection).apply {
@@ -41,11 +39,6 @@ internal class DigitalSøknadEndeligJournalført(
     private val JsonMessage.søknadId get() = this["soknadId"].textValue()
     private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
     private val JsonMessage.fagsakId get() = this["hendelse"]["journalingEventSAF"]["sak"]["fagsakId"].textValue()
-
-    override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {
-        sikkerlogg.info("River required keys had problems in parsing message from rapid: ${problems.toExtendedReport()}")
-        throw Exception("River required keys had problems in parsing message from rapid, see Kibana index tjenestekall-* (sikkerlogg) for details")
-    }
 
     override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
         val søknadId = UUID.fromString(packet.søknadId)

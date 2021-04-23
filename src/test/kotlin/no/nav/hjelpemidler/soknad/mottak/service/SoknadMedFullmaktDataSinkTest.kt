@@ -10,6 +10,7 @@ import io.mockk.slot
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.river.RiverRequiredKeyMissingException
 import no.nav.hjelpemidler.soknad.mottak.river.SoknadMedFullmaktDataSink
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
@@ -237,9 +238,9 @@ internal class SoknadMedFullmaktDataSinkTest {
                 }
         """.trimMargin()
 
-        assertThrows(Exception::class.java) {
+        assertThrows(RiverRequiredKeyMissingException::class.java) {
             rapid.sendTestMessage(forbiddenPacket)
-        }.toString().contains("River required keys had problems in parsing message from rapid").shouldBe(true)
+        }
     }
 
     @Test
@@ -269,8 +270,8 @@ internal class SoknadMedFullmaktDataSinkTest {
                 }
         """.trimMargin()
 
-        assertThrows(Exception::class.java) {
+        assertThrows(RiverRequiredKeyMissingException::class.java) {
             rapid.sendTestMessage(forbiddenPacket)
-        }.toString().contains("River required keys had problems in parsing message from rapid").shouldBe(true)
+        }
     }
 }
