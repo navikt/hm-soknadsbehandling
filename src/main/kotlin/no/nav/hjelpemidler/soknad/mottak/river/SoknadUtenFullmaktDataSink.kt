@@ -25,7 +25,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 internal class SoknadUtenFullmaktDataSink(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient
-) : PacketListenerAbstract {
+) : PacketListenerWithOnError {
 
     private fun soknadToJson(soknad: JsonNode): String = JacksonMapper.objectMapper.writeValueAsString(soknad)
 

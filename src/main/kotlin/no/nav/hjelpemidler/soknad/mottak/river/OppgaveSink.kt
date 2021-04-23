@@ -14,7 +14,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class OppgaveSink(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) : PacketListenerAbstract {
+internal class OppgaveSink(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) : PacketListenerWithOnError {
 
     init {
         River(rapidsConnection).apply {

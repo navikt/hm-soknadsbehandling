@@ -9,7 +9,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 class RiverRequiredKeyMissingException(msg: String) : Exception(msg)
 
-interface PacketListenerAbstract : River.PacketListener {
+interface PacketListenerWithOnError : River.PacketListener {
     override fun onError(problems: MessageProblems, context: RapidsConnection.MessageContext) {
         sikkerlogg.info("River required keys had problems in parsing message from rapid: ${problems.toExtendedReport()}")
         throw RiverRequiredKeyMissingException("River required keys had problems in parsing message from rapid, see Kibana index tjenestekall-* (sikkerlogg) for details")

@@ -23,7 +23,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 internal class DigitalSøknadEndeligJournalført(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient
-) : PacketListenerAbstract {
+) : PacketListenerWithOnError {
 
     init {
         River(rapidsConnection).apply {

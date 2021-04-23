@@ -22,7 +22,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 internal class VedtaksresultatFraInfotrygd(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient
-) : PacketListenerAbstract {
+) : PacketListenerWithOnError {
 
     init {
         River(rapidsConnection).apply {
