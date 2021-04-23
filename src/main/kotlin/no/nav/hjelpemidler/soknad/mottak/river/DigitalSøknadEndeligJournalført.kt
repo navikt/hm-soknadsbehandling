@@ -1,5 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -11,11 +12,11 @@ import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.Status
+import no.nav.hjelpemidler.soknad.mottak.service.SøknadUnderBehandlingData
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData.Companion.getSaksblokkFromFagsakId
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData.Companion.getSaksnrFromFagsakId
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData.Companion.getTrygdekontorNrFromFagsakId
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
@@ -59,11 +60,14 @@ internal class DigitalSøknadEndeligJournalført(
                 launch {
                     oppdaterStatus(søknadId)
                     opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData, fagsakId)
+                    context.send(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
+
+                    // Melding til Ditt NAV
+                    context.send(fnrBruker, SøknadUnderBehandlingData(søknadId, fnrBruker).toJson("hm-SøknadUnderBehandling"))
+                    logger.info { "Endelig journalført: Digital søknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId" }
                 }
             }
         }
-
-        context.send(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
     }
 
     private suspend fun oppdaterStatus(søknadId: UUID) =

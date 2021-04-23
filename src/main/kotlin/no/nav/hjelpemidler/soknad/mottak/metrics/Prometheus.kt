@@ -75,10 +75,4 @@ internal object Prometheus {
         .name("hm_knytning_mellom_infotrygd_og_soeknad_oppretta_problem")
         .help("Mengda problem for knytning mellom søknadar og Infotrygd-sak")
         .register(collectorRegistry)
-
-    val papirSøknadMottatt = Counter
-        .build()
-        .name("hm_soknad_papir_mottatt")
-        .help("Antall papirsøknader mottatt")
-        .register(collectorRegistry)
 }

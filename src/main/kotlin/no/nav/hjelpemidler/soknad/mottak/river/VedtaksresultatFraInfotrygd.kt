@@ -56,7 +56,7 @@ internal class VedtaksresultatFraInfotrygd(
 
                     val vedtaksresultatLagretData =
                         VedtaksresultatLagretData(søknadsId, packet.fnrBruker, packet.vedtaksResultat)
-                    context.send(vedtaksresultatLagretData.toJson("hm-VedtaksresultatLagret"))
+                    context.send(packet.fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatLagret"))
                 }
             }
         }

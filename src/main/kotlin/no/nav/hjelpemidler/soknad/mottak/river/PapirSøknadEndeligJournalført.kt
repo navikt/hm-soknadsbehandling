@@ -1,9 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -15,8 +13,8 @@ import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
+import no.nav.hjelpemidler.soknad.mottak.service.SøknadUnderBehandlingData
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
@@ -86,10 +84,12 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
 
                         save(soknadData)
                         opprettKnytningMellomFagsakOgSøknad(fagsakId = fagsakId, vedtaksresultatData = vedtaksresultatData)
+                        context.send(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
                         logger.info { "Papirsøknad mottatt og lagret: $soknadId" }
 
-                        forward(soknadData, context)
-                        context.send(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
+                        // Send melding til Ditt NAV
+                        context.send(fnrBruker, SøknadUnderBehandlingData(soknadId, fnrBruker).toJson("hm-SøknadUnderBehandling"))
+                        logger.info { "Endelig journalført: Papirsøknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $soknadId" }
                     } catch (e: Exception) {
                         throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
                     }
@@ -115,24 +115,6 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
         }.onFailure {
             logger.error(it) { "Failed to save papirsøknad klar til godkjenning: ${soknadData.soknadId}" }
         }.getOrThrow()
-
-    private fun CoroutineScope.forward(søknadData: PapirSøknadData, context: RapidsConnection.MessageContext) {
-        launch(Dispatchers.IO + SupervisorJob()) {
-            context.send(søknadData.fnrBruker, søknadData.toJson("hm-papirsøknadMottatt"))
-            Prometheus.papirSøknadMottatt.inc()
-        }.invokeOnCompletion {
-            when (it) {
-                null -> {
-                    logger.info("Papirsøknad registrert: ${søknadData.soknadId}")
-                    sikkerlogg.info("Søknad klar til godkjenning med søknadsId: ${søknadData.soknadId}, fnr: ${søknadData.fnrBruker})")
-                }
-                is CancellationException -> logger.warn("Cancelled: ${it.message}")
-                else -> {
-                    logger.error("Failed: ${it.message}. Soknad: ${søknadData.soknadId}")
-                }
-            }
-        }
-    }
 
     private suspend fun opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData, fagsakId: String) =
         kotlin.runCatching {
