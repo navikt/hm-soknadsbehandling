@@ -25,16 +25,16 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 internal class SoknadUtenFullmaktDataSink(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient
-) : River.PacketListener {
+) : PacketListenerWithOnError {
 
     private fun soknadToJson(soknad: JsonNode): String = JacksonMapper.objectMapper.writeValueAsString(soknad)
 
     init {
         River(rapidsConnection).apply {
-            validate { it.requireValue("eventName", "nySoknad") }
-            validate { it.requireValue("signatur", "BRUKER_BEKREFTER") }
+            validate { it.demandValue("eventName", "nySoknad") }
+            validate { it.demandValue("signatur", "BRUKER_BEKREFTER") }
+            validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId", "kommunenavn") }
             validate { it.forbid("soknadId") }
-            validate { it.interestedIn("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId", "kommunenavn") }
         }.register(this)
     }
 

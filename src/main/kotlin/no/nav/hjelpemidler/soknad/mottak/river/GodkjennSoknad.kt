@@ -23,12 +23,11 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) :
-    River.PacketListener {
+internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) : PacketListenerWithOnError {
 
     init {
         River(rapidsConnection).apply {
-            validate { it.requireValue("eventName", "godkjentAvBruker") }
+            validate { it.demandValue("eventName", "godkjentAvBruker") }
             validate { it.requireKey("soknadId") }
         }.register(this)
     }

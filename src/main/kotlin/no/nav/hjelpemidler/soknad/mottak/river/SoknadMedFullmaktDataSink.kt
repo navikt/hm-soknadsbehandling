@@ -20,15 +20,14 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) :
-    River.PacketListener {
+internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) : PacketListenerWithOnError {
 
     init {
         River(rapidsConnection).apply {
-            validate { it.requireValue("eventName", "nySoknad") }
-            validate { it.requireValue("signatur", "FULLMAKT") }
+            validate { it.demandValue("eventName", "nySoknad") }
+            validate { it.demandValue("signatur", "FULLMAKT") }
+            validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId", "kommunenavn") }
             validate { it.forbid("soknadId") }
-            validate { it.interestedIn("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId", "kommunenavn") }
         }.register(this)
     }
 

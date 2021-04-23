@@ -10,6 +10,7 @@ import io.mockk.slot
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.river.RiverRequiredKeyMissingException
 import no.nav.hjelpemidler.soknad.mottak.river.SoknadMedFullmaktDataSink
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
@@ -55,7 +56,8 @@ internal class SoknadMedFullmaktDataSinkTest {
                                         },
                                     "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                                 }
-                        }
+                        },
+                    "kommunenavn": "Oslo"
                 }
         """.trimMargin()
 
@@ -152,7 +154,8 @@ internal class SoknadMedFullmaktDataSinkTest {
                                         },
                                     "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                                 }
-                        }
+                        },
+                    "kommunenavn": "Oslo"
                 }
         """.trimMargin()
 
@@ -183,7 +186,8 @@ internal class SoknadMedFullmaktDataSinkTest {
                                         },
                                     "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                                 }
-                        }
+                        },
+                    "kommunenavn": "Oslo"
                 }
         """.trimMargin()
 
@@ -229,12 +233,14 @@ internal class SoknadMedFullmaktDataSinkTest {
                                         },
                                     "id": "62f68547-11ae-418c-8ab7-4d2af985bcd9"
                                 }
-                        }
+                        },
+                    "kommunenavn": "Oslo"
                 }
         """.trimMargin()
 
-        rapid.sendTestMessage(forbiddenPacket)
-        verify { mock wasNot Called }
+        assertThrows(RiverRequiredKeyMissingException::class.java) {
+            rapid.sendTestMessage(forbiddenPacket)
+        }
     }
 
     @Test
@@ -259,11 +265,12 @@ internal class SoknadMedFullmaktDataSinkTest {
                                         },
                                     "id": "62f68547-11ae-418c-8ab7-4d2af985bcd9"
                                 }
-                        }
+                        },
+                    "kommunenavn": "Oslo"
                 }
         """.trimMargin()
 
-        assertThrows(RuntimeException::class.java) {
+        assertThrows(RiverRequiredKeyMissingException::class.java) {
             rapid.sendTestMessage(forbiddenPacket)
         }
     }

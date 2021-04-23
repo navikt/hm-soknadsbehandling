@@ -21,8 +21,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) :
-    River.PacketListener {
+internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) : PacketListenerWithOnError {
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "PapirSoeknadEndeligJournalfoert") }

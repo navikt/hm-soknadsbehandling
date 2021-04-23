@@ -20,8 +20,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 internal class NyOrdrelinje(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient
-) :
-    River.PacketListener {
+) : PacketListenerWithOnError {
 
     init {
         River(rapidsConnection).apply {
