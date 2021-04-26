@@ -63,8 +63,6 @@ dependencies {
     implementation("io.ktor:ktor-auth-jwt:$ktor_version")
     implementation("io.ktor:ktor-client-apache:$ktor_version")
     implementation("io.ktor:ktor-client-jackson:$ktor_version")
-    implementation(Tms.KtorTokenSupport.tokendingsExchange)
-    implementation(Tms.KtorTokenSupport.idporten)
 
     testImplementation(Junit5.api)
     testImplementation(KoTest.assertions)

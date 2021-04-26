@@ -252,28 +252,8 @@ object Ulid {
     const val ulid = "de.huxhorn.sulky:de.huxhorn.sulky.ulid:$version"
 }
 
-object Vault {
-    const val javaDriver = "com.bettercloud:vault-java-driver:3.1.0"
-}
-
 object Wiremock {
     const val version = "2.21.0"
     const val standalone = "com.github.tomakehurst:wiremock-standalone:$version"
 }
 
-object Graphql {
-    const val version = "3.1.1"
-    const val graphql = "com.expediagroup.graphql"
-    val client = library("client")
-    fun library(name: String) = "com.expediagroup:graphql-kotlin-$name:$version"
-}
-
-object Tms {
-    object KtorTokenSupport {
-        private const val version = "2021.03.19-14.14-a176dc99d3a5"
-        private const val groupId = "com.github.navikt.tms-ktor-token-support"
-
-        const val idporten = "$groupId:token-support-idporten:$version"
-        const val tokendingsExchange = "$groupId:token-support-tokendings-exchange:$version"
-    }
-}
