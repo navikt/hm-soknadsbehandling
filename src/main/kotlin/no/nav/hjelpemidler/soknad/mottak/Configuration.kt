@@ -25,7 +25,7 @@ private val localProperties = ConfigurationMap(
         "AZURE_APP_CLIENT_ID" to "123",
         "AZURE_APP_CLIENT_SECRET" to "dummy",
         "DBAPI_SCOPE" to "123",
-        "SOKNADSBEHANDLING_DB_BASEURL" to "http://host.docker.internal:8083",
+        "SOKNADSBEHANDLING_DB_BASEURL" to "http://localhost:8083/api",
         "SOKNADSBEHANDLING_DB_CLIENT_ID" to "local:hm-soknadsbehandling-db",
     )
 )
