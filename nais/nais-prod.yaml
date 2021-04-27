@@ -9,8 +9,6 @@ metadata:
 spec:
   image: {{ image }}
   team: teamdigihot
-  strategy:
-    type: Recreate
   liveness:
     path: /isalive
   readiness:
