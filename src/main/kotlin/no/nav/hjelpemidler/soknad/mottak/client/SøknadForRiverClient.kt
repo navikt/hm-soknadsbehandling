@@ -33,6 +33,7 @@ internal interface SøknadForRiverClient {
 
     suspend fun save(soknadData: SoknadData)
     suspend fun soknadFinnes(soknadsId: UUID): Boolean
+    suspend fun ordreWithinSameDay(soknadsId: UUID): Boolean
     suspend fun hentFnrForSoknad(soknadsId: UUID): String
     suspend fun slettSøknad(soknadsId: UUID): Int
     suspend fun oppdaterStatus(soknadsId: UUID, status: Status): Int
@@ -127,6 +128,32 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/soknad/bruker/finnes/$soknadsId".httpGet()
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
+                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .awaitObject(
+                        object : ResponseDeserializable<JsonNode> {
+                            override fun deserialize(content: String): JsonNode {
+                                return JacksonMapper.objectMapper.readTree(content)
+                            }
+                        }
+                    )
+                    .let {
+                        it.get("second").booleanValue()
+                    }
+            }
+                .onFailure {
+                    logger.error { it.message }
+                }
+        }
+            .getOrThrow()
+    }
+
+    override suspend fun ordreSisteDøgn(soknadsId: UUID): Boolean {
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+                "$baseUrl/soknad/ordre/ordrelinje-siste-doegn/$soknadsId".httpGet()
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
