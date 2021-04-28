@@ -84,7 +84,13 @@ internal class NyOrdrelinje(
                         save(ordrelinjeData)
 
                         // TODO: Kommenter inn linja under for sending til rapid etter at businesslogikk er på plass
-                        // forward(ordrelinjeData, context)
+                        if (!søknadForRiverClient.ordreWithinSameDay(soknadsId = søknadId)) {
+                            context.send(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
+                            Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
+                            logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
+                            sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
+                        } else {
+                        }
                     } catch (e: Exception) {
                         throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
                     }
