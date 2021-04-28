@@ -6,16 +6,17 @@ App som lytter på rapid og lagrer innsendte søknader i database og sender vide
 
 # Lokal køyring
 
-Kjør docker-compose for å starte database lokalt: 
+1. Kjør docker-compose i [hm-soknad-api](https://github.com/navikt/hm-soknad-api) for å starte nødvendig økosystem:
 ```
+cd hm-soknad-api
 docker-compose -f docker-compose/docker-compose.yml up
 ```
+2. Start hm-soknadsbehandling-db [hm-soknadsbehandling-db](https://github.com/navikt/hm-soknadsbehandling-db)
 
-- start [backend](https://github.com/navikt/hm-soknad-api) for å starte rapid og evt. populere rapid
-- start [hm-soknadsbehandling](https://github.com/navikt/hm-soknadsbehandling) for å lagre søknad i db og sende videre på rapid
+3. Start hm-soknadsbehandling gjennom Application run configuration i Idea
 
-- start hm-soknadsbehandling og vent på melding
-
+Dersom du vil legge nye søknader på rapid så kan du følge readme i [hm-soknad-api](https://github.com/navikt/hm-soknad-api) og
+[hm-soknad](https://github.com/navikt/hm-soknad)
 
 # Henvendelser
 
