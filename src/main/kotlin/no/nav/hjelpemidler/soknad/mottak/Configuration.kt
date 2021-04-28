@@ -69,7 +69,7 @@ internal object Configuration {
     val rapidApplication: Map<String, String> = mapOf(
         "RAPID_KAFKA_CLUSTER" to "gcp",
         "RAPID_APP_NAME" to "hm-soknadsbehandling",
-        "KAFKA_BOOTSTRAP_SERVERS" to config()[Key("KAFKA_BROKERS", stringType)],
+        "KAFKA_BROKERS" to config()[Key("KAFKA_BROKERS", stringType)],
         "KAFKA_CONSUMER_GROUP_ID" to application.id,
         "KAFKA_RAPID_TOPIC" to config()[Key("KAFKA_TOPIC", stringType)],
         "KAFKA_RESET_POLICY" to config()[Key("KAFKA_RESET_POLICY", stringType)],
