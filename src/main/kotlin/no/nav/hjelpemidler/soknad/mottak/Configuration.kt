@@ -19,7 +19,7 @@ private val localProperties = ConfigurationMap(
         "KAFKA_CREDSTORE_PASSWORD" to "",
         "KAFKA_KEYSTORE_PATH" to "",
         "kafka.truststore.password" to "foo",
-        "kafka.brokers" to "host.docker.internal:9092",
+        "KAFKA_BROKERS" to "host.docker.internal:9092",
         "AZURE_TENANT_BASEURL" to "http://localhost:9098",
         "AZURE_APP_TENANT_ID" to "123",
         "AZURE_APP_CLIENT_ID" to "123",
@@ -74,9 +74,8 @@ internal object Configuration {
         "KAFKA_RAPID_TOPIC" to config()[Key("kafka.topic", stringType)],
         "KAFKA_RESET_POLICY" to config()[Key("kafka.reset.policy", stringType)],
         "NAV_TRUSTSTORE_PATH" to config()[Key("KAFKA_TRUSTSTORE_PATH", stringType)],
-        "NAV_TRUSTSTORE_PASSWORD" to config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
+        "KAFKA_CREDSTORE_PASSWORD" to config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
         "KAFKA_KEYSTORE_PATH" to config()[Key("KAFKA_KEYSTORE_PATH", stringType)],
-        "KAFKA_KEYSTORE_PASSWORD" to config()[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
         "HTTP_PORT" to config()[Key("application.httpPort", stringType)],
     ) + System.getenv().filter { it.key.startsWith("NAIS_") }
 

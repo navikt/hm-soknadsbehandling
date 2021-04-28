@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
@@ -45,7 +46,7 @@ internal class NyOrdrelinje(
     private val JsonMessage.saksblokkOgSaksnr get() = this["data"]["saksblokkOgSaksnr"].textValue()
     private val JsonMessage.vedtaksdato get() = this["data"]["vedtaksdato"].asLocalDate()
 
-    override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
@@ -113,9 +114,9 @@ internal class NyOrdrelinje(
         }.getOrThrow()
 
     // TODO: Lag businesslogikk for når vi skal sende melding til Ditt NAV om ny ordrelinje
-//    private fun CoroutineScope.forward(ordrelinjeData: OrdrelinjeData, context: RapidsConnection.MessageContext) {
+//    private fun CoroutineScope.forward(ordrelinjeData: OrdrelinjeData, context: MessageContext) {
 //        launch(Dispatchers.IO + SupervisorJob()) {
-//            context.send(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
+//            context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
 //            Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
 //        }.invokeOnCompletion {
 //            when (it) {

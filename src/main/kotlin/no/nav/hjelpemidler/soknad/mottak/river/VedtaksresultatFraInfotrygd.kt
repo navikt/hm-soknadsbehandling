@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
@@ -36,7 +37,7 @@ internal class VedtaksresultatFraInfotrygd(
     private val JsonMessage.vedtaksResultat get() = this["vedtaksResultat"].textValue()
     private val JsonMessage.vedtaksDato get() = this["vedtaksDato"].asLocalDate()
 
-    override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
@@ -56,7 +57,7 @@ internal class VedtaksresultatFraInfotrygd(
 
                     val vedtaksresultatLagretData =
                         VedtaksresultatLagretData(søknadsId, packet.fnrBruker, packet.vedtaksResultat)
-                    context.send(packet.fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatLagret"))
+                    context.publish(packet.fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatLagret"))
                 }
             }
         }

@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
@@ -46,7 +47,7 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
     private val JsonMessage.fagsakId get() = this["hendelse"]["journalingEventSAF"]["sak"]["fagsakId"].textValue()
     private val JsonMessage.navnBruker get() = this["hendelse"]["journalingEventSAF"]["avsenderMottaker"]["navn"].textValue()
 
-    override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
@@ -84,11 +85,11 @@ internal class PapirSøknadEndeligJournalført(rapidsConnection: RapidsConnectio
 
                         save(soknadData)
                         opprettKnytningMellomFagsakOgSøknad(fagsakId = fagsakId, vedtaksresultatData = vedtaksresultatData)
-                        context.send(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
+                        context.publish(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
                         logger.info { "Papirsøknad mottatt og lagret: $soknadId" }
 
                         // Send melding til Ditt NAV
-                        context.send(fnrBruker, SøknadUnderBehandlingData(soknadId, fnrBruker).toJson("hm-SøknadUnderBehandling"))
+                        context.publish(fnrBruker, SøknadUnderBehandlingData(soknadId, fnrBruker).toJson("hm-SøknadUnderBehandling"))
                         logger.info { "Endelig journalført: Papirsøknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $soknadId" }
                     } catch (e: Exception) {
                         throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)

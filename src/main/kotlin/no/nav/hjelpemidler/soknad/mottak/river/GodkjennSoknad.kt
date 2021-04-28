@@ -9,6 +9,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.S√∏knadForRiverClient
@@ -34,7 +35,7 @@ internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val s√
 
     private val JsonMessage.soknadId get() = this["soknadId"].textValue()
 
-    override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
@@ -82,13 +83,13 @@ internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val s√
         }
     }
 
-    private fun CoroutineScope.forward(soknadData: SoknadData, context: RapidsConnection.MessageContext) {
+    private fun CoroutineScope.forward(soknadData: SoknadData, context: MessageContext) {
         val fnrBruker = soknadData.fnrBruker
         val soknadId = soknadData.soknadId.toString()
 
         launch(Dispatchers.IO + SupervisorJob()) {
             val soknadGodkjentMessage = soknadData.toJson("S√∏knadGodkjentAvBruker")
-            context.send(fnrBruker, soknadGodkjentMessage)
+            context.publish(fnrBruker, soknadGodkjentMessage)
             Prometheus.soknadGodkjentAvBrukerCounter.inc()
         }.invokeOnCompletion {
             when (it) {

@@ -10,6 +10,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
@@ -33,7 +34,7 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søkn
 
     private val JsonMessage.soknadId get() = this["soknadId"].textValue()
 
-    override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
@@ -63,7 +64,7 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søkn
             logger.error(it) { "Failed to update søknad $soknadId med status $status" }
         }.getOrThrow()
 
-    private fun CoroutineScope.forward(soknadId: UUID, fnrBruker: String, context: RapidsConnection.MessageContext) {
+    private fun CoroutineScope.forward(soknadId: UUID, fnrBruker: String, context: MessageContext) {
         launch(Dispatchers.IO + SupervisorJob()) {
 
             val soknadGodkjentMessage = JsonMessage("{}", MessageProblems("")).also {
@@ -73,7 +74,7 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søkn
                 it["fodselNrBruker"] = fnrBruker
                 it["soknadId"] = soknadId.toString()
             }.toJson()
-            context.send(fnrBruker, soknadGodkjentMessage)
+            context.publish(fnrBruker, soknadGodkjentMessage)
             Prometheus.soknadSlettetAvBrukerCounter.inc()
         }.invokeOnCompletion {
             when (it) {

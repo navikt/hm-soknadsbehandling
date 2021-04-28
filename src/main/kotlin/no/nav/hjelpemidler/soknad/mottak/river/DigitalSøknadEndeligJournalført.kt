@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
@@ -41,7 +42,7 @@ internal class DigitalSøknadEndeligJournalført(
     private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
     private val JsonMessage.fagsakId get() = this["hendelse"]["journalingEventSAF"]["sak"]["fagsakId"].textValue()
 
-    override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext) {
         val søknadId = UUID.fromString(packet.søknadId)
         val fnrBruker = packet.fnrBruker
         val fagsakId = packet.fagsakId
@@ -60,10 +61,10 @@ internal class DigitalSøknadEndeligJournalført(
                 launch {
                     oppdaterStatus(søknadId)
                     opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData, fagsakId)
-                    context.send(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
+                    context.publish(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
 
                     // Melding til Ditt NAV
-                    context.send(fnrBruker, SøknadUnderBehandlingData(søknadId, fnrBruker).toJson("hm-SøknadUnderBehandling"))
+                    context.publish(fnrBruker, SøknadUnderBehandlingData(søknadId, fnrBruker).toJson("hm-SøknadUnderBehandling"))
                     logger.info { "Endelig journalført: Digital søknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId" }
                 }
             }

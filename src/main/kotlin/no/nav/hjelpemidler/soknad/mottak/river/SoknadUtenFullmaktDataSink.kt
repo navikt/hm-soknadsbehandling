@@ -10,6 +10,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
@@ -46,7 +47,7 @@ internal class SoknadUtenFullmaktDataSink(
     private val JsonMessage.kommunenavn get() = this["kommunenavn"].textValue()
     private val JsonMessage.navnBruker get() = this["soknad"]["soknad"]["bruker"]["fornavn"].textValue() + " " + this["soknad"]["soknad"]["bruker"]["etternavn"].textValue()
 
-    override fun onPacket(packet: JsonMessage, context: RapidsConnection.MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
@@ -95,9 +96,9 @@ internal class SoknadUtenFullmaktDataSink(
             logger.error(it) { "Failed to save søknad klar til godkjenning: ${soknadData.soknadId}" }
         }.getOrThrow()
 
-    private fun CoroutineScope.forward(søknadData: SoknadData, context: RapidsConnection.MessageContext) {
+    private fun CoroutineScope.forward(søknadData: SoknadData, context: MessageContext) {
         launch(Dispatchers.IO + SupervisorJob()) {
-            context.send(søknadData.fnrBruker, søknadData.toVenterPaaGodkjenningJson())
+            context.publish(søknadData.fnrBruker, søknadData.toVenterPaaGodkjenningJson())
             Prometheus.soknadTilGodkjenningCounter.inc()
         }.invokeOnCompletion {
             when (it) {
