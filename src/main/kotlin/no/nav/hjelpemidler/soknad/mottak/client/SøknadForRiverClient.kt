@@ -33,7 +33,7 @@ internal interface SøknadForRiverClient {
 
     suspend fun save(soknadData: SoknadData)
     suspend fun soknadFinnes(soknadsId: UUID): Boolean
-    suspend fun ordreWithinSameDay(soknadsId: UUID): Boolean
+    suspend fun ordreSisteDøgn(soknadsId: UUID): Boolean
     suspend fun hentFnrForSoknad(soknadsId: UUID): String
     suspend fun slettSøknad(soknadsId: UUID): Int
     suspend fun oppdaterStatus(soknadsId: UUID, status: Status): Int
