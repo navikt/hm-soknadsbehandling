@@ -94,7 +94,7 @@ internal class NyOrdrelinje(
                             logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
                             sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
                         } else {
-                            logger.info("Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet.")
+                            logger.info("Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId")
                         }
                     } catch (e: Exception) {
                         throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
