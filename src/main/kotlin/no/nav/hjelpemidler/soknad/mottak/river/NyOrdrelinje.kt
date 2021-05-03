@@ -81,10 +81,21 @@ internal class NyOrdrelinje(
                             data = packet.data,
                         )
 
-                        save(ordrelinjeData)
+                        val ordreSisteDøgn = søknadForRiverClient.ordreSisteDøgn(soknadsId = søknadId)
+                        val result = save(ordrelinjeData)
 
-                        // TODO: Kommenter inn linja under for sending til rapid etter at businesslogikk er på plass
-                        // forward(ordrelinjeData, context)
+                        if (result == 0) {
+                            return@launch
+                        }
+
+                        if (!ordreSisteDøgn) {
+                            context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
+                            Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
+                            logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
+                            sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
+                        } else {
+                            logger.info("Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId")
+                        }
                     } catch (e: Exception) {
                         throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
                     }
@@ -99,7 +110,7 @@ internal class NyOrdrelinje(
         return skipList.any { it == eventId }
     }
 
-    private suspend fun save(ordrelinje: OrdrelinjeData) =
+    private suspend fun save(ordrelinje: OrdrelinjeData): Int =
         kotlin.runCatching {
             søknadForRiverClient.save(ordrelinje)
         }.onSuccess {

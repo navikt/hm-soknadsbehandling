@@ -3,7 +3,6 @@ package no.nav.hjelpemidler.soknad.mottak.service
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
-import java.time.LocalDateTime
 import java.util.UUID
 
 internal data class OrdrelinjeData(
@@ -20,13 +19,10 @@ internal data class OrdrelinjeData(
 ) {
     internal fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
-            it["eventId"] = UUID.randomUUID().toString()
             it["eventName"] = eventName
-            it["opprettet"] = LocalDateTime.now()
+            it["eventId"] = UUID.randomUUID().toString()
+            it["søknadId"] = this.søknadId
             it["fnrBruker"] = this.fnrBruker
-            it["artikkelnr"] = this.artikkelnr
-            it["antall"] = this.antall
-            it["produktgruppe"] = this.produktgruppe
         }.toJson()
     }
 }
