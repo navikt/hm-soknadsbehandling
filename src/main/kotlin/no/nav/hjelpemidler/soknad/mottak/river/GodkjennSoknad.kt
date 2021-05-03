@@ -41,13 +41,14 @@ internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val s�
                 launch {
                     try {
                         logger.info { "Bruker har godkjent søknad: ${packet.soknadId}" }
-                        val rowsUpdated = update(UUID.fromString(packet.soknadId), Status.GODKJENT)
-                        if (rowsUpdated> 0) {
-                            val soknad = hentSoknadData(UUID.fromString(packet.soknadId))
-                            loggTidBruktForGodkjenning(soknad)
-                            forward(soknad, context)
+                        val soknad = hentSoknadData(UUID.fromString(packet.soknadId))
+                        if (soknad.status != Status.VENTER_GODKJENNING) {
+                            logger.info { "Søknad til godkjenning har ikke status VENTER_GODKJENNING. søknadId: ${packet.soknadId}" }
                         } else {
-                            logger.info { "Søknad som godkjennes er allerede godkjent, søknadId: ${packet.soknadId}" }
+                            loggTidBruktForGodkjenning(soknad)
+                            update(UUID.fromString(packet.soknadId), Status.GODKJENT)
+                            val oppdatertSoknad = hentSoknadData(UUID.fromString(packet.soknadId))
+                            forward(oppdatertSoknad, context)
                         }
                     } catch (e: Exception) {
                         throw RuntimeException("Håndtering av brukergodkjenning for søknad ${packet.soknadId} feilet", e)

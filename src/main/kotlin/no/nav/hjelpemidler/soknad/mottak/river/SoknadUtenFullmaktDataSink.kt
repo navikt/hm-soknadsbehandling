@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
+import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
@@ -46,6 +47,11 @@ internal class SoknadUtenFullmaktDataSink(
     private val JsonMessage.soknad get() = this["soknad"]
     private val JsonMessage.kommunenavn get() = this["kommunenavn"].textValue()
     private val JsonMessage.navnBruker get() = this["soknad"]["soknad"]["bruker"]["fornavn"].textValue() + " " + this["soknad"]["soknad"]["bruker"]["etternavn"].textValue()
+
+    override fun onError(problems: MessageProblems, context: MessageContext) {
+        super.onError(problems, context)
+        System.out.println(problems.toExtendedReport())
+    }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {

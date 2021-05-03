@@ -20,11 +20,12 @@ import java.util.UUID
 
 internal class GodkjennSoknadTest {
     private val soknadId = "e8dac11d-fa66-4561-89d7-88a62ab31c2b"
+    private val soknadIdDuplikat = "b6babd58-e46e-4adf-9799-707d41c5322e"
     private val capturedStatus = slot<Status>()
     private val capturedSoknadId = slot<UUID>()
     private val mock = mockk<SøknadForRiverClient>().apply {
         coEvery { oppdaterStatus(capture(capturedSoknadId), capture(capturedStatus)) } returns 1
-        coEvery { hentSoknadData(any()) } returns SoknadData(
+        coEvery { hentSoknadData(UUID.fromString(soknadId)) } returns SoknadData(
             "fnrBruker",
             "fornavn etternavn",
             "fnrInnsender",
@@ -33,6 +34,39 @@ internal class GodkjennSoknadTest {
                 """ {
                     "fnrBruker": "fnrBruker",
                     "soknadId": "$soknadId",
+                    "datoOpprettet": "2021-02-23T09:46:45.146+00:00",
+                    "soknad": {
+                        "id": "e8dac11d-fa66-4561-89d7-88a62ab31c2b",
+                        "date": "2021-02-16",
+                        "bruker": {
+                            "kilde": "PDL",
+                            "adresse": "Trandemveien 29",
+                            "fnummer": "12345678910",
+                            "fornavn": "Sedat",
+                            "poststed": "Hebnes",
+                            "signatur": "BRUKER_BEKREFTER",
+                            "etternavn": "Kronjuvel",
+                            "postnummer": "4235",
+                            "telefonNummer": "12341234"
+                        },
+                        "levering": "postkassa, postkassa, postkassa",
+                        "hjelpemidler": "foo",
+                        "brukersituasjon": "bar"
+                        }
+                    } """
+            ),
+            status = Status.VENTER_GODKJENNING,
+            kommunenavn = null
+        )
+        coEvery { hentSoknadData(UUID.fromString(soknadIdDuplikat)) } returns SoknadData(
+            "fnrBruker",
+            "fornavn etternavn",
+            "fnrInnsender",
+            UUID.fromString(soknadIdDuplikat),
+            ObjectMapper().readTree(
+                """ {
+                    "fnrBruker": "fnrBruker",
+                    "soknadId": "$soknadIdDuplikat",
                     "datoOpprettet": "2021-02-23T09:46:45.146+00:00",
                     "soknad": {
                         "id": "e8dac11d-fa66-4561-89d7-88a62ab31c2b",
@@ -68,6 +102,27 @@ internal class GodkjennSoknadTest {
         rapid.reset()
         capturedSoknadId.clear()
         capturedStatus.clear()
+    }
+
+    @Test
+    fun `Do not forward already godkjent søknad`() {
+
+        val okPacket =
+            """
+                {
+                    "eventName": "godkjentAvBruker",
+                    "fodselNrBruker": "fnrBruker",
+                    "soknadId": "$soknadIdDuplikat"
+                }
+        """.trimMargin()
+
+        rapid.sendTestMessage(okPacket)
+
+        Thread.sleep(1000)
+
+        val inspektør = rapid.inspektør
+
+        inspektør.size shouldBeExactly 0
     }
 
     @Test
