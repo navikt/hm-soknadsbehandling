@@ -13,7 +13,7 @@ internal data class OrdrelinjeData(
     val ordrelinje: Int,
     val delordrelinje: Int,
     val artikkelnr: String,
-    val antall: Int,
+    val antall: Double,
     val produktgruppe: String,
     val data: JsonNode,
 ) {

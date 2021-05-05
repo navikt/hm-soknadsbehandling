@@ -38,7 +38,7 @@ internal class NyOrdrelinje(
     private val JsonMessage.ordrelinje get() = this["data"]["ordrelinje"].intValue()
     private val JsonMessage.delordrelinje get() = this["data"]["delordrelinje"].intValue()
     private val JsonMessage.artikkelnr get() = this["data"]["artikkelnr"].textValue()
-    private val JsonMessage.antall get() = this["data"]["antall"].intValue()
+    private val JsonMessage.antall get() = this["data"]["antall"].doubleValue()
     private val JsonMessage.produktgruppe get() = this["data"]["produktgruppe"].textValue()
     private val JsonMessage.data get() = this["data"]
 
