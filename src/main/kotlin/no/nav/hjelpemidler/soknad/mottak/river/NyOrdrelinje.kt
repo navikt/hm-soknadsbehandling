@@ -50,6 +50,11 @@ internal class NyOrdrelinje(
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
+                    if (packet.saksblokkOgSaksnr.isEmpty()) {
+                        logger.info("Skipping illegal event saksblokkOgSaksnr='': ${packet.eventId}")
+                        sikkerlogg.error("Skippet event med tom saksblokkOgSaksnr: ${packet.toJson()}")
+                        return@launch
+                    }
                     if (skipEvent(UUID.fromString(packet.eventId))) {
                         logger.info("Hopper over event i skip-list: ${packet.eventId}")
                         sikkerlogg.error("Skippet event: ${packet.toJson()}")
