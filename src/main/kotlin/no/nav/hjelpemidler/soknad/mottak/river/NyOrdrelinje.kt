@@ -51,7 +51,8 @@ internal class NyOrdrelinje(
             withContext(Dispatchers.IO) {
                 launch {
                     if (skipEvent(UUID.fromString(packet.eventId))) {
-                        logger.info { "Hopper over event i skip-list: ${packet.eventId}" }
+                        logger.info("Hopper over event i skip-list: ${packet.eventId}")
+                        sikkerlogg.error("Skippet event: ${packet.toJson()}")
                         return@launch
                     }
                     try {
@@ -106,7 +107,7 @@ internal class NyOrdrelinje(
 
     private fun skipEvent(eventId: UUID): Boolean {
         val skipList = mutableListOf<UUID>()
-        skipList.add(UUID.fromString("01fc4654-bba8-43b3-807b-8487ab21cea3"))
+        skipList.add(UUID.fromString("0ce9295b-d38f-479f-869e-76dbf6a9bcfa"))
         return skipList.any { it == eventId }
     }
 
