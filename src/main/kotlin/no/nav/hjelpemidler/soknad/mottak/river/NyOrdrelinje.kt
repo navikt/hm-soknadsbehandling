@@ -13,6 +13,7 @@ import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
+import no.nav.hjelpemidler.soknad.mottak.service.Status
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -93,6 +94,8 @@ internal class NyOrdrelinje(
                         if (result == 0) {
                             return@launch
                         }
+
+                        søknadForRiverClient.oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
 
                         if (!ordreSisteDøgn) {
                             context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
