@@ -132,22 +132,4 @@ internal class NyOrdrelinje(
         }.onFailure {
             logger.error(it) { "Feil under lagring av ordrelinje for SF ${ordrelinje.serviceforespørsel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
         }.getOrThrow()
-
-    // TODO: Lag businesslogikk for når vi skal sende melding til Ditt NAV om ny ordrelinje
-//    private fun CoroutineScope.forward(ordrelinjeData: OrdrelinjeData, context: MessageContext) {
-//        launch(Dispatchers.IO + SupervisorJob()) {
-//            context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
-//            Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
-//        }.invokeOnCompletion {
-//            when (it) {
-//                null -> {
-//                    logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
-//                    sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
-//                }
-//                is CancellationException -> logger.warn("Cancelled: ${it.message}")
-//                else -> {
-//                    logger.error("Failed: ${it.message}")
-//                }
-//            }
-//        }
 }
