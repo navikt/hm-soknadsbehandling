@@ -115,7 +115,7 @@ internal class NyOrdrelinje(
 
     private fun skipEvent(eventId: UUID): Boolean {
         val skipList = mutableListOf<UUID>()
-        skipList.add(UUID.fromString("0ce9295b-d38f-479f-869e-76dbf6a9bcfa"))
+        skipList.add(UUID.fromString("3ed6db99-e2f8-4b87-bc02-d98279768df0"))
         return skipList.any { it == eventId }
     }
 
