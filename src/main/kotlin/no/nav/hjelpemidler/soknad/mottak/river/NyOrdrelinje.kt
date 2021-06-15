@@ -78,7 +78,7 @@ internal class NyOrdrelinje(
                             return@launch
                         }
 
-                        logger.info("NOTE NOTE NOTE: IGNORING oebsId (set to -1), enhet (set to \"STK\"), and produktgruppeNr (set to \"\") temporarily: ${packet.eventId}")
+                        // logger.info("NOTE NOTE NOTE: IGNORING oebsId (set to -1), enhet (set to \"STK\"), and produktgruppeNr (set to \"\") temporarily: ${packet.eventId}")
 
                         val ordrelinjeData = OrdrelinjeData(
                             søknadId = søknadId,
