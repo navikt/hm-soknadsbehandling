@@ -124,6 +124,8 @@ internal class NyOrdrelinje(
         skipList.add(UUID.fromString("93cd36de-feab-4a29-8aa3-4ef976d203ef"))
         skipList.add(UUID.fromString("1e4690d3-72c5-4cbe-96be-34bdbf3a3022"))
         skipList.add(UUID.fromString("60e9a574-15ea-4f3c-befb-6fdb4341e450"))
+        skipList.add(UUID.fromString("38ef8296-2445-420d-ac72-6749982cfb34"))
+        skipList.add(UUID.fromString("05b03961-fe85-44df-8af7-7528c57deed9"))
         return skipList.any { it == eventId }
     }
 
