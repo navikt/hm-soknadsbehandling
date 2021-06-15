@@ -14,7 +14,7 @@ import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
-import java.util.UUID
+import java.util.*
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
@@ -34,16 +34,16 @@ internal class NyOrdrelinje(
     private val JsonMessage.eventId get() = this["eventId"].textValue()
     private val JsonMessage.opprettet get() = this["opprettet"].textValue()
     private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
-    private val JsonMessage.oebsId get() = this["data"]["oebsId"].intValue()
+    // private val JsonMessage.oebsId get() = this["data"]["oebsId"].intValue()
     private val JsonMessage.serviceforespørsel get() = this["data"]["serviceforespørsel"].intValue()
     private val JsonMessage.ordrenr get() = this["data"]["ordrenr"].intValue()
     private val JsonMessage.ordrelinje get() = this["data"]["ordrelinje"].intValue()
     private val JsonMessage.delordrelinje get() = this["data"]["delordrelinje"].intValue()
     private val JsonMessage.artikkelnr get() = this["data"]["artikkelnr"].textValue()
     private val JsonMessage.antall get() = this["data"]["antall"].doubleValue()
-    private val JsonMessage.enhet get() = this["data"]["enhet"].textValue()
+    // private val JsonMessage.enhet get() = this["data"]["enhet"].textValue()
     private val JsonMessage.produktgruppe get() = this["data"]["produktgruppe"].textValue()
-    private val JsonMessage.produktgruppeNr get() = this["data"]["produktgruppeNr"].textValue()
+    // private val JsonMessage.produktgruppeNr get() = this["data"]["produktgruppeNr"].textValue()
     private val JsonMessage.data get() = this["data"]
 
     // Kun brukt til Infotrygd-matching for å finne søknadId
@@ -78,9 +78,11 @@ internal class NyOrdrelinje(
                             return@launch
                         }
 
+                        logger.info("NOTE NOTE NOTE: IGNORING oebsId (set to -1), enhet (set to \"STK\"), and produktgruppeNr (set to \"\") temporarily: ${packet.eventId}")
+
                         val ordrelinjeData = OrdrelinjeData(
                             søknadId = søknadId,
-                            oebsId = packet.oebsId,
+                            oebsId = -1, // packet.oebsId,
                             fnrBruker = packet.fnrBruker,
                             serviceforespørsel = packet.serviceforespørsel,
                             ordrenr = packet.ordrenr,
@@ -88,9 +90,9 @@ internal class NyOrdrelinje(
                             delordrelinje = packet.delordrelinje,
                             artikkelnr = packet.artikkelnr,
                             antall = packet.antall,
-                            enhet = packet.enhet,
+                            enhet = "STK", // packet.enhet,
                             produktgruppe = packet.produktgruppe,
-                            produktgruppeNr = packet.produktgruppeNr,
+                            produktgruppeNr = "", // packet.produktgruppeNr,
                             data = packet.data,
                         )
 
