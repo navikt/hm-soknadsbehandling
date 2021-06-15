@@ -5,16 +5,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
-import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.helse.rapids_rivers.*
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
-import java.util.UUID
+import java.util.*
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
@@ -128,6 +124,8 @@ internal class NyOrdrelinje(
         skipList.add(UUID.fromString("05b03961-fe85-44df-8af7-7528c57deed9"))
         skipList.add(UUID.fromString("682e025b-9f01-4976-8fe4-08940522e327"))
         skipList.add(UUID.fromString("13c9b843-aafb-4da5-9ed1-c86fdc578f18"))
+        skipList.add(UUID.fromString("b9235bf1-8b29-4bef-a3ea-c191c344afd1"))
+        skipList.add(UUID.fromString("a8aa7b63-9457-4e5d-b77b-1767fac96fb3"))
         return skipList.any { it == eventId }
     }
 
