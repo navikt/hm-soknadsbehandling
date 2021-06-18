@@ -37,7 +37,7 @@ jobs:
   deploy-dev:
     name: Deploy to dev
     needs: build
-    if: github.ref == 'refs/heads/main_disable'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -48,8 +48,7 @@ jobs:
           RESOURCE: nais/nais-dev.yaml,nais/alerts-dev.yaml
   deploy-prod:
     name: Deploy to Production
-    needs: [build]
-# , deploy-dev
+    needs: [build, deploy-dev]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
