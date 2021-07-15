@@ -49,6 +49,7 @@ internal data class SoknadData(
             it["navnBruker"] = this.soknad["soknad"]["bruker"]["etternavn"].textValue() + " " + this.soknad["soknad"]["bruker"]["fornavn"].textValue()
             it["soknad"] = this.soknad
             it["soknadId"] = this.soknadId
+            it["fnrInnsender"] = this.fnrInnsender
         }.toJson()
     }
 
