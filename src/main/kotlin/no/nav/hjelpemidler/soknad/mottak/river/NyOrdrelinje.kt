@@ -13,6 +13,7 @@ import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
+import no.nav.hjelpemidler.soknad.mottak.service.Status
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -33,13 +34,16 @@ internal class NyOrdrelinje(
     private val JsonMessage.eventId get() = this["eventId"].textValue()
     private val JsonMessage.opprettet get() = this["opprettet"].textValue()
     private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
+    private val JsonMessage.oebsId get() = this["data"]["oebsId"].intValue()
     private val JsonMessage.serviceforespørsel get() = this["data"]["serviceforespørsel"].intValue()
     private val JsonMessage.ordrenr get() = this["data"]["ordrenr"].intValue()
     private val JsonMessage.ordrelinje get() = this["data"]["ordrelinje"].intValue()
     private val JsonMessage.delordrelinje get() = this["data"]["delordrelinje"].intValue()
     private val JsonMessage.artikkelnr get() = this["data"]["artikkelnr"].textValue()
-    private val JsonMessage.antall get() = this["data"]["antall"].intValue()
+    private val JsonMessage.antall get() = this["data"]["antall"].doubleValue()
+    private val JsonMessage.enhet get() = this["data"]["enhet"].textValue()
     private val JsonMessage.produktgruppe get() = this["data"]["produktgruppe"].textValue()
+    private val JsonMessage.produktgruppeNr get() = this["data"]["produktgruppeNr"].textValue()
     private val JsonMessage.data get() = this["data"]
 
     // Kun brukt til Infotrygd-matching for å finne søknadId
@@ -50,8 +54,14 @@ internal class NyOrdrelinje(
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
+                    if (packet.saksblokkOgSaksnr.isEmpty()) {
+                        logger.info("Skipping illegal event saksblokkOgSaksnr='': ${packet.eventId}")
+                        sikkerlogg.error("Skippet event med tom saksblokkOgSaksnr: ${packet.toJson()}")
+                        return@launch
+                    }
                     if (skipEvent(UUID.fromString(packet.eventId))) {
-                        logger.info { "Hopper over event i skip-list: ${packet.eventId}" }
+                        logger.info("Hopper over event i skip-list: ${packet.eventId}")
+                        sikkerlogg.error("Skippet event: ${packet.toJson()}")
                         return@launch
                     }
                     try {
@@ -70,6 +80,7 @@ internal class NyOrdrelinje(
 
                         val ordrelinjeData = OrdrelinjeData(
                             søknadId = søknadId,
+                            oebsId = packet.oebsId,
                             fnrBruker = packet.fnrBruker,
                             serviceforespørsel = packet.serviceforespørsel,
                             ordrenr = packet.ordrenr,
@@ -77,7 +88,9 @@ internal class NyOrdrelinje(
                             delordrelinje = packet.delordrelinje,
                             artikkelnr = packet.artikkelnr,
                             antall = packet.antall,
+                            enhet = packet.enhet,
                             produktgruppe = packet.produktgruppe,
+                            produktgruppeNr = packet.produktgruppeNr,
                             data = packet.data,
                         )
 
@@ -87,6 +100,8 @@ internal class NyOrdrelinje(
                         if (result == 0) {
                             return@launch
                         }
+
+                        søknadForRiverClient.oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
 
                         if (!ordreSisteDøgn) {
                             context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
@@ -106,7 +121,15 @@ internal class NyOrdrelinje(
 
     private fun skipEvent(eventId: UUID): Boolean {
         val skipList = mutableListOf<UUID>()
-        skipList.add(UUID.fromString("01fc4654-bba8-43b3-807b-8487ab21cea3"))
+        skipList.add(UUID.fromString("93cd36de-feab-4a29-8aa3-4ef976d203ef"))
+        skipList.add(UUID.fromString("1e4690d3-72c5-4cbe-96be-34bdbf3a3022"))
+        skipList.add(UUID.fromString("60e9a574-15ea-4f3c-befb-6fdb4341e450"))
+        skipList.add(UUID.fromString("38ef8296-2445-420d-ac72-6749982cfb34"))
+        skipList.add(UUID.fromString("05b03961-fe85-44df-8af7-7528c57deed9"))
+        skipList.add(UUID.fromString("682e025b-9f01-4976-8fe4-08940522e327"))
+        skipList.add(UUID.fromString("13c9b843-aafb-4da5-9ed1-c86fdc578f18"))
+        skipList.add(UUID.fromString("b9235bf1-8b29-4bef-a3ea-c191c344afd1"))
+        skipList.add(UUID.fromString("a8aa7b63-9457-4e5d-b77b-1767fac96fb3"))
         return skipList.any { it == eventId }
     }
 
@@ -123,22 +146,4 @@ internal class NyOrdrelinje(
         }.onFailure {
             logger.error(it) { "Feil under lagring av ordrelinje for SF ${ordrelinje.serviceforespørsel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
         }.getOrThrow()
-
-    // TODO: Lag businesslogikk for når vi skal sende melding til Ditt NAV om ny ordrelinje
-//    private fun CoroutineScope.forward(ordrelinjeData: OrdrelinjeData, context: MessageContext) {
-//        launch(Dispatchers.IO + SupervisorJob()) {
-//            context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
-//            Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
-//        }.invokeOnCompletion {
-//            when (it) {
-//                null -> {
-//                    logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
-//                    sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
-//                }
-//                is CancellationException -> logger.warn("Cancelled: ${it.message}")
-//                else -> {
-//                    logger.error("Failed: ${it.message}")
-//                }
-//            }
-//        }
 }
