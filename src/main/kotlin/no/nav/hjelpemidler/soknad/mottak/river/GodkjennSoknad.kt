@@ -36,10 +36,6 @@ internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val s√
     private val JsonMessage.soknadId get() = this["soknadId"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        if (packet.soknadId == "14a0e3d5-1e66-45c5-85b9-615a9e08c539") {
-            // Garbage events in dev.
-            return
-        }
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
