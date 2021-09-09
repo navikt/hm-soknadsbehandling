@@ -18,7 +18,7 @@ import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
@@ -35,6 +35,10 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søkn
     private val JsonMessage.soknadId get() = this["soknadId"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        if (packet.soknadId == "14a0e3d5-1e66-45c5-85b9-615a9e08c539") {
+            // Garbage events in dev.
+            return
+        }
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
