@@ -11,7 +11,8 @@ class RiverRequiredKeyMissingException(msg: String) : Exception(msg)
 
 interface PacketListenerWithOnError : River.PacketListener {
     override fun onError(problems: MessageProblems, context: MessageContext) {
-        sikkerlogg.info("River required keys had problems in parsing message from rapid: ${problems.toExtendedReport()}")
-        throw RiverRequiredKeyMissingException("River required keys had problems in parsing message from rapid, see Kibana index tjenestekall-* (sikkerlogg) for details")
+        return
+        // sikkerlogg.info("River required keys had problems in parsing message from rapid: ${problems.toExtendedReport()}")
+        // throw RiverRequiredKeyMissingException("River required keys had problems in parsing message from rapid, see Kibana index tjenestekall-* (sikkerlogg) for details")
     }
 }
