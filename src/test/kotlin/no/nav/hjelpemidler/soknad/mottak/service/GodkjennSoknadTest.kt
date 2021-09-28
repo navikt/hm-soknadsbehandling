@@ -14,7 +14,7 @@ import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSoknad
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.util.UUID
 
 internal class GodkjennSoknadTest {
     private val soknadId = "e8dac11d-fa66-4561-89d7-88a62ab31c2b"
