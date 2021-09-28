@@ -12,6 +12,8 @@ import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSoknad
+import no.nav.hjelpemidler.soknad.mottak.river.RiverRequiredKeyMissingException
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
@@ -156,21 +158,21 @@ internal class GodkjennSoknadTest {
         jsonNode["soknad"] shouldNotBe null
     }
 
-//    @Test
-//    fun `Do not react to events without soknadId key`() {
-//
-//        val invalidPacket =
-//            """
-//                {
-//                    "eventName": "godkjentAvBruker",
-//                    "fodselNrBruker": "fnrBruker"
-//                }
-//        """.trimMargin()
-//
-//        Assertions.assertThrows(RiverRequiredKeyMissingException::class.java) {
-//            rapid.sendTestMessage(invalidPacket)
-//        }
-//    }
+    @Test
+    fun `Do not react to events without soknadId key`() {
+
+        val invalidPacket =
+            """
+                {
+                    "eventName": "godkjentAvBruker",
+                    "fodselNrBruker": "fnrBruker"
+                }
+        """.trimMargin()
+
+        Assertions.assertThrows(RiverRequiredKeyMissingException::class.java) {
+            rapid.sendTestMessage(invalidPacket)
+        }
+    }
 
     @Test
     fun `Do not react to events with irrelevant eventName`() {
