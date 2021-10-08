@@ -204,7 +204,7 @@ internal class SoknadMedFullmaktDataSinkTest {
 
         jsonNode["soknadId"].isNull shouldBe false
         jsonNode["fnrBruker"].textValue() shouldBe "fnrBruker"
-        jsonNode["eventName"].textValue() shouldBe "hm-Søknad"
+        jsonNode["eventName"].textValue() shouldBe "hm-søknadMedFullmaktMottatt"
         jsonNode["opprettet"].textValue() shouldNotBe null
         jsonNode["navnBruker"].textValue() shouldBe "etternavn fornavn"
     }

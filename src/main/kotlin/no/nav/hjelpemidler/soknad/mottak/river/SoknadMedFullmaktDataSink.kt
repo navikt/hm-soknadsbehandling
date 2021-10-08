@@ -92,7 +92,7 @@ internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, pri
 
     private fun CoroutineScope.forward(søknadData: SoknadData, context: MessageContext) {
         launch(Dispatchers.IO + SupervisorJob()) {
-            context.publish(søknadData.fnrBruker, søknadData.toJson("Søknad"))
+            context.publish(søknadData.fnrBruker, søknadData.toJson("hm-søknadMedFullmaktMottatt"))
             Prometheus.soknadMedFullmaktCounter.inc()
         }.invokeOnCompletion {
             when (it) {

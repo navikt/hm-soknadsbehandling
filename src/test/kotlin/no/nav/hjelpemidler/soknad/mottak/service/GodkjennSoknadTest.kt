@@ -153,7 +153,7 @@ internal class GodkjennSoknadTest {
 
         jsonNode["soknadId"].textValue() shouldBe soknadId
         jsonNode["fnrBruker"].textValue() shouldBe "fnrBruker"
-        jsonNode["eventName"].textValue() shouldBe "hm-SøknadGodkjentAvBruker"
+        jsonNode["eventName"].textValue() shouldBe "hm-søknadGodkjentAvBrukerMottatt"
         jsonNode["opprettet"].textValue() shouldNotBe null
         jsonNode["soknad"] shouldNotBe null
     }

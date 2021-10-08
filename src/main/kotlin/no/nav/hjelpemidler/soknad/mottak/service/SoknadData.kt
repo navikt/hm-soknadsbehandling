@@ -42,7 +42,7 @@ internal data class SoknadData(
             it["@id"] = id // @deprecated
             it["eventId"] = id
             it["@event_name"] = eventName // @deprecated
-            it["eventName"] = "hm-$eventName"
+            it["eventName"] = eventName
             it["opprettet"] = LocalDateTime.now()
             it["fodselNrBruker"] = this.fnrBruker // @deprecated
             it["fnrBruker"] = this.fnrBruker

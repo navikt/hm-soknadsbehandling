@@ -89,7 +89,7 @@ internal class GodkjennSoknad(rapidsConnection: RapidsConnection, private val s�
         val soknadId = soknadData.soknadId.toString()
 
         launch(Dispatchers.IO + SupervisorJob()) {
-            val soknadGodkjentMessage = soknadData.toJson("SøknadGodkjentAvBruker")
+            val soknadGodkjentMessage = soknadData.toJson("hm-søknadGodkjentAvBrukerMottatt")
             context.publish(fnrBruker, soknadGodkjentMessage)
             Prometheus.soknadGodkjentAvBrukerCounter.inc()
         }.invokeOnCompletion {
