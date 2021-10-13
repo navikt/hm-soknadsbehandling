@@ -19,6 +19,7 @@ import no.nav.hjelpemidler.soknad.mottak.river.SoknadMedFullmaktDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.SoknadUtenFullmaktDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
+import no.nav.hjelpemidler.soknad.mottak.service.MonitoreringService
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadsgodkjenningService
 import no.nav.hjelpemidler.soknad.mottak.wiremock.WiremockServer
 import java.util.Timer
@@ -43,6 +44,8 @@ fun main() {
     val baseUrlSoknadsbehandlingDb = Configuration.soknadsbehandlingDb.baseUrl
     val søknadForRiverClient =
         SøknadForRiverClientImpl(baseUrlSoknadsbehandlingDb, azureClient, Configuration.azure.dbApiScope)
+
+    MonitoreringService(søknadForRiverClient)
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .build().apply {

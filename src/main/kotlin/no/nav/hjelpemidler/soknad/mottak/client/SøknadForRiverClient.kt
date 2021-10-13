@@ -1,6 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.client
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.core.ResponseDeserializable
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.coroutines.awaitObject
@@ -66,6 +67,7 @@ internal interface SøknadForRiverClient {
 
     suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean
     suspend fun savePapir(soknadData: PapirSøknadData): Int
+    suspend fun hentGodkjenteSøknaderUtenOppgaveEldreEnn(dager: Int): List<String>
 }
 
 internal class SøknadForRiverClientImpl(
@@ -79,10 +81,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/soknad/bruker".httpPost()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadData))
                     .awaitStringResponse()
             }
@@ -97,10 +96,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/soknad/papir".httpPost()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(papirSøknadData))
                     .awaitStringResponse().third.toInt()
             }
@@ -116,10 +112,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/ordre".httpPost()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(ordrelinje))
                     .awaitStringResponse().third.toInt()
             }
@@ -135,10 +128,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/soknad/bruker/finnes/$soknadsId".httpGet()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .awaitObject(
                         object : ResponseDeserializable<JsonNode> {
                             override fun deserialize(content: String): JsonNode {
@@ -161,10 +151,7 @@ internal class SøknadForRiverClientImpl(
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 "$baseUrl/soknad/ordre/ordrelinje-siste-doegn/$soknadsId".httpGet()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .awaitObject(
                         object : ResponseDeserializable<JsonNode> {
                             override fun deserialize(content: String): JsonNode {
@@ -188,10 +175,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/soknad/fnr/$soknadsId".httpGet()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .awaitStringResponse()
                     .let {
                         it.third
@@ -209,10 +193,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/soknad/bruker".httpDelete()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadsId))
                     .awaitStringResponse().third.toInt()
             }
@@ -228,10 +209,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/soknad/utlopt/bruker".httpDelete()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadsId))
                     .awaitStringResponse().third.toInt()
             }
@@ -247,10 +225,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/soknad/journalpost-id/$soknadsId".httpPut()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(mapOf("journalpostId" to journalpostId)))
                     .awaitStringResponse().third.toInt()
             }
@@ -266,10 +241,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/soknad/oppgave-id/$soknadsId".httpPut()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(mapOf("oppgaveId" to oppgaveId)))
                     .awaitStringResponse().third.toInt()
             }
@@ -285,10 +257,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/infotrygd/fagsak".httpPost()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(vedtaksresultatData))
                     .awaitStringResponse().third.toInt()
             }
@@ -332,10 +301,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/soknad/fra-vedtaksresultat".httpPost()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .jsonBody(
                         JacksonMapper.objectMapper.writeValueAsString(
                             SoknadFraVedtaksresultatDto(
@@ -378,10 +344,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/infotrygd/vedtaksresultat".httpPost()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .jsonBody(
                         JacksonMapper.objectMapper.writeValueAsString(
                             VedtaksresultatDto(
@@ -442,10 +405,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/infotrygd/fnr-jounralpost".httpPost()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .jsonBody(
                         JacksonMapper.objectMapper.writeValueAsString(
                             FnrOgJournalpostIdFinnesDto(
@@ -482,10 +442,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/soknad/status/$soknadsId".httpPut()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(status))
                     .awaitStringResponse().third.toInt()
             }
@@ -496,16 +453,13 @@ internal class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun hentSoknadData(soknadsId: UUID): SoknadData? {
+    override suspend fun hentSoknadData(soknadsId: UUID): SoknadData {
         return withContext(Dispatchers.IO) {
 
             kotlin.runCatching {
 
                 "$baseUrl/soknadsdata/bruker/$soknadsId".httpGet()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .awaitObjectResponse(
                         object : ResponseDeserializable<SoknadDataDto> {
                             override fun deserialize(content: String): SoknadDataDto {
@@ -528,10 +482,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/soknad/opprettet-dato/$soknadsId".httpGet()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .awaitObjectResponse(
                         object : ResponseDeserializable<Date> {
                             override fun deserialize(content: String): Date {
@@ -554,10 +505,7 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/soknad/utgaatt/$dager".httpGet()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .headers()
                     .awaitObjectResponse(
                         object : ResponseDeserializable<List<UtgåttSøknad>> {
                             override fun deserialize(content: String): List<UtgåttSøknad> {
@@ -573,4 +521,33 @@ internal class SøknadForRiverClientImpl(
         }
             .getOrThrow()
     }
+
+    override suspend fun hentGodkjenteSøknaderUtenOppgaveEldreEnn(dager: Int): List<String> {
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+                "$baseUrl/soknad/godkjentUtenOppgave/$dager".httpGet()
+                    .headers()
+                    .awaitObjectResponse(
+                        object : ResponseDeserializable<List<String>> {
+                            override fun deserialize(content: String): List<String> {
+                                return JacksonMapper.objectMapper.readValue(content, Array<String>::class.java).toList()
+                            }
+                        }
+                    ).third
+            }
+                .onFailure {
+                    logger.error(it) { "Feil ved GET $baseUrl/soknad/godkjentUtenOppgave/$dager." }
+                }
+        }
+            .getOrThrow()
+    }
+
+    private fun Request.headers() = this.header(
+        mapOf(
+            "Content-Type" to "application/json",
+            "Accept" to "application/json",
+            "Authorization" to "Bearer ${azureClient.getToken(accesstokenScope).accessToken}",
+            "X-Correlation-ID" to UUID.randomUUID().toString()
+        )
+    )
 }
