@@ -10,6 +10,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.Status
@@ -35,7 +36,7 @@ internal class VedtaksresultatFraInfotrygd(
     private val JsonMessage.søknadID get() = this["søknadID"].textValue()
     private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
     private val JsonMessage.vedtaksResultat get() = this["vedtaksResultat"].textValue()
-    private val JsonMessage.vedtaksDato get() = this["vedtaksDato"].asLocalDate()
+    private val JsonMessage.vedtaksDato get() = this["vedtaksDato"].asLocalDateTime()
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
@@ -44,7 +45,7 @@ internal class VedtaksresultatFraInfotrygd(
 
                     val søknadsId = UUID.fromString(packet.søknadID)
 
-                    lagreVedtaksresultat(søknadsId, packet.vedtaksResultat, packet.vedtaksDato)
+                    lagreVedtaksresultat(søknadsId, packet.vedtaksResultat, packet.vedtaksDato.toLocalDate())
 
                     val status = when (packet.vedtaksResultat) {
                         "I" -> Status.VEDTAKSRESULTAT_INNVILGET
