@@ -54,6 +54,7 @@ fun main() {
             NyOrdrelinje(this, søknadForRiverClient)
             VedtaksresultatFraInfotrygd(this, søknadForRiverClient)
             PapirSøknadEndeligJournalført(this, søknadForRiverClient)
+            DigitalSøknadEndeligJournalført(this, søknadForRiverClient)
         }
         .start()
 }
