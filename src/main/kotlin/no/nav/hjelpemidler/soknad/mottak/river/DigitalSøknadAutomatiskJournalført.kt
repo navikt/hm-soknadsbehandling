@@ -11,6 +11,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.service.Status
+import no.nav.hjelpemidler.soknad.mottak.service.SøknadUnderBehandlingData
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -24,7 +25,7 @@ internal class DigitalSøknadAutomatiskJournalført(
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "hm-opprettetOgFerdigstiltJournalpost") }
-            validate { it.requireKey("soknadId", "sakId", "joarkRef") }
+            validate { it.requireKey("soknadId", "sakId", "joarkRef", "fnrBruker") }
         }.register(this)
     }
 
@@ -36,11 +37,20 @@ internal class DigitalSøknadAutomatiskJournalført(
         )
 
         val søknadId = packet["soknadId"].asText()
+        val fnrBruker = packet["fnrBruker"].asText()
 
         runBlocking {
             withContext(Dispatchers.IO) {
                 launch {
                     oppdaterStatus(UUID.fromString(søknadId))
+                    // Melding til Ditt NAV
+                    context.publish(
+                        fnrBruker,
+                        SøknadUnderBehandlingData(
+                            UUID.fromString(søknadId),
+                            fnrBruker
+                        ).toJson("hm-SøknadUnderBehandling")
+                    )
                 }
             }
         }
