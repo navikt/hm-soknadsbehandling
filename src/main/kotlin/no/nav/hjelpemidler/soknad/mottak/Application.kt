@@ -9,6 +9,7 @@ import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClientImpl
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadAutomatiskJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSoknad
+import no.nav.hjelpemidler.soknad.mottak.river.HotsakOpprettet
 import no.nav.hjelpemidler.soknad.mottak.river.JournalpostSink
 import no.nav.hjelpemidler.soknad.mottak.river.NyOrdrelinje
 import no.nav.hjelpemidler.soknad.mottak.river.OppgaveSink
@@ -16,6 +17,7 @@ import no.nav.hjelpemidler.soknad.mottak.river.PapirSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.SlettSoknad
 import no.nav.hjelpemidler.soknad.mottak.river.SoknadMedFullmaktDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.SoknadUtenFullmaktDataSink
+import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadsgodkjenningService
 import no.nav.hjelpemidler.soknad.mottak.wiremock.WiremockServer
@@ -57,6 +59,8 @@ fun main() {
             PapirSøknadEndeligJournalført(this, søknadForRiverClient)
             DigitalSøknadEndeligJournalført(this, søknadForRiverClient)
             DigitalSøknadAutomatiskJournalført(this, søknadForRiverClient)
+            VedtaksresultatFraHotsak(this, søknadForRiverClient)
+            HotsakOpprettet(this, søknadForRiverClient)
         }
         .start()
 }

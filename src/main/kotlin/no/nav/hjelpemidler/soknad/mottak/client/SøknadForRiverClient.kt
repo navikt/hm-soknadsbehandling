@@ -43,6 +43,7 @@ internal interface SøknadForRiverClient {
     suspend fun slettUtløptSøknad(soknadsId: UUID): Int
     suspend fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String): Int
     suspend fun oppdaterOppgaveId(soknadsId: UUID, oppgaveId: String): Int
+    suspend fun lagKnytningMellomHotsakOgSøknad(soknadsId: UUID, sakId: String): Int
     suspend fun lagKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData): Int
     suspend fun hentSøknadIdFraVedtaksresultat(
         fnrBruker: String,
@@ -52,6 +53,12 @@ internal interface SøknadForRiverClient {
 
     suspend fun save(ordrelinje: OrdrelinjeData): Int
     suspend fun lagreVedtaksresultat(
+        søknadId: UUID,
+        vedtaksresultat: String,
+        vedtaksdato: LocalDate
+    ): Int
+
+    suspend fun lagreVedtaksresultatFraHotsak(
         søknadId: UUID,
         vedtaksresultat: String,
         vedtaksdato: LocalDate
@@ -292,6 +299,30 @@ internal class SøknadForRiverClientImpl(
         }
     }
 
+    override suspend fun lagKnytningMellomHotsakOgSøknad(soknadsId: UUID, sakId: String): Int {
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+
+                "$baseUrl/hotsak/fagsak".httpPost()
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
+                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(HotsakTilknytningData(soknadsId, sakId)))
+                    .awaitStringResponse().third.toInt()
+            }
+                .onFailure {
+                    logger.error { it.message }
+                }
+                .getOrThrow()
+        }
+    }
+
+    data class HotsakTilknytningData(
+        val søknadId: UUID,
+        val saksnr: String
+    )
+
     override suspend fun hentSøknadIdFraVedtaksresultat(
         fnrBruker: String,
         saksblokkOgSaksnr: String,
@@ -347,6 +378,37 @@ internal class SøknadForRiverClientImpl(
             kotlin.runCatching {
 
                 "$baseUrl/infotrygd/vedtaksresultat".httpPost()
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
+                    .header("X-Correlation-ID", UUID.randomUUID().toString())
+                    .jsonBody(
+                        JacksonMapper.objectMapper.writeValueAsString(
+                            VedtaksresultatDto(
+                                søknadId,
+                                vedtaksresultat,
+                                vedtaksdato
+                            )
+                        )
+                    )
+                    .awaitStringResponse().third.toInt()
+            }
+                .onFailure {
+                    logger.error { it.message }
+                }
+                .getOrThrow()
+        }
+    }
+
+    override suspend fun lagreVedtaksresultatFraHotsak(
+        søknadId: UUID,
+        vedtaksresultat: String,
+        vedtaksdato: LocalDate
+    ): Int {
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+
+                "$baseUrl/hotsak/vedtaksresultat".httpPost()
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
@@ -499,7 +561,8 @@ internal class SøknadForRiverClientImpl(
                     .awaitObjectResponse(
                         object : ResponseDeserializable<List<UtgåttSøknad>> {
                             override fun deserialize(content: String): List<UtgåttSøknad> {
-                                return JacksonMapper.objectMapper.readValue(content, Array<UtgåttSøknad>::class.java).toList()
+                                return JacksonMapper.objectMapper.readValue(content, Array<UtgåttSøknad>::class.java)
+                                    .toList()
                             }
                         }
                     ).third
