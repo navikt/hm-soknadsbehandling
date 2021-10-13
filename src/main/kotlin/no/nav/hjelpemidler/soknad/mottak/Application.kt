@@ -6,6 +6,7 @@ import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClientImpl
+import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadAutomatiskJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSoknad
 import no.nav.hjelpemidler.soknad.mottak.river.JournalpostSink
@@ -55,6 +56,7 @@ fun main() {
             VedtaksresultatFraInfotrygd(this, søknadForRiverClient)
             PapirSøknadEndeligJournalført(this, søknadForRiverClient)
             DigitalSøknadEndeligJournalført(this, søknadForRiverClient)
+            DigitalSøknadAutomatiskJournalført(this, søknadForRiverClient)
         }
         .start()
 }
