@@ -35,18 +35,15 @@ internal class DigitalSøknadEndeligJournalført(
             validate { it.requireKey("hendelse.journalingEventSAF") }
             validate { it.requireKey("hendelse.journalingEventSAF.sak") }
             validate { it.requireKey("hendelse.journalingEventSAF.sak.fagsakId") }
-            validate { it.requireKey("eventId") }
         }.register(this)
     }
 
     private val JsonMessage.søknadId get() = this["soknadId"].textValue()
-    private val JsonMessage.eventId get() = this["eventId"].textValue()
     private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
     private val JsonMessage.fagsakId get() = this["hendelse"]["journalingEventSAF"]["sak"]["fagsakId"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         val søknadId = UUID.fromString(packet.søknadId)
-        val eventId = UUID.fromString(packet.eventId)
         val fnrBruker = packet.fnrBruker
         val fagsakId = packet.fagsakId
 
@@ -58,8 +55,6 @@ internal class DigitalSøknadEndeligJournalført(
             getSaksblokkFromFagsakId(fagsakId),
             getSaksnrFromFagsakId(fagsakId),
         )
-
-        logger.info("DEBUG: onPacket DigitalSøknadEndeligJournalført.kt: eventId=$eventId, søknadId=$søknadId vedtaksresultatData=$vedtaksresultatData")
 
         runBlocking {
             withContext(Dispatchers.IO) {
