@@ -60,7 +60,6 @@ object Database {
 object Fuel {
     const val version = "2.2.1"
     const val fuel = "com.github.kittinunf.fuel:fuel:$version"
-    const val fuelMoshi = "com.github.kittinunf.fuel:fuel-moshi:$version"
     fun library(name: String) = "com.github.kittinunf.fuel:fuel-$name:$version"
 }
 
