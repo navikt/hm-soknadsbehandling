@@ -61,7 +61,6 @@ fun main() {
             NyOrdrelinje(this, søknadForRiverClient)
             VedtaksresultatFraInfotrygd(this, søknadForRiverClient)
             PapirSøknadEndeligJournalført(this, søknadForRiverClient)
-            DigitalSøknadEndeligJournalført(this, søknadForRiverClient)
             DigitalSøknadAutomatiskJournalført(this, søknadForRiverClient)
             VedtaksresultatFraHotsak(this, søknadForRiverClient)
             HotsakOpprettet(this, søknadForRiverClient)
