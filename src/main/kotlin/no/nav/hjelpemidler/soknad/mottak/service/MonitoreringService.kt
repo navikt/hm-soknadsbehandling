@@ -10,9 +10,9 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Date
 import java.util.Timer
+import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timerTask
 
-private const val TJUEFIRE_TIMER_I_SEKUND = 1000 * 60 * 60 * 24L
 private const val TO_DAGER = 2
 
 internal class MonitoreringService(
@@ -22,16 +22,16 @@ internal class MonitoreringService(
 ) {
 
     init {
-        Timer("finn-godkjente-soknader-som-mangler-oppgave-task", true).schedule(
+        Timer("MonitoreringService", true).schedule(
             timerTask {
                 runBlocking {
                     launch {
                         rapporterGodkjenteSøknaderUtenOppgave()
-                    }.start()
+                    }
                 }
             },
             startTime,
-            TJUEFIRE_TIMER_I_SEKUND
+            TimeUnit.DAYS.toMillis(1)
         )
     }
 
