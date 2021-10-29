@@ -272,7 +272,7 @@ internal class SøknadForRiverClientImpl(
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
 
-                "$baseUrl/hotsak/fagsak".httpPost()
+                "$baseUrl/hotsak/sak".httpPost()
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
