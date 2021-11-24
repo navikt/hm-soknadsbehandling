@@ -37,6 +37,7 @@ jobs:
           docker build -t $IMAGE .
           docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
           docker push $IMAGE
+
   deploy-dev:
     name: Deploy to dev
     needs: build
@@ -48,6 +49,7 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: nais/nais-dev.yaml,nais/alerts-dev.yaml
+          
   deploy-prod:
     name: Deploy to Production
     needs: [build, deploy-dev]
