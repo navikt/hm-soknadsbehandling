@@ -52,6 +52,11 @@ internal interface SøknadForRiverClient {
         vedtaksdato: LocalDate
     ): UUID?
 
+    suspend fun hentSøknadIdFraHotsakSaksnummer(
+        fnrBruker: String,
+        saksnummer: String,
+    ): UUID?
+
     suspend fun save(ordrelinje: OrdrelinjeData): Int
     suspend fun lagreVedtaksresultat(
         søknadId: UUID,
@@ -333,11 +338,52 @@ internal class SøknadForRiverClientImpl(
         }
     }
 
+    override suspend fun hentSøknadIdFraHotsakSaksnummer(
+        fnrBruker: String,
+        saksnummer: String
+    ): UUID? {
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+
+                "$baseUrl/soknad/hotsak/fra-saknummer".httpPost()
+                    .headers()
+                    .jsonBody(
+                        JacksonMapper.objectMapper.writeValueAsString(
+                            SoknadFraHotsakNummerDto(
+                                fnrBruker,
+                                saksnummer,
+                            )
+                        )
+                    )
+                    .awaitObject(
+                        object : ResponseDeserializable<JsonNode> {
+                            override fun deserialize(content: String): JsonNode {
+                                return JacksonMapper.objectMapper.readTree(content)
+                            }
+                        }
+                    )
+                    .let {
+                        if (it.get("soknadId").textValue() != null) {
+                            UUID.fromString(it.get("soknadId").textValue())
+                        } else {
+                            null
+                        }
+                    }
+            }
+                .onFailure {
+                    logger.error { it.message }
+                }
+                .getOrThrow()
+        }
+    }
+
     data class SoknadFraVedtaksresultatDto(
         val fnrBruker: String,
         val saksblokkOgSaksnr: String,
         val vedtaksdato: LocalDate
     )
+
+    data class SoknadFraHotsakNummerDto(val fnrBruker: String, val saksnummer: String)
 
     override suspend fun lagreVedtaksresultat(søknadId: UUID, vedtaksresultat: String, vedtaksdato: LocalDate): Int {
         return withContext(Dispatchers.IO) {

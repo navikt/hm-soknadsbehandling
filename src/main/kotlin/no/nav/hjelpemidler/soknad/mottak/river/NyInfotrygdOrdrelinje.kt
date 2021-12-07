@@ -19,7 +19,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class NyOrdrelinje(
+internal class NyInfotrygdOrdrelinje(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient
 ) : PacketListenerWithOnError {
@@ -65,7 +65,7 @@ internal class NyOrdrelinje(
                         return@launch
                     }
                     try {
-                        logger.info { "Ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
+                        logger.info { "Inftrygd ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
 
                         // Match ordrelinje to Infotrygd-table
                         val søknadId = søknadForRiverClient.hentSøknadIdFraVedtaksresultat(
