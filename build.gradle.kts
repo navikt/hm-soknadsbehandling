@@ -2,6 +2,8 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 val ktor_version = "1.4.0"
+val influxDbClientVersion = "2.2.0"
+val influxDbJava = "2.21"
 
 plugins {
     application
@@ -63,6 +65,9 @@ dependencies {
     implementation("io.ktor:ktor-auth-jwt:$ktor_version")
     implementation("io.ktor:ktor-client-apache:$ktor_version")
     implementation("io.ktor:ktor-client-jackson:$ktor_version")
+
+    implementation("com.influxdb:influxdb-client-kotlin:$influxDbClientVersion")
+    implementation("org.influxdb:influxdb-java:$influxDbJava")
 
     testImplementation(Junit5.api)
     testImplementation(KoTest.assertions)
