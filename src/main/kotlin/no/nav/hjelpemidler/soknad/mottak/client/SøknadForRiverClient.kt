@@ -27,7 +27,6 @@ import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
 import java.time.LocalDate
 import java.util.Date
 import java.util.UUID
-import kotlin.math.log
 
 private val logger = KotlinLogging.logger {}
 
