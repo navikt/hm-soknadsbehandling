@@ -53,7 +53,6 @@ internal interface SøknadForRiverClient {
     ): UUID?
 
     suspend fun hentSøknadIdFraHotsakSaksnummer(
-        fnrBruker: String,
         saksnummer: String,
     ): UUID?
 
@@ -339,7 +338,6 @@ internal class SøknadForRiverClientImpl(
     }
 
     override suspend fun hentSøknadIdFraHotsakSaksnummer(
-        fnrBruker: String,
         saksnummer: String
     ): UUID? {
         return withContext(Dispatchers.IO) {
@@ -350,7 +348,6 @@ internal class SøknadForRiverClientImpl(
                     .jsonBody(
                         JacksonMapper.objectMapper.writeValueAsString(
                             SoknadFraHotsakNummerDto(
-                                fnrBruker,
                                 saksnummer,
                             )
                         )
@@ -383,7 +380,7 @@ internal class SøknadForRiverClientImpl(
         val vedtaksdato: LocalDate
     )
 
-    data class SoknadFraHotsakNummerDto(val fnrBruker: String, val saksnummer: String)
+    data class SoknadFraHotsakNummerDto(val saksnummer: String)
 
     override suspend fun lagreVedtaksresultat(søknadId: UUID, vedtaksresultat: String, vedtaksdato: LocalDate): Int {
         return withContext(Dispatchers.IO) {

@@ -66,7 +66,6 @@ internal class NyHotsakOrdrelinje(
 
                         // Match ordrelinje to Hotsak-table
                         val søknadId = søknadForRiverClient.hentSøknadIdFraHotsakSaksnummer(
-                            packet.fnrBruker,
                             packet.saksnummer,
                         )
                         if (søknadId == null) {
