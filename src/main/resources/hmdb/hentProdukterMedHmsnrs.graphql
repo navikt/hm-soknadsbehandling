@@ -1,12 +1,6 @@
-query HentProdukterMedHmsnrs($hmsnrs: [String!]!) {
+query HentIsokortnavnForProdukterMedHmsnrs($hmsnrs: [String!]!) {
   produkter: hentProdukterMedHmsnrs(hmsnrs: $hmsnrs) {
-    id
     hmsnr
-    artikkelId
-    artikkelnavn
-    produktId
-    produktbeskrivelse
-    isotittel
-    blobUrlLite
+    isokortnavn
   }
 }

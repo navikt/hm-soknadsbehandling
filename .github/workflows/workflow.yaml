@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - DIGIHOT-520-statistikk-digital-vs-papir-per-kommune
+      - 57-generere-dokumentbeskrivelse-for-alle-digitale-søknader
 
 env:
   IMAGE: "docker.pkg.github.com/${{ github.repository }}/hm-soknadsbehandling:${{ github.sha }}"
