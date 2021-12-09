@@ -65,10 +65,13 @@ internal class SoknadMedFullmaktDataSink(
                             status = Status.GODKJENT_MED_FULLMAKT,
                             kommunenavn = packet.kommunenavn,
                         )
+
                         if (søknadForRiverClient.soknadFinnes(soknadData.soknadId)) {
                             logger.warn { "Søknaden er allerede lagret i databasen: ${packet.soknadId}" }
                             return@launch
                         }
+
+                        // TODO: Generate document title
 
                         logger.info { "Søknad med fullmakt mottatt: ${packet.soknadId}" }
                         save(soknadData)

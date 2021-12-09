@@ -255,3 +255,11 @@ object Wiremock {
     const val version = "2.21.0"
     const val standalone = "com.github.tomakehurst:wiremock-standalone:$version"
 }
+
+object GraphQL {
+    const val version = "5.2.0"
+    const val graphql = "com.expediagroup.graphql"
+    val ktorClient = library("ktor-client")
+    val clientJackson = library("client-jackson")
+    fun library(name: String) = "com.expediagroup:graphql-kotlin-$name:$version"
+}

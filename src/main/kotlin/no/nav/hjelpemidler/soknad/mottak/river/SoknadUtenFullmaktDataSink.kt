@@ -75,10 +75,13 @@ internal class SoknadUtenFullmaktDataSink(
                             status = Status.VENTER_GODKJENNING,
                             kommunenavn = packet.kommunenavn
                         )
+
                         if (søknadForRiverClient.soknadFinnes(soknadData.soknadId)) {
                             logger.warn { "Søknaden er allerede lagret i databasen: ${packet.soknadId}" }
                             return@launch
                         }
+
+                        // TODO: Generate document title
 
                         logger.info { "Søknad til godkjenning mottatt: ${packet.soknadId}" }
                         save(soknadData)

@@ -1,13 +1,16 @@
+
+import com.expediagroup.graphql.plugin.gradle.tasks.GraphQLIntrospectSchemaTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
-val ktor_version = "1.4.0"
+val ktor_version = Ktor.version
 val influxDbClientVersion = "2.2.0"
 val influxDbJava = "2.21"
 
 plugins {
     application
     kotlin("jvm") version Kotlin.version
+    id(GraphQL.graphql) version GraphQL.version
     id(Spotless.spotless) version Spotless.version
     id(Shadow.shadow) version Shadow.version
 }
@@ -36,8 +39,8 @@ application {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_12
-    targetCompatibility = JavaVersion.VERSION_12
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
@@ -69,6 +72,13 @@ dependencies {
     implementation("com.influxdb:influxdb-client-kotlin:$influxDbClientVersion")
     implementation("org.influxdb:influxdb-java:$influxDbJava")
 
+    implementation(GraphQL.ktorClient) {
+        exclude("com.expediagroup", "graphql-kotlin-client-serialization") // prefer jackson
+        exclude("io.ktor", "ktor-client-serialization") // prefer ktor-client-jackson
+        exclude("io.ktor", "ktor-client-cio") // prefer ktor-client-apache
+    }
+    implementation(GraphQL.clientJackson)
+
     testImplementation(Junit5.api)
     testImplementation(KoTest.assertions)
     testImplementation(KoTest.runner)
@@ -91,7 +101,7 @@ spotless {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions.freeCompilerArgs = listOf()
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }
 
 tasks.withType<Test> {
@@ -105,7 +115,7 @@ tasks.withType<Test> {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "6.2.2"
+    gradleVersion = "7.2"
 }
 
 tasks.named("shadowJar") {
@@ -118,4 +128,17 @@ tasks.named("jar") {
 
 tasks.named("compileKotlin") {
     dependsOn("spotlessCheck")
+}
+
+graphql {
+    client {
+        schemaFile = file("src/main/resources/hmdb/schema.graphql")
+        queryFileDirectory = "src/main/resources/hmdb"
+        packageName = "no.nav.hjelpemidler.soknad.mottak.client.hmdb"
+    }
+}
+
+val graphqlIntrospectSchema by tasks.getting(GraphQLIntrospectSchemaTask::class) {
+    endpoint.set("https://hm-grunndata-api.dev.intern.nav.no/graphql")
+    outputFile.set(file("src/main/resources/hmdb/schema.graphql"))
 }
