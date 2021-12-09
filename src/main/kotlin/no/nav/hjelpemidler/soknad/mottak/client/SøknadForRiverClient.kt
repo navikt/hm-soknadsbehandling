@@ -27,6 +27,7 @@ import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
 import java.time.LocalDate
 import java.util.Date
 import java.util.UUID
+import kotlin.math.log
 
 private val logger = KotlinLogging.logger {}
 
@@ -360,7 +361,8 @@ internal class SøknadForRiverClientImpl(
                         }
                     )
                     .let {
-                        if (it.get("soknadId").textValue() != null) {
+                        logger.info("Fikk tilbake fra søknadsbehandling db ${it.textValue()}")
+                        if (it.get("soknadId")?.textValue() != null) {
                             UUID.fromString(it.get("soknadId").textValue())
                         } else {
                             null
