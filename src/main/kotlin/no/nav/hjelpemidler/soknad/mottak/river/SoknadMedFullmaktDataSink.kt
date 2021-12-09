@@ -12,7 +12,9 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.metrics.InfluxMetrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
@@ -21,7 +23,12 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) : PacketListenerWithOnError {
+internal class SoknadMedFullmaktDataSink(
+    rapidsConnection: RapidsConnection,
+    private val søknadForRiverClient: SøknadForRiverClient,
+    private val pdlClient: PdlClient,
+    private val influxMetrics: InfluxMetrics
+) : PacketListenerWithOnError {
 
     init {
         River(rapidsConnection).apply {
@@ -67,6 +74,14 @@ internal class SoknadMedFullmaktDataSink(rapidsConnection: RapidsConnection, pri
                         save(soknadData)
 
                         forward(soknadData, context)
+
+                        // Logg statistikk
+                        try {
+                            val kommunenr = pdlClient.hentKommunenr(packet.fnrBruker)
+                            influxMetrics.digitalSoknad(kommunenr)
+                        } catch (e: Exception) {
+                            logger.warn(e) { "Feil under logging av statistikk 'digitalsøknad per kommune'" }
+                        }
                     } catch (e: Exception) {
                         throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
                     }
