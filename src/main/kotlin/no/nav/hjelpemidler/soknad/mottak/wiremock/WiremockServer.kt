@@ -24,6 +24,32 @@ internal class WiremockServer(private val configuration: Configuration) {
                     )
             )
 
+        wiremockServer
+            .stubFor(
+                WireMock.post(WireMock.urlPathMatching("/pdl"))
+                    .willReturn(
+                        WireMock.aResponse().withStatus(200)
+                            .withHeader("Content-Type", "application/json")
+                            .withBody(
+                                """
+                                {
+                                  "data": {
+                                    "hentPerson": {
+                                      "bostedsadresse": [
+                                        {
+                                          "vegadresse": {
+                                            "kommunenummer": "1134"
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                                """
+                            )
+                    )
+            )
+
         wiremockServer.start()
     }
 }

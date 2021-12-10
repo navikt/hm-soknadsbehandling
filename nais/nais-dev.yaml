@@ -38,6 +38,8 @@ spec:
     enabled: true
   kafka:
     pool: nav-dev
+  envFrom:
+    - secret: hm-influxdb-secret
   env:
     - name: SOKNADSBEHANDLING_DB_BASEURL
       value: http://hm-soknadsbehandling-db.teamdigihot.svc.cluster.local/api

@@ -5,7 +5,9 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
+import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClientImpl
+import no.nav.hjelpemidler.soknad.mottak.metrics.InfluxMetrics
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadAutomatiskJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalførtEtterTilbakeføring
@@ -46,13 +48,15 @@ fun main() {
     val baseUrlSoknadsbehandlingDb = Configuration.soknadsbehandlingDb.baseUrl
     val søknadForRiverClient =
         SøknadForRiverClientImpl(baseUrlSoknadsbehandlingDb, azureClient, Configuration.azure.dbApiScope)
+    val pdlClient = PdlClient(azureClient, Configuration.pdl.baseUrl, Configuration.pdl.apiScope)
+    val influxMetrics = InfluxMetrics()
 
     MonitoreringService(søknadForRiverClient)
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .build().apply {
-            SoknadMedFullmaktDataSink(this, søknadForRiverClient)
-            SoknadUtenFullmaktDataSink(this, søknadForRiverClient)
+            SoknadMedFullmaktDataSink(this, søknadForRiverClient, pdlClient, influxMetrics)
+            SoknadUtenFullmaktDataSink(this, søknadForRiverClient, pdlClient, influxMetrics)
             SlettSoknad(this, søknadForRiverClient)
             GodkjennSoknad(this, søknadForRiverClient)
             startSøknadUtgåttScheduling(SøknadsgodkjenningService(søknadForRiverClient, this))
@@ -62,7 +66,7 @@ fun main() {
             NyInfotrygdOrdrelinje(this, søknadForRiverClient)
             NyHotsakOrdrelinje(this, søknadForRiverClient)
             VedtaksresultatFraInfotrygd(this, søknadForRiverClient)
-            PapirSøknadEndeligJournalført(this, søknadForRiverClient)
+            PapirSøknadEndeligJournalført(this, søknadForRiverClient, pdlClient, influxMetrics)
             DigitalSøknadAutomatiskJournalført(this, søknadForRiverClient)
             VedtaksresultatFraHotsak(this, søknadForRiverClient)
             HotsakOpprettet(this, søknadForRiverClient)
