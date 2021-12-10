@@ -34,6 +34,7 @@ internal class HotsakOpprettet(
                      """.trimMargin()
         )
 
+
         val søknadId = packet["soknadId"].asText()
         val sakId = packet["sakId"].asText()
 
