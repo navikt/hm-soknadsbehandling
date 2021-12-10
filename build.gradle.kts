@@ -66,6 +66,7 @@ dependencies {
         exclude(module = "slf4j-simple")
         exclude(module = "slf4j-api")
     }
+    implementation("io.ktor:ktor-jackson:$ktor_version")
     implementation("io.ktor:ktor-auth:$ktor_version")
     implementation("io.ktor:ktor-auth-jwt:$ktor_version")
     implementation("io.ktor:ktor-client-apache:$ktor_version")
