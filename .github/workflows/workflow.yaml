@@ -28,7 +28,8 @@ jobs:
             ${{ runner.os }}-gradle-
       - name: Temp clean cache
         run: |
-          rm -rf ~/.gradle ~/.m2
+          rm -rf ~/.gradle ~/.m2 ./gradle ./buildSrc/.gradle ./buildSrc/build
+          ./gradlew clean
       - name: Build with Gradle
         run: ./gradlew build --info
         env:
