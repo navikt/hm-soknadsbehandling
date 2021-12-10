@@ -63,10 +63,6 @@ object Fuel {
     fun library(name: String) = "com.github.kittinunf.fuel:fuel-$name:$version"
 }
 
-object GradleWrapper {
-    const val version = "5.5"
-}
-
 object Jackson {
     const val version = "2.10.3"
     const val core = "com.fasterxml.jackson.core:jackson-core:$version"
@@ -120,13 +116,10 @@ object Konfig {
 }
 
 object Kotlin {
-    const val version = "1.4.0"
+    const val version = "1.5.31"
     const val stdlib = "org.jetbrains.kotlin:kotlin-stdlib:$version"
 
-    object Coroutines {
-        const val version = "1.3.7"
-        fun module(name: String) = "org.jetbrains.kotlinx:kotlinx-coroutines-$name:$version"
-    }
+    const val testJUnit5 = "org.jetbrains.kotlin:kotlin-test-junit5:$version"
 
     object Logging {
         const val version = "1.7.9"
@@ -150,12 +143,8 @@ object KoTest {
     fun library(name: String) = "io.kotest:kotest-$name:$version"
 }
 
-object Kotlinx {
-    const val bimap = "com.uchuhimo:kotlinx-bimap:1.2"
-}
-
 object Ktor {
-    const val version = "1.4.0"
+    const val version = "1.6.4"
     const val server = "io.ktor:ktor-server:$version"
     const val serverNetty = "io.ktor:ktor-server-netty:$version"
     const val auth = "io.ktor:ktor-auth:$version"
@@ -164,20 +153,6 @@ object Ktor {
     const val micrometerMetrics = "io.ktor:ktor-metrics-micrometer:$version"
     const val ktorTest = "io.ktor:ktor-server-test-host:$version"
     fun library(name: String) = "io.ktor:ktor-$name:$version"
-}
-
-object Log4j2 {
-    const val version = "2.13.1"
-    const val api = "org.apache.logging.log4j:log4j-api:$version"
-    const val core = "org.apache.logging.log4j:log4j-core:$version"
-    const val slf4j = "org.apache.logging.log4j:log4j-slf4j-impl:$version"
-
-    fun library(name: String) = "org.apache.logging.log4j:log4j-$name:$version"
-
-    object Logstash {
-        private const val version = "1.0.2"
-        const val logstashLayout = "com.vlkan.log4j2:log4j2-logstash-layout:$version"
-    }
 }
 
 object Micrometer {
@@ -206,25 +181,7 @@ object Nare {
     const val nare = "no.nav:nare:$version"
 }
 
-object Prometheus {
-    const val version = "0.8.1"
-    const val common = "io.prometheus:simpleclient_common:$version"
-    const val hotspot = "io.prometheus:simpleclient_hotspot:$version"
-    const val log4j2 = "io.prometheus:simpleclient_log4j2:$version"
-    fun library(name: String) = "io.prometheus:simpleclient_$name:$version"
-
-    object Nare {
-        const val version = "0b41ab4"
-        const val prometheus = "no.nav:nare-prometheus:$version"
-    }
-}
-
 const val RapidAndRivers = "com.github.navikt:rapids-and-rivers:1.6d6256d"
-
-object Slf4j {
-    const val version = "1.7.25"
-    const val api = "org.slf4j:slf4j-api:$version"
-}
 
 object Ktlint {
     const val version = "0.38.1"
