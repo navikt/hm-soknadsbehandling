@@ -15,6 +15,8 @@ plugins {
     id(Shadow.shadow) version Shadow.version
 }
 
+group = "no.nav.hjelpemidler.soknad.mottak"
+
 buildscript {
     repositories {
         jcenter()
