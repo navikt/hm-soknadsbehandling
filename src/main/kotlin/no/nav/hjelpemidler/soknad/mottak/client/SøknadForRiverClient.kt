@@ -360,7 +360,6 @@ internal class SøknadForRiverClientImpl(
                         }
                     )
                     .let {
-                        logger.info("Fikk tilbake fra søknadsbehandling db ${it.textValue()}")
                         if (it.get("soknadId")?.textValue() != null) {
                             UUID.fromString(it.get("soknadId").textValue())
                         } else {
