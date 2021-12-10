@@ -14,7 +14,8 @@ import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSoknad
 import no.nav.hjelpemidler.soknad.mottak.river.HotsakOpprettet
 import no.nav.hjelpemidler.soknad.mottak.river.JournalpostSink
-import no.nav.hjelpemidler.soknad.mottak.river.NyOrdrelinje
+import no.nav.hjelpemidler.soknad.mottak.river.NyHotsakOrdrelinje
+import no.nav.hjelpemidler.soknad.mottak.river.NyInfotrygdOrdrelinje
 import no.nav.hjelpemidler.soknad.mottak.river.OppgaveSink
 import no.nav.hjelpemidler.soknad.mottak.river.PapirSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.SlettSoknad
@@ -62,7 +63,8 @@ fun main() {
             JournalpostSink(this, søknadForRiverClient)
             OppgaveSink(this, søknadForRiverClient)
             DigitalSøknadEndeligJournalført(this, søknadForRiverClient)
-            NyOrdrelinje(this, søknadForRiverClient)
+            NyInfotrygdOrdrelinje(this, søknadForRiverClient)
+            NyHotsakOrdrelinje(this, søknadForRiverClient)
             VedtaksresultatFraInfotrygd(this, søknadForRiverClient)
             PapirSøknadEndeligJournalført(this, søknadForRiverClient, pdlClient, influxMetrics)
             DigitalSøknadAutomatiskJournalført(this, søknadForRiverClient)
