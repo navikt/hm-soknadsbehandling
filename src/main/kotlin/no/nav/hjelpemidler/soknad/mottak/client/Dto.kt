@@ -11,7 +11,8 @@ data class SoknadDataDto(
     val soknadId: UUID? = null,
     val soknad: JsonNode? = null,
     val status: Status? = null,
-    val kommunenavn: String? = null
+    val kommunenavn: String? = null,
+    val soknadGjelder: String? = null,
 )
 
 data class SoknadMedStatus(
