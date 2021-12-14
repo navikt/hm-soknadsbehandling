@@ -14,7 +14,8 @@ internal data class SoknadData(
     val soknadId: UUID,
     val soknad: JsonNode,
     val status: Status,
-    val kommunenavn: String?
+    val kommunenavn: String?,
+    val soknadGjelder: String?,
 ) {
 
     companion object {
@@ -32,7 +33,8 @@ internal data class SoknadData(
                 soknadDataDto.soknadId,
                 soknadDataDto.soknad,
                 soknadDataDto.status,
-                soknadDataDto.kommunenavn
+                soknadDataDto.kommunenavn,
+                soknadDataDto.soknadGjelder,
             )
         }
     }
@@ -50,6 +52,7 @@ internal data class SoknadData(
             it["soknad"] = this.soknad
             it["soknadId"] = this.soknadId
             it["fnrInnsender"] = this.fnrInnsender
+            if (this.soknadGjelder != null) it["soknadGjelder"] = this.soknadGjelder
         }.toJson()
     }
 

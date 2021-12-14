@@ -1,8 +1,8 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
+import junit.framework.Assert.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
-import kotlin.test.assertEquals
 
 internal class TimeUtilTest {
 

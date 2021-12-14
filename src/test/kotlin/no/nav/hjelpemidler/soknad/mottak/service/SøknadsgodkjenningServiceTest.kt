@@ -43,7 +43,8 @@ internal class SøknadsgodkjenningServiceTest {
             soknadId,
             mockSoknad,
             Status.VENTER_GODKJENNING,
-            "oslo"
+            "oslo",
+            soknadGjelder = "Søknad om Hjelpemidler",
         )
     }
 

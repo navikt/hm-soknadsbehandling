@@ -24,6 +24,7 @@ spec:
     outbound:
       rules:
         - application: hm-soknadsbehandling-db
+        - application: hm-grunndata-api
   azure:
     application:
       enabled: true
