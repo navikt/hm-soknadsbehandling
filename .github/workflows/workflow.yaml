@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - DIGIHOT-520-statistikk-digital-vs-papir-per-kommune
 
 env:
   IMAGE: "docker.pkg.github.com/${{ github.repository }}/hm-soknadsbehandling:${{ github.sha }}"

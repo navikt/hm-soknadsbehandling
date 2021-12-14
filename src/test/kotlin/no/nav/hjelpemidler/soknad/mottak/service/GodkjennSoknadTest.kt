@@ -56,7 +56,8 @@ internal class GodkjennSoknadTest {
                     } """
             ),
             status = Status.VENTER_GODKJENNING,
-            kommunenavn = null
+            kommunenavn = null,
+            soknadGjelder = "Søknad om Hjelpemidler",
         )
         coEvery { hentSoknadData(UUID.fromString(soknadIdDuplikat)) } returns SoknadData(
             "fnrBruker",
@@ -89,7 +90,8 @@ internal class GodkjennSoknadTest {
                     } """
             ),
             status = Status.GODKJENT,
-            kommunenavn = null
+            kommunenavn = null,
+            soknadGjelder = "Søknad om Hjelpemidler",
         )
     }
 
