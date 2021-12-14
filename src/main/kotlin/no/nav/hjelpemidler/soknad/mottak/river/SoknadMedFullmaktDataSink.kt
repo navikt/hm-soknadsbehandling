@@ -33,7 +33,7 @@ internal class SoknadMedFullmaktDataSink(
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "nySoknad") }
-            validate { it.demandValue("signatur", "FULLMAKT") }
+            validate { it.demandAny("signatur", listOf("FULLMAKT", "FRITAK_FRA_FULLMAKT")) }
             validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId", "kommunenavn") }
             validate { it.forbid("soknadId") }
         }.register(this)

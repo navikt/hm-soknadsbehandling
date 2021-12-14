@@ -168,6 +168,38 @@ internal class SoknadMedFullmaktDataSinkTest {
     }
 
     @Test
+    fun `Signatur FRITAK_FRA_FULLMAKT element in JSON is mapped to correct status`() {
+
+        val okPacket =
+            """
+                {
+                    "eventName": "nySoknad",
+                    "signatur": "FRITAK_FRA_FULLMAKT",
+                    "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "fodselNrBruker": "fnrBruker",
+                    "fodselNrInnsender": "fodselNrInnsender",
+                    "soknad": 
+                        {
+                            "soknad":
+                                {
+                                    "date": "2020-06-19",
+                                    "bruker": 
+                                        {
+                                            "fornavn": "fornavn",
+                                            "etternavn": "etternavn"
+                                        },
+                                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
+                                }
+                        },
+                    "kommunenavn": "Oslo"
+                }
+        """.trimMargin()
+
+        rapid.sendTestMessage(okPacket)
+        capturedSoknadData.captured.status shouldBe Status.GODKJENT_MED_FULLMAKT
+    }
+
+    @Test
     fun `Handle soknad if packet contains required keys`() {
 
         val okPacket =
