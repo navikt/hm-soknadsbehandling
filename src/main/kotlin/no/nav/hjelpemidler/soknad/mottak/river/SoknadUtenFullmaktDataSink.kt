@@ -15,7 +15,6 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
-import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.InfluxMetrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
@@ -30,7 +29,6 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 internal class SoknadUtenFullmaktDataSink(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient,
-    private val pdlClient: PdlClient,
     private val influxMetrics: InfluxMetrics
 ) : PacketListenerWithOnError {
 
@@ -88,13 +86,7 @@ internal class SoknadUtenFullmaktDataSink(
 
                         forward(soknadData, context)
 
-                        // Logg statistikk
-                        try {
-                            val kommunenr = pdlClient.hentKommunenr(packet.fnrBruker)
-                            influxMetrics.digitalSoknad(kommunenr)
-                        } catch (e: Exception) {
-                            logger.warn(e) { "Feil under logging av statistikk 'digitalsøknad per kommune'" }
-                        }
+                        influxMetrics.digitalSoknad(packet.fnrBruker, packet.soknadId)
                     } catch (e: Exception) {
                         throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
                     }

@@ -49,14 +49,14 @@ fun main() {
     val søknadForRiverClient =
         SøknadForRiverClientImpl(baseUrlSoknadsbehandlingDb, azureClient, Configuration.azure.dbApiScope)
     val pdlClient = PdlClient(azureClient, Configuration.pdl.baseUrl, Configuration.pdl.apiScope)
-    val influxMetrics = InfluxMetrics()
+    val influxMetrics = InfluxMetrics(pdlClient)
 
     MonitoreringService(søknadForRiverClient)
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .build().apply {
-            SoknadMedFullmaktDataSink(this, søknadForRiverClient, pdlClient, influxMetrics)
-            SoknadUtenFullmaktDataSink(this, søknadForRiverClient, pdlClient, influxMetrics)
+            SoknadMedFullmaktDataSink(this, søknadForRiverClient, influxMetrics)
+            SoknadUtenFullmaktDataSink(this, søknadForRiverClient, influxMetrics)
             SlettSoknad(this, søknadForRiverClient)
             GodkjennSoknad(this, søknadForRiverClient)
             startSøknadUtgåttScheduling(SøknadsgodkjenningService(søknadForRiverClient, this))
@@ -66,7 +66,7 @@ fun main() {
             NyInfotrygdOrdrelinje(this, søknadForRiverClient)
             NyHotsakOrdrelinje(this, søknadForRiverClient)
             VedtaksresultatFraInfotrygd(this, søknadForRiverClient)
-            PapirSøknadEndeligJournalført(this, søknadForRiverClient, pdlClient, influxMetrics)
+            PapirSøknadEndeligJournalført(this, søknadForRiverClient, influxMetrics)
             DigitalSøknadAutomatiskJournalført(this, søknadForRiverClient)
             VedtaksresultatFraHotsak(this, søknadForRiverClient)
             HotsakOpprettet(this, søknadForRiverClient)

@@ -3,12 +3,18 @@ package no.nav.hjelpemidler.soknad.mottak.metrics
 import com.influxdb.client.InfluxDBClientFactory
 import com.influxdb.client.domain.WritePrecision
 import com.influxdb.client.write.Point
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.Configuration
+import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import java.time.Instant
 
-internal class InfluxMetrics(config: Configuration.InfluxDb = Configuration.influxDb) {
+internal class InfluxMetrics(
+    private val pdlClient: PdlClient,
+    config: Configuration.InfluxDb = Configuration.influxDb
+) {
 
     private val client = InfluxDBClientFactory.createV1(
         "${config.host}:${config.port}",
@@ -18,20 +24,36 @@ internal class InfluxMetrics(config: Configuration.InfluxDb = Configuration.infl
         null
     )
 
-    private val ukjentSted = Kommunenr.Sted("UKJENT", "UKJENT")
-
-    fun digitalSoknad(kommunenr: String?) {
-        val sted = Kommunenr.kommunenrTilSted(kommunenr) ?: ukjentSted
-        writeEvent(
-            STED,
-            mapOf("counter-digital" to 1L),
-            mapOf("kommune" to sted.kommunenavn, "fylke" to sted.fylkesnavn)
-        )
+    suspend fun digitalSoknad(brukersFnr: String, soknadId: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                val kommunenr = pdlClient.hentKommunenr(brukersFnr)
+                val sted = Kommunenr.kommunenrTilSted(kommunenr) ?: ukjentSted
+                writeEvent(
+                    STED,
+                    mapOf("counter-digital" to 1L),
+                    mapOf("kommune" to sted.kommunenavn, "fylke" to sted.fylkesnavn)
+                )
+            } catch (e: Exception) {
+                logg.warn(e) { "Feil under logging av statistikk 'digitalsøknad per kommune'. Søknad: $soknadId" }
+            }
+        }
     }
 
-    fun papirSoknad(kommuneNr: String?) {
-        val sted = Kommunenr.kommunenrTilSted(kommuneNr) ?: ukjentSted
-        writeEvent(STED, mapOf("counter-papir" to 1L), mapOf("kommune" to sted.kommunenavn, "fylke" to sted.fylkesnavn))
+    suspend fun papirSoknad(brukersFnr: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                val kommunenr = pdlClient.hentKommunenr(brukersFnr)
+                val sted = Kommunenr.kommunenrTilSted(kommunenr) ?: ukjentSted
+                writeEvent(
+                    STED,
+                    mapOf("counter-papir" to 1L),
+                    mapOf("kommune" to sted.kommunenavn, "fylke" to sted.fylkesnavn)
+                )
+            } catch (e: Exception) {
+                logg.warn(e) { "Feil under logging av statistikk 'papirsøknad per kommune'." }
+            }
+        }
     }
 
     private fun writeEvent(measurement: String, fields: Map<String, Any>, tags: Map<String, String>) = runBlocking {
@@ -49,6 +71,8 @@ internal class InfluxMetrics(config: Configuration.InfluxDb = Configuration.infl
         }
     }
 }
+
+private val ukjentSted = Kommunenr.Sted("UKJENT", "UKJENT")
 
 private val logg = KotlinLogging.logger {}
 
