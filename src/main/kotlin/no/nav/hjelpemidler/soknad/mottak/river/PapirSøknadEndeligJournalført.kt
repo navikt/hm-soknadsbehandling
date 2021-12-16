@@ -9,7 +9,6 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.InfluxMetrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
@@ -25,7 +24,6 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 internal class PapirSøknadEndeligJournalført(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient,
-    private val pdlClient: PdlClient,
     private val influxMetrics: InfluxMetrics
 ) : PacketListenerWithOnError {
     init {
@@ -99,13 +97,7 @@ internal class PapirSøknadEndeligJournalført(
                         context.publish(fnrBruker, SøknadUnderBehandlingData(soknadId, fnrBruker).toJson("hm-SøknadUnderBehandling"))
                         logger.info { "Endelig journalført: Papirsøknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $soknadId" }
 
-                        // Logg statistikk
-                        try {
-                            val kommunenr = pdlClient.hentKommunenr(fnrBruker)
-                            influxMetrics.papirSoknad(kommunenr)
-                        } catch (e: Exception) {
-                            logger.warn(e) { "Feil under logging av statistikk 'papirsøknad per kommune'" }
-                        }
+                        influxMetrics.papirSoknad(packet.fnrBruker)
                     } catch (e: Exception) {
                         throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
                     }
