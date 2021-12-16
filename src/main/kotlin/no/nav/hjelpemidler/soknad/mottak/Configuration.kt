@@ -34,6 +34,8 @@ private val localProperties = ConfigurationMap(
         "SOKNADSBEHANDLING_DB_CLIENT_ID" to "local:hm-soknadsbehandling-db",
         "PDL_API_URL" to "http://localhost:9098/pdl",
         "PDL_API_SCOPE" to "api://dev-gcp.pdl.pdl-api/.default",
+        "SLACK_HOOK" to "http://dummy",
+        "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "false",
 
         "GRUNNDATA_API_URL" to "https://hm-grunndata-api.dev.intern.nav.no",
     )
@@ -50,6 +52,7 @@ private val devProperties = ConfigurationMap(
         "SOKNADSBEHANDLING_DB_CLIENT_ID" to "dev-gcp:teamdigihot:hm-soknadsbehandling-db",
         "PDL_API_URL" to "https://pdl-api.dev-fss-pub.nais.io/graphql",
         "PDL_API_SCOPE" to "api://dev-fss.pdl.pdl-api/.default",
+        "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "true",
 
         "GRUNNDATA_API_URL" to "http://hm-grunndata-api",
     )
@@ -65,6 +68,7 @@ private val prodProperties = ConfigurationMap(
         "SOKNADSBEHANDLING_DB_CLIENT_ID" to "prod-gcp:teamdigihot:hm-soknadsbehandling-db",
         "PDL_API_URL" to "https://pdl-api.prod-fss-pub.nais.io/graphql",
         "PDL_API_SCOPE" to "api://prod-fss.pdl.pdl-api/.default",
+        "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "true",
 
         "GRUNNDATA_API_URL" to "http://hm-grunndata-api",
     )
@@ -84,6 +88,7 @@ internal object Configuration {
 
     val soknadsbehandlingDb: SoknadsbehandlingDb = SoknadsbehandlingDb()
     val hmdb: Hmdb = Hmdb()
+    val slack: Slack = Slack()
     val azure: Azure = Azure()
     val application: Application = Application()
     val influxDb: InfluxDb = InfluxDb()
@@ -134,6 +139,12 @@ internal object Configuration {
 
     data class Hmdb(
         val grunndataApi: String = config[Key("GRUNNDATA_API_URL", stringType)],
+    )
+
+    data class Slack(
+        val slackHook: String = config[Key("SLACK_HOOK", stringType)],
+        val postDokumentbeskrivelseToSlack: String = config[Key("POST_DOKUMENTBESKRIVELSE_TO_SLACK", stringType)],
+        val environment: String = config[Key("application.profile", stringType)],
     )
 }
 
