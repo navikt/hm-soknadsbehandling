@@ -52,7 +52,7 @@ private val devProperties = ConfigurationMap(
         "SOKNADSBEHANDLING_DB_CLIENT_ID" to "dev-gcp:teamdigihot:hm-soknadsbehandling-db",
         "PDL_API_URL" to "https://pdl-api.dev-fss-pub.nais.io/graphql",
         "PDL_API_SCOPE" to "api://dev-fss.pdl.pdl-api/.default",
-        "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "true",
+        "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "false",
 
         "GRUNNDATA_API_URL" to "http://hm-grunndata-api",
     )
