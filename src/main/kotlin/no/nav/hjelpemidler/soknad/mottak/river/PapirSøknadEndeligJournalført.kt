@@ -1,9 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -54,54 +51,53 @@ internal class PapirSøknadEndeligJournalført(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
-            withContext(Dispatchers.IO) {
-                launch {
 
-                    if (skipEvent(UUID.fromString(packet.eventId))) {
-                        logger.info { "Hopper over event i skip-list: ${packet.eventId}" }
-                        return@launch
-                    }
+            if (skipEvent(UUID.fromString(packet.eventId))) {
+                logger.info { "Hopper over event i skip-list: ${packet.eventId}" }
+                return@runBlocking
+            }
 
-                    val soknadId = UUID.randomUUID()
-                    val fnrBruker = packet.fnrBruker
-                    val fagsakId = packet.fagsakId
+            val soknadId = UUID.randomUUID()
+            val fnrBruker = packet.fnrBruker
+            val fagsakId = packet.fagsakId
 
-                    val vedtaksresultatData = VedtaksresultatData(
-                        soknadId,
-                        fnrBruker,
-                        VedtaksresultatData.getTrygdekontorNrFromFagsakId(fagsakId),
-                        VedtaksresultatData.getSaksblokkFromFagsakId(fagsakId),
-                        VedtaksresultatData.getSaksnrFromFagsakId(fagsakId),
-                    )
+            val vedtaksresultatData = VedtaksresultatData(
+                soknadId,
+                fnrBruker,
+                VedtaksresultatData.getTrygdekontorNrFromFagsakId(fagsakId),
+                VedtaksresultatData.getSaksblokkFromFagsakId(fagsakId),
+                VedtaksresultatData.getSaksnrFromFagsakId(fagsakId),
+            )
 
-                    try {
-                        val soknadData = PapirSøknadData(
-                            fnrBruker = fnrBruker,
-                            soknadId = soknadId,
-                            status = Status.ENDELIG_JOURNALFØRT,
-                            journalpostid = packet.journalpostId,
-                            navnBruker = packet.navnBruker
-                        )
+            try {
+                val soknadData = PapirSøknadData(
+                    fnrBruker = fnrBruker,
+                    soknadId = soknadId,
+                    status = Status.ENDELIG_JOURNALFØRT,
+                    journalpostid = packet.journalpostId,
+                    navnBruker = packet.navnBruker
+                )
 
-                        if (søknadForRiverClient.fnrOgJournalpostIdFinnes(soknadData.fnrBruker, soknadData.journalpostid)) {
-                            logger.warn { "En søknad med dette fødselsnummeret og journalpostIden er allerede lagret i databasen: $soknadId, journalpostId: ${soknadData.journalpostid}, eventId: ${packet.eventId}" }
-                            return@launch
-                        }
-
-                        save(soknadData)
-                        opprettKnytningMellomFagsakOgSøknad(fagsakId = fagsakId, vedtaksresultatData = vedtaksresultatData)
-                        context.publish(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
-                        logger.info { "Papirsøknad mottatt og lagret: $soknadId" }
-
-                        // Send melding til Ditt NAV
-                        context.publish(fnrBruker, SøknadUnderBehandlingData(soknadId, fnrBruker).toJson("hm-SøknadUnderBehandling"))
-                        logger.info { "Endelig journalført: Papirsøknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $soknadId" }
-
-                        influxMetrics.papirSoknad(packet.fnrBruker)
-                    } catch (e: Exception) {
-                        throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
-                    }
+                if (søknadForRiverClient.fnrOgJournalpostIdFinnes(soknadData.fnrBruker, soknadData.journalpostid)) {
+                    logger.warn { "En søknad med dette fødselsnummeret og journalpostIden er allerede lagret i databasen: $soknadId, journalpostId: ${soknadData.journalpostid}, eventId: ${packet.eventId}" }
+                    return@runBlocking
                 }
+
+                save(soknadData)
+                opprettKnytningMellomFagsakOgSøknad(fagsakId = fagsakId, vedtaksresultatData = vedtaksresultatData)
+                context.publish(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
+                logger.info { "Papirsøknad mottatt og lagret: $soknadId" }
+
+                // Send melding til Ditt NAV
+                context.publish(
+                    fnrBruker,
+                    SøknadUnderBehandlingData(soknadId, fnrBruker).toJson("hm-SøknadUnderBehandling")
+                )
+                logger.info { "Endelig journalført: Papirsøknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $soknadId" }
+
+                influxMetrics.papirSoknad(packet.fnrBruker)
+            } catch (e: Exception) {
+                throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
             }
         }
     }
@@ -124,7 +120,10 @@ internal class PapirSøknadEndeligJournalført(
             logger.error(it) { "Failed to save papirsøknad klar til godkjenning: ${soknadData.soknadId}" }
         }.getOrThrow()
 
-    private suspend fun opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData, fagsakId: String) =
+    private suspend fun opprettKnytningMellomFagsakOgSøknad(
+        vedtaksresultatData: VedtaksresultatData,
+        fagsakId: String
+    ) =
         kotlin.runCatching {
             søknadForRiverClient.lagKnytningMellomFagsakOgSøknad(vedtaksresultatData)
         }.onSuccess {

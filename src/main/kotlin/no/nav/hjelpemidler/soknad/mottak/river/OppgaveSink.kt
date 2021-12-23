@@ -1,9 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -15,7 +12,8 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class OppgaveSink(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) : PacketListenerWithOnError {
+internal class OppgaveSink(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) :
+    PacketListenerWithOnError {
 
     init {
         River(rapidsConnection).apply {
@@ -29,22 +27,21 @@ internal class OppgaveSink(rapidsConnection: RapidsConnection, private val søkn
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
-            withContext(Dispatchers.IO) {
-                launch {
-                    try {
-                        val rowsUpdated = update(UUID.fromString(packet.soknadId), packet.oppgaveId)
-                        if (rowsUpdated > 0) {
-                            logger.info("Søknad ${packet.soknadId} oppdatert med oppgaveId ${packet.oppgaveId}")
-                        } else {
-                            logger.error {
-                                "Kunne ikke oppdatere søknad ${packet.soknadId} med oppgaveId ${packet.oppgaveId}. " +
-                                    "Kontroller at soknadId eksisterer og ikke allerede har registrert en oppgaveId."
-                            }
-                        }
-                    } catch (e: Exception) {
-                        throw RuntimeException("Håndtering av ny oppgaveId (${packet.oppgaveId}) for søknad ${packet.soknadId} feilet", e)
+            try {
+                val rowsUpdated = update(UUID.fromString(packet.soknadId), packet.oppgaveId)
+                if (rowsUpdated > 0) {
+                    logger.info("Søknad ${packet.soknadId} oppdatert med oppgaveId ${packet.oppgaveId}")
+                } else {
+                    logger.error {
+                        "Kunne ikke oppdatere søknad ${packet.soknadId} med oppgaveId ${packet.oppgaveId}. " +
+                            "Kontroller at soknadId eksisterer og ikke allerede har registrert en oppgaveId."
                     }
                 }
+            } catch (e: Exception) {
+                throw RuntimeException(
+                    "Håndtering av ny oppgaveId (${packet.oppgaveId}) for søknad ${packet.soknadId} feilet",
+                    e
+                )
             }
         }
     }

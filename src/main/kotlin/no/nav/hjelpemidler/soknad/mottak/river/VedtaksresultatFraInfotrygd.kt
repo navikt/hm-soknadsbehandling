@@ -1,9 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -39,27 +36,23 @@ internal class VedtaksresultatFraInfotrygd(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
-            withContext(Dispatchers.IO) {
-                launch {
 
-                    val søknadsId = UUID.fromString(packet.søknadID)
+            val søknadsId = UUID.fromString(packet.søknadID)
 
-                    lagreVedtaksresultat(søknadsId, packet.vedtaksResultat, packet.vedtaksDato)
+            lagreVedtaksresultat(søknadsId, packet.vedtaksResultat, packet.vedtaksDato)
 
-                    val status = when (packet.vedtaksResultat) {
-                        "I" -> Status.VEDTAKSRESULTAT_INNVILGET
-                        "IM" -> Status.VEDTAKSRESULTAT_MUNTLIG_INNVILGET
-                        "A" -> Status.VEDTAKSRESULTAT_AVSLÅTT
-                        "DI" -> Status.VEDTAKSRESULTAT_DELVIS_INNVILGET
-                        else -> Status.VEDTAKSRESULTAT_ANNET
-                    }
-                    oppdaterStatus(søknadsId, status)
-
-                    val vedtaksresultatLagretData =
-                        VedtaksresultatLagretData(søknadsId, packet.fnrBruker, packet.vedtaksResultat)
-                    context.publish(packet.fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatLagret"))
-                }
+            val status = when (packet.vedtaksResultat) {
+                "I" -> Status.VEDTAKSRESULTAT_INNVILGET
+                "IM" -> Status.VEDTAKSRESULTAT_MUNTLIG_INNVILGET
+                "A" -> Status.VEDTAKSRESULTAT_AVSLÅTT
+                "DI" -> Status.VEDTAKSRESULTAT_DELVIS_INNVILGET
+                else -> Status.VEDTAKSRESULTAT_ANNET
             }
+            oppdaterStatus(søknadsId, status)
+
+            val vedtaksresultatLagretData =
+                VedtaksresultatLagretData(søknadsId, packet.fnrBruker, packet.vedtaksResultat)
+            context.publish(packet.fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatLagret"))
         }
     }
 

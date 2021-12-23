@@ -1,9 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -52,69 +49,65 @@ internal class NyInfotrygdOrdrelinje(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
-            withContext(Dispatchers.IO) {
-                launch {
-                    if (packet.saksblokkOgSaksnr.isEmpty()) {
-                        logger.info("Skipping illegal event saksblokkOgSaksnr='': ${packet.eventId}")
-                        sikkerlogg.error("Skippet event med tom saksblokkOgSaksnr: ${packet.toJson()}")
-                        return@launch
-                    }
-                    if (skipEvent(UUID.fromString(packet.eventId))) {
-                        logger.info("Hopper over event i skip-list: ${packet.eventId}")
-                        sikkerlogg.error("Skippet event: ${packet.toJson()}")
-                        return@launch
-                    }
-                    try {
-                        logger.info { "Inftrygd ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
+            if (packet.saksblokkOgSaksnr.isEmpty()) {
+                logger.info("Skipping illegal event saksblokkOgSaksnr='': ${packet.eventId}")
+                sikkerlogg.error("Skippet event med tom saksblokkOgSaksnr: ${packet.toJson()}")
+                return@runBlocking
+            }
+            if (skipEvent(UUID.fromString(packet.eventId))) {
+                logger.info("Hopper over event i skip-list: ${packet.eventId}")
+                sikkerlogg.error("Skippet event: ${packet.toJson()}")
+                return@runBlocking
+            }
+            try {
+                logger.info { "Inftrygd ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
 
-                        // Match ordrelinje to Infotrygd-table
-                        val søknadId = søknadForRiverClient.hentSøknadIdFraVedtaksresultat(
-                            packet.fnrBruker,
-                            packet.saksblokkOgSaksnr,
-                            packet.vedtaksdato
-                        )
-                        if (søknadId == null) {
-                            logger.warn { "Ordrelinje med eventId ${packet.eventId} kan ikkje matchast mot ein søknadId" }
-                            return@launch
-                        }
-
-                        val ordrelinjeData = OrdrelinjeData(
-                            søknadId = søknadId,
-                            oebsId = packet.oebsId,
-                            fnrBruker = packet.fnrBruker,
-                            serviceforespørsel = packet.serviceforespørsel,
-                            ordrenr = packet.ordrenr,
-                            ordrelinje = packet.ordrelinje,
-                            delordrelinje = packet.delordrelinje,
-                            artikkelnr = packet.artikkelnr,
-                            antall = packet.antall,
-                            enhet = packet.enhet,
-                            produktgruppe = packet.produktgruppe,
-                            produktgruppeNr = packet.produktgruppeNr,
-                            data = packet.data,
-                        )
-
-                        val ordreSisteDøgn = søknadForRiverClient.ordreSisteDøgn(soknadsId = søknadId)
-                        val result = save(ordrelinjeData)
-
-                        if (result == 0) {
-                            return@launch
-                        }
-
-                        søknadForRiverClient.oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
-
-                        if (!ordreSisteDøgn) {
-                            context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
-                            Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
-                            logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
-                            sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
-                        } else {
-                            logger.info("Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId")
-                        }
-                    } catch (e: Exception) {
-                        throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
-                    }
+                // Match ordrelinje to Infotrygd-table
+                val søknadId = søknadForRiverClient.hentSøknadIdFraVedtaksresultat(
+                    packet.fnrBruker,
+                    packet.saksblokkOgSaksnr,
+                    packet.vedtaksdato
+                )
+                if (søknadId == null) {
+                    logger.warn { "Ordrelinje med eventId ${packet.eventId} kan ikkje matchast mot ein søknadId" }
+                    return@runBlocking
                 }
+
+                val ordrelinjeData = OrdrelinjeData(
+                    søknadId = søknadId,
+                    oebsId = packet.oebsId,
+                    fnrBruker = packet.fnrBruker,
+                    serviceforespørsel = packet.serviceforespørsel,
+                    ordrenr = packet.ordrenr,
+                    ordrelinje = packet.ordrelinje,
+                    delordrelinje = packet.delordrelinje,
+                    artikkelnr = packet.artikkelnr,
+                    antall = packet.antall,
+                    enhet = packet.enhet,
+                    produktgruppe = packet.produktgruppe,
+                    produktgruppeNr = packet.produktgruppeNr,
+                    data = packet.data,
+                )
+
+                val ordreSisteDøgn = søknadForRiverClient.ordreSisteDøgn(soknadsId = søknadId)
+                val result = save(ordrelinjeData)
+
+                if (result == 0) {
+                    return@runBlocking
+                }
+
+                søknadForRiverClient.oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
+
+                if (!ordreSisteDøgn) {
+                    context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
+                    Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
+                    logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
+                    sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
+                } else {
+                    logger.info("Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId")
+                }
+            } catch (e: Exception) {
+                throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
             }
         }
     }

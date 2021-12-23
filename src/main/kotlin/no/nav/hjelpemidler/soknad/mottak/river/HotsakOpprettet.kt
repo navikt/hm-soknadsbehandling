@@ -1,9 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -38,11 +35,7 @@ internal class HotsakOpprettet(
         val sakId = packet["sakId"].asText()
 
         runBlocking {
-            withContext(Dispatchers.IO) {
-                launch {
-                    opprettKnytningMellomHotsakOgSøknad(UUID.fromString(søknadId), sakId)
-                }
-            }
+            opprettKnytningMellomHotsakOgSøknad(UUID.fromString(søknadId), sakId)
         }
     }
 
