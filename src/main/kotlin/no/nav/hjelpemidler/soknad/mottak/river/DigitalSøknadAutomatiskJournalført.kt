@@ -1,9 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -40,19 +37,15 @@ internal class DigitalSøknadAutomatiskJournalført(
         val fnrBruker = packet["fnrBruker"].asText()
 
         runBlocking {
-            withContext(Dispatchers.IO) {
-                launch {
-                    oppdaterStatus(UUID.fromString(søknadId))
-                    // Melding til Ditt NAV
-                    context.publish(
-                        fnrBruker,
-                        SøknadUnderBehandlingData(
-                            UUID.fromString(søknadId),
-                            fnrBruker
-                        ).toJson("hm-SøknadUnderBehandling")
-                    )
-                }
-            }
+            oppdaterStatus(UUID.fromString(søknadId))
+            // Melding til Ditt NAV
+            context.publish(
+                fnrBruker,
+                SøknadUnderBehandlingData(
+                    UUID.fromString(søknadId),
+                    fnrBruker
+                ).toJson("hm-SøknadUnderBehandling")
+            )
         }
     }
 

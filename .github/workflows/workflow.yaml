@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - DIGIHOT-665-fjerne-coroutines
 
 env:
   IMAGE: "docker.pkg.github.com/${{ github.repository }}/hm-soknadsbehandling:${{ github.sha }}"
