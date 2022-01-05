@@ -9,10 +9,13 @@ import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
+import no.nav.hjelpemidler.soknad.mottak.metrics.kommune.KommuneDto
+import no.nav.hjelpemidler.soknad.mottak.metrics.kommune.KommuneService
 import java.time.Instant
 
 internal class InfluxMetrics(
     private val pdlClient: PdlClient,
+    private val kommuneService: KommuneService = KommuneService(),
     config: Configuration.InfluxDb = Configuration.influxDb
 ) {
 
@@ -28,11 +31,11 @@ internal class InfluxMetrics(
         withContext(Dispatchers.IO) {
             try {
                 val kommunenr = pdlClient.hentKommunenr(brukersFnr)
-                val sted = Kommunenr.kommunenrTilSted(kommunenr) ?: ukjentSted
+                val sted = kommuneService.kommunenrTilSted(kommunenr) ?: ukjentSted
                 writeEvent(
                     STED,
                     mapOf("counter-digital" to 1L),
-                    mapOf("kommune" to sted.kommunenavn, "fylke" to sted.fylkesnavn)
+                    mapOf("kommune" to sted.kommunenavn, "fylke" to sted.fylkenavn)
                 )
             } catch (e: Exception) {
                 logg.warn(e) { "Feil under logging av statistikk 'digitalsøknad per kommune'. Søknad: $soknadId" }
@@ -44,11 +47,11 @@ internal class InfluxMetrics(
         withContext(Dispatchers.IO) {
             try {
                 val kommunenr = pdlClient.hentKommunenr(brukersFnr)
-                val sted = Kommunenr.kommunenrTilSted(kommunenr) ?: ukjentSted
+                val sted = kommuneService.kommunenrTilSted(kommunenr) ?: ukjentSted
                 writeEvent(
                     STED,
                     mapOf("counter-papir" to 1L),
-                    mapOf("kommune" to sted.kommunenavn, "fylke" to sted.fylkesnavn)
+                    mapOf("kommune" to sted.kommunenavn, "fylke" to sted.fylkenavn)
                 )
             } catch (e: Exception) {
                 logg.warn(e) { "Feil under logging av statistikk 'papirsøknad per kommune'." }
@@ -72,7 +75,7 @@ internal class InfluxMetrics(
     }
 }
 
-private val ukjentSted = Kommunenr.Sted("UKJENT", "UKJENT")
+private val ukjentSted = KommuneDto("UKJENT", "UKJENT", "UKJENT")
 
 private val logg = KotlinLogging.logger {}
 

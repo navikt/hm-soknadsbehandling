@@ -36,7 +36,7 @@ private val localProperties = ConfigurationMap(
         "PDL_API_SCOPE" to "api://dev-gcp.pdl.pdl-api/.default",
         "SLACK_HOOK" to "http://dummy",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "false",
-
+        "OPPSLAG_URL" to "http://digihot-oppslag.dev.intern.nav.no/api",
         "GRUNNDATA_API_URL" to "https://hm-grunndata-api.dev.intern.nav.no",
     )
 )
@@ -53,7 +53,7 @@ private val devProperties = ConfigurationMap(
         "PDL_API_URL" to "https://pdl-api.dev-fss-pub.nais.io/graphql",
         "PDL_API_SCOPE" to "api://dev-fss.pdl.pdl-api/.default",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "false",
-
+        "OPPSLAG_URL" to "http://digihot-oppslag/api",
         "GRUNNDATA_API_URL" to "http://hm-grunndata-api",
     )
 )
@@ -69,7 +69,7 @@ private val prodProperties = ConfigurationMap(
         "PDL_API_URL" to "https://pdl-api.prod-fss-pub.nais.io/graphql",
         "PDL_API_SCOPE" to "api://prod-fss.pdl.pdl-api/.default",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "true",
-
+        "OPPSLAG_URL" to "http://digihot-oppslag/api",
         "GRUNNDATA_API_URL" to "http://hm-grunndata-api",
     )
 )
@@ -93,6 +93,7 @@ internal object Configuration {
     val application: Application = Application()
     val influxDb: InfluxDb = InfluxDb()
     val pdl: Pdl = Pdl()
+    val oppslagUrl = config[Key("OPPSLAG_URL", stringType)]
     val rapidApplication: Map<String, String> = mapOf(
         "RAPID_KAFKA_CLUSTER" to "gcp",
         "RAPID_APP_NAME" to "hm-soknadsbehandling",
