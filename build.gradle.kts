@@ -4,7 +4,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 val ktor_version = Ktor.version
-val influxDbClientVersion = "2.2.0"
+val influxDbClientVersion = "3.3.0"
 val influxDbJava = "2.21"
 
 plugins {
@@ -41,8 +41,8 @@ application {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
 }
 
 dependencies {
@@ -50,7 +50,8 @@ dependencies {
     implementation(Jackson.kotlin)
     implementation(Jackson.jsr310)
     implementation("com.github.guepardoapps:kulid:1.1.2.0")
-    implementation("com.github.navikt:rapids-and-rivers:20210428115805-514c80c")
+    implementation("com.github.navikt:rapids-and-rivers:2021.12.23-14.25.03a3f6fe7709")
+    implementation("org.slf4j:slf4j-api:2.0.0-alpha5") // fordi rapids-and-rivers er på logback-classic:1.3.0-alpha10 som krever slf4j >= 2.0.0-alpha4
     implementation(Ktor.serverNetty)
     implementation(Database.Flyway)
     implementation(Database.HikariCP)
@@ -104,7 +105,7 @@ spotless {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions.freeCompilerArgs = listOf()
-    kotlinOptions.jvmTarget = "11"
+    kotlinOptions.jvmTarget = "16"
 }
 
 tasks.withType<Test> {

@@ -16,12 +16,10 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.OutgoingContent
 import io.ktor.response.respond
-import io.ktor.util.KtorExperimentalAPI
 import io.ktor.util.filter
 import io.ktor.utils.io.ByteWriteChannel
 import io.ktor.utils.io.copyAndClose
 
-@KtorExperimentalAPI
 fun httpClient() = HttpClient(Apache) {
     install(JsonFeature) {
         serializer = JacksonSerializer { configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false) }

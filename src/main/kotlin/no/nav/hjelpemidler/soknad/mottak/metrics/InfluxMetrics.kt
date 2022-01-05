@@ -26,6 +26,7 @@ internal class InfluxMetrics(
         config.name,
         null
     )
+    private val writeApi = client.makeWriteApi()
 
     suspend fun digitalSoknad(brukersFnr: String, soknadId: String) {
         withContext(Dispatchers.IO) {
@@ -68,7 +69,7 @@ internal class InfluxMetrics(
                 .time(Instant.now().toEpochMilli(), WritePrecision.MS)
 
             logg.info("Skriv point-objekt til Aiven: ${point.toLineProtocol()}")
-            client.writeApi.writePoint(point)
+            writeApi.writePoint(point)
         } catch (e: Exception) {
             logg.warn(e) { "Skriving av event til influx feilet" }
         }

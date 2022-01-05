@@ -72,7 +72,7 @@ internal class GodkjennSoknad(
         try {
             val opprettetDato = søknadForRiverClient.hentSoknadOpprettetDato(soknadData.soknadId)
             val tid = periodeMellomDatoer(
-                LocalDateTime.ofInstant(opprettetDato!!.toInstant(), ZoneId.systemDefault()),
+                LocalDateTime.ofInstant(opprettetDato.toInstant(), ZoneId.systemDefault()),
                 LocalDateTime.now()
             )
             logger.info("Tid brukt fra opprettelse til godkjenning av søknad med ID ${soknadData.soknadId} var: $tid")
