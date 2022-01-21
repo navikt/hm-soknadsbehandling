@@ -69,7 +69,7 @@ internal class NyInfotrygdOrdrelinje(
                     packet.vedtaksdato
                 )
                 if (søknadId == null) {
-                    logger.warn { "Ordrelinje med eventId ${packet.eventId} kan ikkje matchast mot ein søknadId" }
+                    logger.warn { "Ordrelinje med eventId ${packet.eventId} kan ikkje matchast mot ein søknadId (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})" }
                     return@runBlocking
                 }
 
