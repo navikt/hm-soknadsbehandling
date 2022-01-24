@@ -26,6 +26,8 @@ spec:
         - application: hm-soknadsbehandling-db
         - application: hm-grunndata-api
         - application: digihot-oppslag
+      external:
+        - host: hm-infotrygd-proxy.prod-fss-pub.nais.io
   azure:
     application:
       enabled: true
