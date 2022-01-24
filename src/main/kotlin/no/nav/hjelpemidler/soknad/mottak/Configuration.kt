@@ -25,6 +25,7 @@ private val localProperties = ConfigurationMap(
         "AZURE_APP_CLIENT_ID" to "123",
         "AZURE_APP_CLIENT_SECRET" to "dummy",
         "DBAPI_SCOPE" to "123",
+        "INFOTRYGD_PROXY_SCOPE" to "123",
         "INFLUX_HOST" to "http://localhost",
         "INFLUX_PORT" to "1234",
         "INFLUX_DATABASE_NAME" to "defaultdb",
@@ -32,6 +33,7 @@ private val localProperties = ConfigurationMap(
         "INFLUX_PASSWORD" to "password",
         "SOKNADSBEHANDLING_DB_BASEURL" to "http://localhost:8083/api",
         "SOKNADSBEHANDLING_DB_CLIENT_ID" to "local:hm-soknadsbehandling-db",
+        "INFOTRYGD_PROXY_BASEURL" to "http://localhost:8083/infotrygdproxy",
         "PDL_API_URL" to "http://localhost:9098/pdl",
         "PDL_API_SCOPE" to "api://dev-gcp.pdl.pdl-api/.default",
         "SLACK_HOOK" to "http://dummy",
@@ -49,7 +51,9 @@ private val devProperties = ConfigurationMap(
         "KAFKA_TOPIC" to "teamdigihot.hm-soknadsbehandling-v1",
         "AZURE_TENANT_BASEURL" to "https://login.microsoftonline.com",
         "DBAPI_SCOPE" to "api://dev-gcp.teamdigihot.hm-soknadsbehandling-db/.default",
+        "INFOTRYGD_PROXY_SCOPE" to "api://dev-fss.teamdigihot.hm-infotrygd-proxy/.default",
         "SOKNADSBEHANDLING_DB_CLIENT_ID" to "dev-gcp:teamdigihot:hm-soknadsbehandling-db",
+        "INFOTRYGD_PROXY_BASEURL" to "https://hm-infotrygd-proxy.dev-fss-pub.nais.io",
         "PDL_API_URL" to "https://pdl-api.dev-fss-pub.nais.io/graphql",
         "PDL_API_SCOPE" to "api://dev-fss.pdl.pdl-api/.default",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "false",
@@ -65,7 +69,9 @@ private val prodProperties = ConfigurationMap(
         "KAFKA_TOPIC" to "teamdigihot.hm-soknadsbehandling-v1",
         "AZURE_TENANT_BASEURL" to "https://login.microsoftonline.com",
         "DBAPI_SCOPE" to "api://prod-gcp.teamdigihot.hm-soknadsbehandling-db/.default",
+        "INFOTRYGD_PROXY_SCOPE" to "api://prod-fss.teamdigihot.hm-infotrygd-proxy/.default",
         "SOKNADSBEHANDLING_DB_CLIENT_ID" to "prod-gcp:teamdigihot:hm-soknadsbehandling-db",
+        "INFOTRYGD_PROXY_BASEURL" to "https://hm-infotrygd-proxy.prod-fss-pub.nais.io",
         "PDL_API_URL" to "https://pdl-api.prod-fss-pub.nais.io/graphql",
         "PDL_API_SCOPE" to "api://prod-fss.pdl.pdl-api/.default",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "true",
@@ -87,6 +93,7 @@ internal object Configuration {
     }
 
     val soknadsbehandlingDb: SoknadsbehandlingDb = SoknadsbehandlingDb()
+    val infotrygdProxy: InfotrygdProxy = InfotrygdProxy()
     val hmdb: Hmdb = Hmdb()
     val slack: Slack = Slack()
     val azure: Azure = Azure()
@@ -118,7 +125,8 @@ internal object Configuration {
         val tenantId: String = config[Key("AZURE_APP_TENANT_ID", stringType)],
         val clientId: String = config[Key("AZURE_APP_CLIENT_ID", stringType)],
         val clientSecret: String = config[Key("AZURE_APP_CLIENT_SECRET", stringType)],
-        val dbApiScope: String = config[Key("DBAPI_SCOPE", stringType)]
+        val dbApiScope: String = config[Key("DBAPI_SCOPE", stringType)],
+        val infotrygdProxyScope: String = config[Key("INFOTRYGD_PROXY_SCOPE", stringType)],
     )
 
     data class InfluxDb(
@@ -136,6 +144,10 @@ internal object Configuration {
 
     data class SoknadsbehandlingDb(
         val baseUrl: String = config[Key("SOKNADSBEHANDLING_DB_BASEURL", stringType)],
+    )
+
+    data class InfotrygdProxy(
+        val baseUrl: String = config[Key("INFOTRYGD_PROXY_BASEURL", stringType)],
     )
 
     data class Hmdb(

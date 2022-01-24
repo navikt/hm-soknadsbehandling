@@ -7,6 +7,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
@@ -18,7 +19,8 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class NyInfotrygdOrdrelinje(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient
+    private val søknadForRiverClient: SøknadForRiverClient,
+    private val infotrygdProxyClient: InfotrygdProxyClient,
 ) : PacketListenerWithOnError {
 
     init {
@@ -70,6 +72,10 @@ internal class NyInfotrygdOrdrelinje(
                 )
                 if (søknadId == null) {
                     logger.warn { "Ordrelinje med eventId ${packet.eventId} kan ikkje matchast mot ein søknadId (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})" }
+
+                    val harVedtakInfotrygd = infotrygdProxyClient.harVedtakFor(packet.fnrBruker, packet.saksblokkOgSaksnr.take(1), packet.saksblokkOgSaksnr.takeLast(2), packet.vedtaksdato)
+                    logger.info("DEBUG: TEST: harVedtakInfotrygd=$harVedtakInfotrygd")
+
                     return@runBlocking
                 }
 
