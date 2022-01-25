@@ -5,7 +5,7 @@ import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.core.ResponseDeserializable
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.coroutines.awaitObject
-import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.fuel.httpPost
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
@@ -38,7 +38,7 @@ internal class InfotrygdProxyClientImpl(
         )
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/har-vedtak-for".httpGet()
+                "$baseUrl/har-vedtak-for".httpPost()
                     .headers()
                     .jsonBody(
                         JacksonMapper.objectMapper.writeValueAsString(
