@@ -74,6 +74,9 @@ internal class NyInfotrygdOrdrelinje(
                     if (it.count() == 1) {
                         it.first()
                     } else {
+                        if (it.count() > 1) {
+                            sikkerlogg.warn("Fant flere søknader med matchende fnr+saksblokkOgSaksnr+vedtaksdato (saksblokkOgSaksnr=${packet.saksblokkOgSaksnr}, vedtaksdato=${packet.vedtaksdato}, antallTreff=${it.count()}, ider: [$it])")
+                        }
                         null
                     }
                 }
@@ -94,11 +97,12 @@ internal class NyInfotrygdOrdrelinje(
                         if (it.count() == 1) {
                             it.first()
                         } else {
+                            if (it.count() > 1) {
+                                logger.info("Fant flere søknader på bruker som ikke har fått vedtaksdato enda, kan derfor ikke matche til korrekt av dem uten mer informasjon (antall=${it.count()})")
+                            }
                             null
                         }
                     }
-
-                    logger.info("DEBUG: TEST: søknadId=$søknadId (søknadIder: $søknadIder)")
 
                     if (søknadId != null) {
                         // Check if we have a decision that is just not synced yet
@@ -108,8 +112,6 @@ internal class NyInfotrygdOrdrelinje(
                             packet.saksblokkOgSaksnr.takeLast(2),
                             packet.vedtaksdato
                         )
-
-                        logger.info("DEBUG: TEST: harVedtakInfotrygd=$harVedtakInfotrygd")
 
                         if (harVedtakInfotrygd) {
                             logger.info("Ordrelinje med eventId ${packet.eventId} matchet mot søknad indirekte med sjekk av infotrygd-databasen (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})")
@@ -124,8 +126,6 @@ internal class NyInfotrygdOrdrelinje(
                         logger.warn("Ordrelinje med eventId ${packet.eventId} kan ikkje matchast mot ein søknadId (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})")
                         return@runBlocking
                     }
-                } else {
-                    logger.info("DEBUG: TEST: SøknadId != null")
                 }
 
                 val ordrelinjeData = OrdrelinjeData(
