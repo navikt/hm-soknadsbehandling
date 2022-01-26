@@ -1,7 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.metrics.kommune
 
 import com.github.kittinunf.fuel.core.FuelError
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 

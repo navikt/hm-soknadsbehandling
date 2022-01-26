@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
+import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClientImpl
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClientImpl
 import no.nav.hjelpemidler.soknad.mottak.metrics.InfluxMetrics
@@ -45,9 +46,10 @@ fun main() {
         clientSecret = Configuration.azure.clientSecret
     )
 
-    val baseUrlSoknadsbehandlingDb = Configuration.soknadsbehandlingDb.baseUrl
     val søknadForRiverClient =
-        SøknadForRiverClientImpl(baseUrlSoknadsbehandlingDb, azureClient, Configuration.azure.dbApiScope)
+        SøknadForRiverClientImpl(Configuration.soknadsbehandlingDb.baseUrl, azureClient, Configuration.azure.dbApiScope)
+    val infotrygdProxyClient =
+        InfotrygdProxyClientImpl(Configuration.infotrygdProxy.baseUrl, azureClient, Configuration.azure.infotrygdProxyScope)
     val pdlClient = PdlClient(azureClient, Configuration.pdl.baseUrl, Configuration.pdl.apiScope)
     val influxMetrics = InfluxMetrics(pdlClient)
 
@@ -63,7 +65,7 @@ fun main() {
             JournalpostSink(this, søknadForRiverClient)
             OppgaveSink(this, søknadForRiverClient)
             DigitalSøknadEndeligJournalført(this, søknadForRiverClient)
-            NyInfotrygdOrdrelinje(this, søknadForRiverClient)
+            NyInfotrygdOrdrelinje(this, søknadForRiverClient, infotrygdProxyClient)
             NyHotsakOrdrelinje(this, søknadForRiverClient)
             VedtaksresultatFraInfotrygd(this, søknadForRiverClient)
             PapirSøknadEndeligJournalført(this, søknadForRiverClient, influxMetrics)

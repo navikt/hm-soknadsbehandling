@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - jira667-digihot-oppslag
 
 env:
   IMAGE: "docker.pkg.github.com/${{ github.repository }}/hm-soknadsbehandling:${{ github.sha }}"

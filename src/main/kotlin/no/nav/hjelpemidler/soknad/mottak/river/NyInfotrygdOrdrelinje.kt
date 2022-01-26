@@ -7,6 +7,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
@@ -18,7 +19,8 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class NyInfotrygdOrdrelinje(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient
+    private val søknadForRiverClient: SøknadForRiverClient,
+    private val infotrygdProxyClient: InfotrygdProxyClient,
 ) : PacketListenerWithOnError {
 
     init {
@@ -63,14 +65,67 @@ internal class NyInfotrygdOrdrelinje(
                 logger.info { "Inftrygd ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
 
                 // Match ordrelinje to Infotrygd-table
-                val søknadId = søknadForRiverClient.hentSøknadIdFraVedtaksresultat(
+                val søknadIder = søknadForRiverClient.hentSøknadIdFraVedtaksresultatV2(
                     packet.fnrBruker,
                     packet.saksblokkOgSaksnr,
-                    packet.vedtaksdato
                 )
+
+                var søknadId = søknadIder.filter { it.vedtaksDato == packet.vedtaksdato }.map { it.søknadId }.let {
+                    if (it.count() == 1) {
+                        it.first()
+                    } else {
+                        if (it.count() > 1) {
+                            sikkerlogg.warn("Fant flere søknader med matchende fnr+saksblokkOgSaksnr+vedtaksdato (saksblokkOgSaksnr=${packet.saksblokkOgSaksnr}, vedtaksdato=${packet.vedtaksdato}, antallTreff=${it.count()}, ider: [$it])")
+                        }
+                        null
+                    }
+                }
+
                 if (søknadId == null) {
-                    logger.warn { "Ordrelinje med eventId ${packet.eventId} kan ikkje matchast mot ein søknadId (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})" }
-                    return@runBlocking
+                    /*
+                        If we don't already have the required "vedtak" (decision) stored in our database so that we can
+                        match a "søknadId" to our incoming order line, then the likelihood is that it is being held back
+                        by hm-infotrygd-poller still because we are receiving the order line on the same day the decision
+                        was made on. So now we either have to throw the order line away, or match it somehow without the
+                        decision date helping with uniqueness. Here we do assume a match if we both have a reference in
+                        our database that is still missing its decision date AND there is a decision with the correct
+                        date in the Infotrygd-database. If not we throw the order line away.
+                     */
+
+                    // Check if we have one and only one application waiting for its decision
+                    søknadId = søknadIder.filter { it.vedtaksDato == null }.map { it.søknadId }.let {
+                        if (it.count() == 1) {
+                            it.first()
+                        } else {
+                            if (it.count() > 1) {
+                                logger.info("Fant flere søknader på bruker som ikke har fått vedtaksdato enda, kan derfor ikke matche til korrekt av dem uten mer informasjon (antall=${it.count()})")
+                            }
+                            null
+                        }
+                    }
+
+                    if (søknadId != null) {
+                        // Check if we have a decision that is just not synced yet
+                        val harVedtakInfotrygd = infotrygdProxyClient.harVedtakFor(
+                            packet.fnrBruker,
+                            packet.saksblokkOgSaksnr.take(1),
+                            packet.saksblokkOgSaksnr.takeLast(2),
+                            packet.vedtaksdato
+                        )
+
+                        if (harVedtakInfotrygd) {
+                            logger.info("Ordrelinje med eventId ${packet.eventId} matchet mot søknad indirekte med sjekk av infotrygd-databasen (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})")
+                        } else {
+                            logger.warn("Fant en søknadId uten vedtaksdato i databasen enda for Ordrelinje med eventId ${packet.eventId}, men fant ikke avgjørelsen i Infotrygd-databasen!")
+                            // Do not use it if we do not find a match
+                            søknadId = null
+                        }
+                    }
+
+                    if (søknadId == null) {
+                        logger.warn("Ordrelinje med eventId ${packet.eventId} kan ikkje matchast mot ein søknadId (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})")
+                        return@runBlocking
+                    }
                 }
 
                 val ordrelinjeData = OrdrelinjeData(

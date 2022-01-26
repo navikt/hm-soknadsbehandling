@@ -1,5 +1,5 @@
 name: Vulnerabilities scanning of dependencies
-on: push
+on: [push]
 jobs:
   security:
     runs-on: ubuntu-latest

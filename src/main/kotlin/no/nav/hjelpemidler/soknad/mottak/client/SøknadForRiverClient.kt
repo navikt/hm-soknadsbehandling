@@ -1,6 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.client
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.core.ResponseDeserializable
 import com.github.kittinunf.fuel.core.extensions.jsonBody
@@ -22,6 +23,7 @@ import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadDataDto
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedStatus
 import no.nav.hjelpemidler.soknad.mottak.service.Status
+import no.nav.hjelpemidler.soknad.mottak.service.SøknadIdFraVedtaksresultat
 import no.nav.hjelpemidler.soknad.mottak.service.UtgåttSøknad
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
 import java.time.LocalDate
@@ -51,6 +53,10 @@ internal interface SøknadForRiverClient {
         saksblokkOgSaksnr: String,
         vedtaksdato: LocalDate
     ): UUID?
+    suspend fun hentSøknadIdFraVedtaksresultatV2(
+        fnrBruker: String,
+        saksblokkOgSaksnr: String,
+    ): List<SøknadIdFraVedtaksresultat>
 
     suspend fun hentSøknadIdFraHotsakSaksnummer(
         saksnummer: String,
@@ -337,6 +343,38 @@ internal class SøknadForRiverClientImpl(
         }
     }
 
+    override suspend fun hentSøknadIdFraVedtaksresultatV2(
+        fnrBruker: String,
+        saksblokkOgSaksnr: String,
+    ): List<SøknadIdFraVedtaksresultat> {
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+                "$baseUrl/soknad/fra-vedtaksresultat-v2".httpPost()
+                    .headers()
+                    .jsonBody(
+                        JacksonMapper.objectMapper.writeValueAsString(
+                            SoknadFraVedtaksresultatV2Dto(
+                                fnrBruker,
+                                saksblokkOgSaksnr,
+                            )
+                        )
+                    )
+                    .awaitObject(
+                        object : ResponseDeserializable<Array<SøknadIdFraVedtaksresultat>> {
+                            override fun deserialize(content: String): Array<SøknadIdFraVedtaksresultat> {
+                                return JacksonMapper.objectMapper.readValue(content)
+                            }
+                        }
+                    )
+                    .toList()
+            }
+                .onFailure {
+                    logger.error { it.message }
+                }
+                .getOrThrow()
+        }
+    }
+
     override suspend fun hentSøknadIdFraHotsakSaksnummer(
         saksnummer: String
     ): UUID? {
@@ -378,6 +416,11 @@ internal class SøknadForRiverClientImpl(
         val fnrBruker: String,
         val saksblokkOgSaksnr: String,
         val vedtaksdato: LocalDate
+    )
+
+    data class SoknadFraVedtaksresultatV2Dto(
+        val fnrBruker: String,
+        val saksblokkOgSaksnr: String,
     )
 
     data class SoknadFraHotsakNummerDto(val saksnummer: String)
