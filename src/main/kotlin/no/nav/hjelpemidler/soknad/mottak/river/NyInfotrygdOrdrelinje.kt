@@ -65,18 +65,67 @@ internal class NyInfotrygdOrdrelinje(
                 logger.info { "Inftrygd ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
 
                 // Match ordrelinje to Infotrygd-table
-                val søknadId = søknadForRiverClient.hentSøknadIdFraVedtaksresultat(
+                val søknadIder = søknadForRiverClient.hentSøknadIdFraVedtaksresultatV2(
                     packet.fnrBruker,
                     packet.saksblokkOgSaksnr,
-                    packet.vedtaksdato
                 )
+
+                var søknadId = søknadIder.filter { it.vedtaksDato == packet.vedtaksdato }.map { it.søknadId }.let {
+                    if (it.count() == 1) {
+                        it.first()
+                    } else {
+                        null
+                    }
+                }
+
                 if (søknadId == null) {
-                    logger.warn { "Ordrelinje med eventId ${packet.eventId} kan ikkje matchast mot ein søknadId (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})" }
+                    /*
+                        If we don't already have the required "vedtak" (decision) stored in our database so that we can
+                        match a "søknadId" to our incoming order line, then the likelihood is that it is being held back
+                        by hm-infotrygd-poller still because we are receiving the order line on the same day the decision
+                        was made on. So now we either have to throw the order line away, or match it somehow without the
+                        decision date helping with uniqueness. Here we do assume a match if we both have a reference in
+                        our database that is still missing its decision date AND there is a decision with the correct
+                        date in the Infotrygd-database. If not we throw the order line away.
+                     */
 
-                    val harVedtakInfotrygd = infotrygdProxyClient.harVedtakFor(packet.fnrBruker, packet.saksblokkOgSaksnr.take(1), packet.saksblokkOgSaksnr.takeLast(2), packet.vedtaksdato)
-                    logger.info("DEBUG: TEST: harVedtakInfotrygd=$harVedtakInfotrygd")
+                    // Check if we have one and only one application waiting for its decision
+                    søknadId = søknadIder.filter { it.vedtaksDato == null }.map { it.søknadId }.let {
+                        if (it.count() == 1) {
+                            it.first()
+                        } else {
+                            null
+                        }
+                    }
 
-                    return@runBlocking
+                    logger.info("DEBUG: TEST: søknadId=$søknadId (søknadIder: $søknadIder)")
+
+                    if (søknadId != null) {
+                        // Check if we have a decision that is just not synced yet
+                        val harVedtakInfotrygd = infotrygdProxyClient.harVedtakFor(
+                            packet.fnrBruker,
+                            packet.saksblokkOgSaksnr.take(1),
+                            packet.saksblokkOgSaksnr.takeLast(2),
+                            packet.vedtaksdato
+                        )
+
+                        logger.info("DEBUG: TEST: harVedtakInfotrygd=$harVedtakInfotrygd")
+
+                        if (harVedtakInfotrygd) {
+                            logger.info("Ordrelinje med eventId ${packet.eventId} matchet mot søknad indirekte med sjekk av infotrygd-databasen (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})")
+                        } else {
+                            logger.warn("Fant en søknadId uten vedtaksdato i databasen enda for Ordrelinje med eventId ${packet.eventId}, men fant ikke avgjørelsen i Infotrygd-databasen!")
+                            // Do not use it if we do not find a match
+                            søknadId = null
+                        }
+                    }
+
+                    if (søknadId == null) {
+                        logger.warn("Ordrelinje med eventId ${packet.eventId} kan ikkje matchast mot ein søknadId (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})")
+                        return@runBlocking
+                    }
+                } else {
+                    logger.info("DEBUG: TEST: SøknadId != null")
                 }
 
                 val ordrelinjeData = OrdrelinjeData(
