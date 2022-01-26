@@ -1,9 +1,5 @@
 name: Vulnerabilities scanning of dependencies
-# on: [push]
-on:
-  push:
-    branches:
-      - disabled-acbdcs
+on: [push]
 jobs:
   security:
     runs-on: ubuntu-latest

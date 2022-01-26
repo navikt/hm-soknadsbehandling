@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - ordrelinjer-sjekk-infotrygd-om-vedtakdato-lik-now
 
 env:
   IMAGE: "docker.pkg.github.com/${{ github.repository }}/hm-soknadsbehandling:${{ github.sha }}"
@@ -53,7 +52,7 @@ jobs:
   deploy-prod:
     name: Deploy to Production
     needs: [build, deploy-dev]
-    # if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

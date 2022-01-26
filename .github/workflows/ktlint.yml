@@ -1,10 +1,5 @@
 name: ktlint
-# on: [push]
-on:
-  push:
-    branches:
-      - disabled-acbdcs
-
+on: [push]
 jobs:
   code-style-violations:
     name: Check coding style violations
