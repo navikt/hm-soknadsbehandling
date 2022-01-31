@@ -101,13 +101,13 @@ internal class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun savePapir(papirSøknadData: PapirSøknadData): Int {
+    override suspend fun savePapir(soknadData: PapirSøknadData): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
 
                 "$baseUrl/soknad/papir".httpPost()
                     .headers()
-                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(papirSøknadData))
+                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadData))
                     .awaitStringResponse().third.toInt()
             }
                 .onFailure {

@@ -1,6 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import junit.framework.Assert.assertEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
