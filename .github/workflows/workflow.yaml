@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - jdk17
 
 env:
   IMAGE: "docker.pkg.github.com/${{ github.repository }}/hm-soknadsbehandling:${{ github.sha }}"
