@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - mottok-ordrelinjer-foer-vedtak
 
 env:
   IMAGE: "docker.pkg.github.com/${{ github.repository }}/hm-soknadsbehandling:${{ github.sha }}"
