@@ -81,6 +81,7 @@ internal class NyInfotrygdOrdrelinje(
                     }
                 }
 
+                var mottokOrdrelinjeFørVedtak = false
                 if (søknadId == null) {
                     /*
                         If we don't already have the required "vedtak" (decision) stored in our database so that we can
@@ -91,6 +92,8 @@ internal class NyInfotrygdOrdrelinje(
                         our database that is still missing its decision date AND there is a decision with the correct
                         date in the Infotrygd-database. If not we throw the order line away.
                      */
+
+                    mottokOrdrelinjeFørVedtak = true
 
                     // Check if we have one and only one application waiting for its decision
                     søknadId = søknadIder.filter { it.vedtaksDato == null }.map { it.søknadId }.let {
@@ -153,13 +156,17 @@ internal class NyInfotrygdOrdrelinje(
 
                 søknadForRiverClient.oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
 
-                if (!ordreSisteDøgn) {
-                    context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
-                    Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
-                    logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
-                    sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
-                } else {
-                    logger.info("Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId")
+                if (!mottokOrdrelinjeFørVedtak) {
+                    if (!ordreSisteDøgn) {
+                        context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
+                        Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
+                        logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
+                        sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
+                    } else {
+                        logger.info("Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId")
+                    }
+                } else if (!ordreSisteDøgn) {
+                    logger.info("Skippet utsending av sms-varsel for innkommende ordrelinje siden vi mottok ordrelinjen før vedtaket!")
                 }
             } catch (e: Exception) {
                 throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
