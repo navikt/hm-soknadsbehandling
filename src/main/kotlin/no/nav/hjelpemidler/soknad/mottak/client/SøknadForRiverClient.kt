@@ -62,8 +62,6 @@ internal interface SøknadForRiverClient {
         saksnummer: String,
     ): UUID?
 
-    suspend fun hentHarVedtakForSøknadId(søknadId: UUID): Boolean
-
     suspend fun save(ordrelinje: OrdrelinjeData): Int
     suspend fun lagreVedtaksresultat(
         søknadId: UUID,
@@ -414,37 +412,6 @@ internal class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun hentHarVedtakForSøknadId(søknadId: UUID): Boolean {
-        return withContext(Dispatchers.IO) {
-            kotlin.runCatching {
-
-                "$baseUrl/soknad/hotsak/har-vedtak/fra-søknadid".httpPost()
-                    .headers()
-                    .jsonBody(
-                        JacksonMapper.objectMapper.writeValueAsString(
-                            HarVedtakFraHotsakSøknadIdDto(
-                                søknadId,
-                            )
-                        )
-                    )
-                    .awaitObject(
-                        object : ResponseDeserializable<JsonNode> {
-                            override fun deserialize(content: String): JsonNode {
-                                return JacksonMapper.objectMapper.readTree(content)
-                            }
-                        }
-                    )
-                    .let {
-                        it["harVedtak"].booleanValue()
-                    }
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
-        }
-    }
-
     data class SoknadFraVedtaksresultatDto(
         val fnrBruker: String,
         val saksblokkOgSaksnr: String,
@@ -457,8 +424,6 @@ internal class SøknadForRiverClientImpl(
     )
 
     data class SoknadFraHotsakNummerDto(val saksnummer: String)
-
-    data class HarVedtakFraHotsakSøknadIdDto(val søknadId: UUID)
 
     override suspend fun lagreVedtaksresultat(søknadId: UUID, vedtaksresultat: String, vedtaksdato: LocalDate): Int {
         return withContext(Dispatchers.IO) {

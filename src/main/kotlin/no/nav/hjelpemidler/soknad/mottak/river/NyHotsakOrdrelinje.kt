@@ -68,9 +68,6 @@ internal class NyHotsakOrdrelinje(
                     return@runBlocking
                 }
 
-                /* Check if we already have a vedtak, and if not lets not send an sms about it */
-                val mottokOrdrelinjeFørVedtak = !søknadForRiverClient.hentHarVedtakForSøknadId(søknadId)
-
                 logger.info("Fant søknadsid $søknadId fra HOTSAK saksnummer ${packet.saksnummer}")
 
                 val ordrelinjeData = OrdrelinjeData(
@@ -98,17 +95,13 @@ internal class NyHotsakOrdrelinje(
 
                 søknadForRiverClient.oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
 
-                if (!mottokOrdrelinjeFørVedtak) {
-                    if (!ordreSisteDøgn) {
-                        context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
-                        Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
-                        logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
-                        sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
-                    } else {
-                        logger.info("Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId")
-                    }
-                } else if (!ordreSisteDøgn) {
-                    logger.info("Skippet utsending av sms-varsel for innkommende ordrelinje siden vi mottok ordrelinjen før vedtaket (hotsak)!")
+                if (!ordreSisteDøgn) {
+                    context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
+                    Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
+                    logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
+                    sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
+                } else {
+                    logger.info("Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId")
                 }
             } catch (e: Exception) {
                 throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
