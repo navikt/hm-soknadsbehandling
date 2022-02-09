@@ -7,6 +7,8 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.hjelpemidler.soknad.mottak.Configuration
+import no.nav.hjelpemidler.soknad.mottak.Profile
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
@@ -109,12 +111,17 @@ internal class NyInfotrygdOrdrelinje(
 
                     if (søknadId != null) {
                         // Check if we have a decision that is just not synced yet
-                        val harVedtakInfotrygd = infotrygdProxyClient.harVedtakFor(
+                        var harVedtakInfotrygd = infotrygdProxyClient.harVedtakFor(
                             packet.fnrBruker,
                             packet.saksblokkOgSaksnr.take(1),
                             packet.saksblokkOgSaksnr.takeLast(2),
                             packet.vedtaksdato
                         )
+
+                        // FIXME: Remove again, pretend we found it since infotrygd in dev is static
+                        if (Configuration.application.profile == Profile.DEV) {
+                            harVedtakInfotrygd = true
+                        }
 
                         if (harVedtakInfotrygd) {
                             logger.info("Ordrelinje med eventId ${packet.eventId} matchet mot søknad indirekte med sjekk av infotrygd-databasen (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})")
