@@ -154,9 +154,9 @@ internal class NyInfotrygdOrdrelinje(
                     return@runBlocking
                 }
 
-                søknadForRiverClient.oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
-
                 if (!mottokOrdrelinjeFørVedtak) {
+                    søknadForRiverClient.oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
+
                     if (!ordreSisteDøgn) {
                         context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
                         Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()

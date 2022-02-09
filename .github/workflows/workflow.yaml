@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - fiks-async-problemer-med-ordrelinjer-varsler
 
 env:
   IMAGE: "docker.pkg.github.com/${{ github.repository }}/hm-soknadsbehandling:${{ github.sha }}"
@@ -48,16 +49,16 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: nais/nais-dev.yaml,nais/alerts-dev.yaml
-          
-  deploy-prod:
-    name: Deploy to Production
-    needs: [build, deploy-dev]
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: nais/deploy/actions/deploy@v1
-        env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          CLUSTER: prod-gcp
-          RESOURCE: nais/nais-prod.yaml,nais/alerts-prod.yaml
+
+#  deploy-prod:
+#    name: Deploy to Production
+#    needs: [build, deploy-dev]
+#    if: github.ref == 'refs/heads/main'
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: nais/deploy/actions/deploy@v1
+#        env:
+#          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+#          CLUSTER: prod-gcp
+#          RESOURCE: nais/nais-prod.yaml,nais/alerts-prod.yaml

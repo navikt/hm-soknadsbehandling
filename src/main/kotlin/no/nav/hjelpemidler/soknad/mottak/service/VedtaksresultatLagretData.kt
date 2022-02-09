@@ -9,6 +9,7 @@ internal data class VedtaksresultatLagretData(
     val søknadId: UUID,
     val fnrBruker: String,
     val vedtaksresultat: String,
+    val eksternVarslingDeaktivert: Boolean = false,
 ) {
     internal fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
@@ -17,6 +18,7 @@ internal data class VedtaksresultatLagretData(
             it["søknadId"] = this.søknadId
             it["fnrBruker"] = this.fnrBruker
             it["vedtaksresultat"] = this.vedtaksresultat
+            it["eksternVarslingDeaktivert"] = this.eksternVarslingDeaktivert
         }.toJson()
     }
 }

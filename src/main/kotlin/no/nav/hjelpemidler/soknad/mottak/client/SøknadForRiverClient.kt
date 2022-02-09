@@ -37,6 +37,7 @@ internal interface SøknadForRiverClient {
     suspend fun save(soknadData: SoknadData)
     suspend fun soknadFinnes(soknadsId: UUID): Boolean
     suspend fun ordreSisteDøgn(soknadsId: UUID): Boolean
+    suspend fun harOrdreForSøknad(soknadsId: UUID): Boolean
     suspend fun hentFnrForSoknad(soknadsId: UUID): String
     suspend fun slettSøknad(soknadsId: UUID): Int
     suspend fun oppdaterStatus(soknadsId: UUID, status: Status): Int
@@ -161,6 +162,29 @@ internal class SøknadForRiverClientImpl(
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 "$baseUrl/soknad/ordre/ordrelinje-siste-doegn/$soknadsId".httpGet()
+                    .headers()
+                    .awaitObject(
+                        object : ResponseDeserializable<JsonNode> {
+                            override fun deserialize(content: String): JsonNode {
+                                return JacksonMapper.objectMapper.readTree(content)
+                            }
+                        }
+                    )
+                    .let {
+                        it.get("second").booleanValue()
+                    }
+            }
+                .onFailure {
+                    logger.error { it.message }
+                }
+        }
+            .getOrThrow()
+    }
+
+    override suspend fun harOrdreForSøknad(soknadsId: UUID): Boolean {
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+                "$baseUrl/soknad/ordre/har-ordre/$soknadsId".httpGet()
                     .headers()
                     .awaitObject(
                         object : ResponseDeserializable<JsonNode> {
