@@ -109,7 +109,7 @@ internal class NyInfotrygdOrdrelinje(
 
                     if (søknadId != null) {
                         // Check if we have a decision that is just not synced yet
-                        var harVedtakInfotrygd = infotrygdProxyClient.harVedtakFor(
+                        val harVedtakInfotrygd = infotrygdProxyClient.harVedtakFor(
                             packet.fnrBruker,
                             packet.saksblokkOgSaksnr.take(1),
                             packet.saksblokkOgSaksnr.takeLast(2),
