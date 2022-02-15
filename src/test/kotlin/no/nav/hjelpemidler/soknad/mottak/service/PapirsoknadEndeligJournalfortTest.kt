@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.metrics.InfluxMetrics
 import no.nav.hjelpemidler.soknad.mottak.river.PapirSøknadEndeligJournalført
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -19,9 +20,10 @@ internal class PapirsoknadEndeligJournalfortTest {
         coEvery { fnrOgJournalpostIdFinnes(any(), any()) } returns false
         coEvery { lagKnytningMellomFagsakOgSøknad(capture(capturedInfotrygdMock)) } returns 1
     }
+    private val influxMetricsMock = mockk<InfluxMetrics>(relaxed = true)
 
     private val rapid = TestRapid().apply {
-        PapirSøknadEndeligJournalført(this, mock)
+        PapirSøknadEndeligJournalført(this, mock, influxMetricsMock)
     }
 
     @BeforeEach

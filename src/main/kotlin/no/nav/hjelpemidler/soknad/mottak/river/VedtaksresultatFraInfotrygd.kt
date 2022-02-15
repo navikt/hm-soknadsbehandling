@@ -1,9 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -12,6 +9,7 @@ import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatLagretData
 import java.time.LocalDate
@@ -39,26 +37,53 @@ internal class VedtaksresultatFraInfotrygd(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
-            withContext(Dispatchers.IO) {
-                launch {
 
-                    val søknadsId = UUID.fromString(packet.søknadID)
+            val søknadsId = UUID.fromString(packet.søknadID)
 
-                    lagreVedtaksresultat(søknadsId, packet.vedtaksResultat, packet.vedtaksDato)
+            lagreVedtaksresultat(søknadsId, packet.vedtaksResultat, packet.vedtaksDato)
 
-                    val status = when (packet.vedtaksResultat) {
-                        "I" -> Status.VEDTAKSRESULTAT_INNVILGET
-                        "IM" -> Status.VEDTAKSRESULTAT_MUNTLIG_INNVILGET
-                        "A" -> Status.VEDTAKSRESULTAT_AVSLÅTT
-                        "DI" -> Status.VEDTAKSRESULTAT_DELVIS_INNVILGET
-                        else -> Status.VEDTAKSRESULTAT_ANNET
-                    }
-                    oppdaterStatus(søknadsId, status)
+            val status = when (packet.vedtaksResultat) {
+                "I" -> Status.VEDTAKSRESULTAT_INNVILGET
+                "IM" -> Status.VEDTAKSRESULTAT_MUNTLIG_INNVILGET
+                "A" -> Status.VEDTAKSRESULTAT_AVSLÅTT
+                "DI" -> Status.VEDTAKSRESULTAT_DELVIS_INNVILGET
+                else -> Status.VEDTAKSRESULTAT_ANNET
+            }
+            oppdaterStatus(søknadsId, status)
 
-                    val vedtaksresultatLagretData =
-                        VedtaksresultatLagretData(søknadsId, packet.fnrBruker, packet.vedtaksResultat)
-                    context.publish(packet.fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatLagret"))
-                }
+            // Sjekk om ordrelinjer kom inn før vedtaket, noe som kan skje for Infotrygd fordi vi venter med å
+            // hente resultatet til neste morgen. Hvis dette er tilfelle deaktiverer vi ekstern varsling for vedtaket
+            // og gir ekstern varsling for utsending startet i stede...
+            val mottokOrdrelinjeFørVedtak = søknadForRiverClient.harOrdreForSøknad(søknadsId)
+
+            // Lagre vedtaksstatus og send beskjed til ditt nav
+            val vedtaksresultatLagretData =
+                VedtaksresultatLagretData(søknadsId, packet.fnrBruker, packet.vedtaksResultat, mottokOrdrelinjeFørVedtak)
+            context.publish(packet.fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatLagret"))
+
+            // Hvis vi allerede har ordrelinjer i databasen for denne søknaden: send utsending startet.
+            if (mottokOrdrelinjeFørVedtak) {
+                oppdaterStatus(søknadsId, Status.UTSENDING_STARTET)
+
+                val ordrelinjeData = OrdrelinjeData(
+                    søknadId = søknadsId,
+                    fnrBruker = packet.fnrBruker,
+                    // Resten av feltene brukes ikke i json:
+                    oebsId = 0,
+                    serviceforespørsel = null,
+                    ordrenr = 0,
+                    ordrelinje = 0,
+                    delordrelinje = 0,
+                    artikkelnr = "",
+                    antall = 0.0,
+                    enhet = "",
+                    produktgruppe = "",
+                    produktgruppeNr = "",
+                    data = null,
+                )
+                context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
+                Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
+                logger.info("Ordrelinje sendt ved vedtak: ${ordrelinjeData.søknadId}")
             }
         }
     }

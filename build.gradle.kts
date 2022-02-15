@@ -1,116 +1,141 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
+import com.expediagroup.graphql.plugin.gradle.tasks.GraphQLIntrospectSchemaTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val ktor_version = "1.4.0"
+val ktorVersion = "1.6.7"
+val jacksonVersion = "2.13.1"
+val fuelVersion = "2.3.1"
+val graphQLClientVersion = "5.3.2"
+val kotestVersion = "5.1.0"
 
 plugins {
     application
-    kotlin("jvm") version Kotlin.version
-    id(Spotless.spotless) version Spotless.version
-    id(Shadow.shadow) version Shadow.version
+    kotlin("jvm") version "1.6.10"
+    id("com.expediagroup.graphql") version "5.3.2"
+    id("com.diffplug.spotless") version "6.2.0"
 }
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-}
-
-apply {
-    plugin(Spotless.spotless)
-}
+group = "no.nav.hjelpemidler.soknad.mottak"
 
 repositories {
     mavenCentral()
-    jcenter()
     maven("https://packages.confluent.io/maven/")
     maven("https://jitpack.io")
-    mavenLocal()
 }
 
 application {
     applicationName = "hm-soknadsbehandling"
-    mainClassName = "no.nav.hjelpemidler.soknad.mottak.ApplicationKt"
+    mainClass.set("no.nav.hjelpemidler.soknad.mottak.ApplicationKt")
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_12
-    targetCompatibility = JavaVersion.VERSION_12
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
-dependencies {
-    implementation(Jackson.core)
-    implementation(Jackson.kotlin)
-    implementation(Jackson.jsr310)
-    implementation("com.github.guepardoapps:kulid:1.1.2.0")
-    implementation("com.github.navikt:rapids-and-rivers:20210428115805-514c80c")
-    implementation(Ktor.serverNetty)
-    implementation(Database.Flyway)
-    implementation(Database.HikariCP)
-    implementation(Database.Kotlinquery)
-    implementation(Database.Postgres)
-    implementation(Fuel.fuel)
-    implementation(Fuel.library("coroutines"))
-    implementation(Konfig.konfig)
-    implementation(Kotlin.Logging.kotlinLogging)
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("io.ktor:ktor-jackson:$ktor_version")
-    implementation(Database.VaultJdbc) {
-        exclude(module = "slf4j-simple")
-        exclude(module = "slf4j-api")
-    }
-    implementation("io.ktor:ktor-auth:$ktor_version")
-    implementation("io.ktor:ktor-auth-jwt:$ktor_version")
-    implementation("io.ktor:ktor-client-apache:$ktor_version")
-    implementation("io.ktor:ktor-client-jackson:$ktor_version")
+fun ktor(name: String) = "io.ktor:ktor-$name:$ktorVersion"
+fun graphqlKotlin(name: String) = "com.expediagroup:graphql-kotlin-$name:$graphQLClientVersion"
 
-    testImplementation(Junit5.api)
-    testImplementation(KoTest.assertions)
-    testImplementation(KoTest.runner)
-    testImplementation(Ktor.ktorTest)
-    testImplementation(Mockk.mockk)
-    testImplementation(TestContainers.postgresql)
-    implementation(Wiremock.standalone)
-    testRuntimeOnly(Junit5.engine)
+dependencies {
+    // Kotlin
+    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("reflect"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.0") // følger ikke kotlin-versjon
+
+    // Other
+    implementation("com.natpryce:konfig:1.6.10.0")
+    implementation("com.github.navikt:rapids-and-rivers:2022.01.19-09.53.b526ca84a9e4")
+    implementation("com.github.guepardoapps:kulid:2.0.0.0")
+    implementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
+
+    // Jackson
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+
+    // Ktor Server
+    implementation(ktor("server-core"))
+    implementation(ktor("server-netty"))
+    implementation(ktor("jackson"))
+    implementation(ktor("auth"))
+    implementation(ktor("auth-jwt"))
+    implementation(ktor("metrics-micrometer"))
+
+    // Ktor Client
+    implementation(ktor("client-core"))
+    implementation(ktor("client-apache"))
+    implementation(ktor("client-jackson"))
+
+    // Logging
+    implementation("org.slf4j:slf4j-api:2.0.0-alpha6") // fordi rapids-and-rivers er på logback-classic:1.3.0-alpha10 som krever slf4j >= 2.0.0-alpha4
+    implementation("io.github.microutils:kotlin-logging:2.1.21")
+
+    // Fuel -> todo: fjern, bruk ktor-client som også er i bruk
+    implementation("com.github.kittinunf.fuel:fuel:$fuelVersion")
+    implementation("com.github.kittinunf.fuel:fuel-coroutines:$fuelVersion")
+
+    // InfluxDB
+    implementation("org.influxdb:influxdb-java:2.22")
+    implementation("com.influxdb:influxdb-client-kotlin:4.1.0")
+
+    // GraphQL Client
+    implementation(graphqlKotlin("ktor-client")) {
+        exclude("com.expediagroup", "graphql-kotlin-client-serialization") // prefer jackson
+        exclude("io.ktor", "ktor-client-serialization") // prefer ktor-client-jackson
+        exclude("io.ktor", "ktor-client-cio") // prefer ktor-client-apache
+    }
+    implementation(graphqlKotlin("client-jackson"))
+
+    // Test
+    testImplementation(kotlin("test"))
+    testImplementation(ktor("server-test-host"))
+    testImplementation("io.mockk:mockk:1.12.2")
+    testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
+    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
 }
 
 spotless {
     kotlin {
-        ktlint(Ktlint.version)
+        ktlint()
+        targetExclude("**/generated/**")
     }
     kotlinGradle {
-        target("*.gradle.kts", "buildSrc/*.gradle.kts")
-        ktlint(Ktlint.version)
+        target("*.gradle.kts")
+        ktlint()
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.freeCompilerArgs = listOf()
-    kotlinOptions.jvmTarget = "1.8"
+tasks.withType<KotlinCompile> {
+    dependsOn("spotlessApply")
+    dependsOn("spotlessCheck")
+
+    kotlinOptions.jvmTarget = "17"
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    testLogging {
-        showExceptions = true
-        showStackTraces = true
-        exceptionFormat = TestExceptionFormat.FULL
-        events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+}
+
+tasks.withType<Jar> {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    manifest {
+        attributes["Main-Class"] = application.mainClass
+    }
+    from(
+        configurations.runtimeClasspath.get().map {
+            if (it.isDirectory) it else zipTree(it)
+        }
+    )
+}
+
+graphql {
+    client {
+        schemaFile = file("src/main/resources/hmdb/schema.graphql")
+        queryFileDirectory = "src/main/resources/hmdb"
+        packageName = "no.nav.hjelpemidler.soknad.mottak.client.hmdb"
     }
 }
 
-tasks.withType<Wrapper> {
-    gradleVersion = "6.2.2"
-}
-
-tasks.named("shadowJar") {
-    dependsOn("test")
-}
-
-tasks.named("jar") {
-    dependsOn("test")
-}
-
-tasks.named("compileKotlin") {
-    dependsOn("spotlessCheck")
+val graphqlIntrospectSchema by tasks.getting(GraphQLIntrospectSchemaTask::class) {
+    endpoint.set("https://hm-grunndata-api.dev.intern.nav.no/graphql")
+    outputFile.set(file("src/main/resources/hmdb/schema.graphql"))
 }

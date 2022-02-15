@@ -1,6 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.client
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.core.ResponseDeserializable
 import com.github.kittinunf.fuel.core.extensions.jsonBody
@@ -22,6 +23,7 @@ import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadDataDto
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedStatus
 import no.nav.hjelpemidler.soknad.mottak.service.Status
+import no.nav.hjelpemidler.soknad.mottak.service.SøknadIdFraVedtaksresultat
 import no.nav.hjelpemidler.soknad.mottak.service.UtgåttSøknad
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
 import java.time.LocalDate
@@ -35,6 +37,7 @@ internal interface SøknadForRiverClient {
     suspend fun save(soknadData: SoknadData)
     suspend fun soknadFinnes(soknadsId: UUID): Boolean
     suspend fun ordreSisteDøgn(soknadsId: UUID): Boolean
+    suspend fun harOrdreForSøknad(soknadsId: UUID): Boolean
     suspend fun hentFnrForSoknad(soknadsId: UUID): String
     suspend fun slettSøknad(soknadsId: UUID): Int
     suspend fun oppdaterStatus(soknadsId: UUID, status: Status): Int
@@ -50,6 +53,14 @@ internal interface SøknadForRiverClient {
         fnrBruker: String,
         saksblokkOgSaksnr: String,
         vedtaksdato: LocalDate
+    ): UUID?
+    suspend fun hentSøknadIdFraVedtaksresultatV2(
+        fnrBruker: String,
+        saksblokkOgSaksnr: String,
+    ): List<SøknadIdFraVedtaksresultat>
+
+    suspend fun hentSøknadIdFraHotsakSaksnummer(
+        saksnummer: String,
     ): UUID?
 
     suspend fun save(ordrelinje: OrdrelinjeData): Int
@@ -91,13 +102,13 @@ internal class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun savePapir(papirSøknadData: PapirSøknadData): Int {
+    override suspend fun savePapir(soknadData: PapirSøknadData): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
 
                 "$baseUrl/soknad/papir".httpPost()
                     .headers()
-                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(papirSøknadData))
+                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadData))
                     .awaitStringResponse().third.toInt()
             }
                 .onFailure {
@@ -151,6 +162,29 @@ internal class SøknadForRiverClientImpl(
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 "$baseUrl/soknad/ordre/ordrelinje-siste-doegn/$soknadsId".httpGet()
+                    .headers()
+                    .awaitObject(
+                        object : ResponseDeserializable<JsonNode> {
+                            override fun deserialize(content: String): JsonNode {
+                                return JacksonMapper.objectMapper.readTree(content)
+                            }
+                        }
+                    )
+                    .let {
+                        it.get("second").booleanValue()
+                    }
+            }
+                .onFailure {
+                    logger.error { it.message }
+                }
+        }
+            .getOrThrow()
+    }
+
+    override suspend fun harOrdreForSøknad(soknadsId: UUID): Boolean {
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+                "$baseUrl/soknad/ordre/har-ordre/$soknadsId".httpGet()
                     .headers()
                     .awaitObject(
                         object : ResponseDeserializable<JsonNode> {
@@ -333,11 +367,87 @@ internal class SøknadForRiverClientImpl(
         }
     }
 
+    override suspend fun hentSøknadIdFraVedtaksresultatV2(
+        fnrBruker: String,
+        saksblokkOgSaksnr: String,
+    ): List<SøknadIdFraVedtaksresultat> {
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+                "$baseUrl/soknad/fra-vedtaksresultat-v2".httpPost()
+                    .headers()
+                    .jsonBody(
+                        JacksonMapper.objectMapper.writeValueAsString(
+                            SoknadFraVedtaksresultatV2Dto(
+                                fnrBruker,
+                                saksblokkOgSaksnr,
+                            )
+                        )
+                    )
+                    .awaitObject(
+                        object : ResponseDeserializable<Array<SøknadIdFraVedtaksresultat>> {
+                            override fun deserialize(content: String): Array<SøknadIdFraVedtaksresultat> {
+                                return JacksonMapper.objectMapper.readValue(content)
+                            }
+                        }
+                    )
+                    .toList()
+            }
+                .onFailure {
+                    logger.error { it.message }
+                }
+                .getOrThrow()
+        }
+    }
+
+    override suspend fun hentSøknadIdFraHotsakSaksnummer(
+        saksnummer: String
+    ): UUID? {
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+
+                "$baseUrl/soknad/hotsak/fra-saknummer".httpPost()
+                    .headers()
+                    .jsonBody(
+                        JacksonMapper.objectMapper.writeValueAsString(
+                            SoknadFraHotsakNummerDto(
+                                saksnummer,
+                            )
+                        )
+                    )
+                    .awaitObject(
+                        object : ResponseDeserializable<JsonNode> {
+                            override fun deserialize(content: String): JsonNode {
+                                return JacksonMapper.objectMapper.readTree(content)
+                            }
+                        }
+                    )
+                    .let {
+                        if (it.get("soknadId")?.textValue() != null) {
+                            UUID.fromString(it.get("soknadId").textValue())
+                        } else {
+                            null
+                        }
+                    }
+            }
+                .onFailure {
+                    logger.error { it.message }
+                }
+                .getOrThrow()
+        }
+    }
+
     data class SoknadFraVedtaksresultatDto(
         val fnrBruker: String,
         val saksblokkOgSaksnr: String,
         val vedtaksdato: LocalDate
     )
+
+    data class SoknadFraVedtaksresultatV2Dto(
+        val fnrBruker: String,
+        val saksblokkOgSaksnr: String,
+    )
+
+    data class SoknadFraHotsakNummerDto(val saksnummer: String)
 
     override suspend fun lagreVedtaksresultat(søknadId: UUID, vedtaksresultat: String, vedtaksdato: LocalDate): Int {
         return withContext(Dispatchers.IO) {

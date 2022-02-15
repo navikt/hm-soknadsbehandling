@@ -1,4 +1,3 @@
-FROM navikt/java:12
+FROM navikt/java:17
 
-COPY build/libs/hm-soknadsbehandling-all.jar app.jar
-
+COPY build/libs/hm-soknadsbehandling.jar app.jar

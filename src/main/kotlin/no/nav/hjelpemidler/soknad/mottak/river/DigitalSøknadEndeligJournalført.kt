@@ -1,9 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -57,17 +54,16 @@ internal class DigitalSøknadEndeligJournalført(
         )
 
         runBlocking {
-            withContext(Dispatchers.IO) {
-                launch {
-                    oppdaterStatus(søknadId)
-                    opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData, fagsakId)
-                    context.publish(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
+            oppdaterStatus(søknadId)
+            opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData, fagsakId)
+            context.publish(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
 
-                    // Melding til Ditt NAV
-                    context.publish(fnrBruker, SøknadUnderBehandlingData(søknadId, fnrBruker).toJson("hm-SøknadUnderBehandling"))
-                    logger.info { "Endelig journalført: Digital søknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId" }
-                }
-            }
+            // Melding til Ditt NAV
+            context.publish(
+                fnrBruker,
+                SøknadUnderBehandlingData(søknadId, fnrBruker).toJson("hm-SøknadUnderBehandling")
+            )
+            logger.info { "Endelig journalført: Digital søknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId" }
         }
     }
 
@@ -76,29 +72,32 @@ internal class DigitalSøknadEndeligJournalført(
             søknadForRiverClient.oppdaterStatus(søknadId, Status.ENDELIG_JOURNALFØRT)
         }.onSuccess {
             if (it > 0) {
-                logger.info("Status på søknad sett til endelig journalført: $søknadId, it=$it")
+                logger.info { "Status på søknad sett til endelig journalført: $søknadId, it=$it" }
             } else {
-                logger.warn("Status er allereie sett til endelig journalført: $søknadId")
+                logger.warn { "Status er allereie sett til endelig journalført: $søknadId" }
             }
         }.onFailure {
-            logger.error("Failed to update søknad to endelig journalført: $søknadId")
+            logger.error(it) { "Failed to update søknad to endelig journalført: $søknadId" }
         }.getOrThrow()
 
-    private suspend fun opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData, fagsakId: String) =
+    private suspend fun opprettKnytningMellomFagsakOgSøknad(
+        vedtaksresultatData: VedtaksresultatData,
+        fagsakId: String
+    ) =
         kotlin.runCatching {
             søknadForRiverClient.lagKnytningMellomFagsakOgSøknad(vedtaksresultatData)
         }.onSuccess {
             when (it) {
                 0 -> {
-                    logger.warn("Inga knytning laga mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId")
+                    logger.warn { "Inga knytning laga mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId" }
                     Prometheus.knytningMellomSøknadOgInfotrygdProblemCounter.inc()
                 }
                 1 -> {
-                    logger.info("Knytning lagra mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId")
+                    logger.info { "Knytning lagra mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId" }
                     Prometheus.knytningMellomSøknadOgInfotrygdOpprettaCounter.inc()
                 }
                 else -> {
-                    logger.error("Fleire knytningar laga mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId")
+                    logger.error { "Fleire knytningar laga mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId" }
                     Prometheus.knytningMellomSøknadOgInfotrygdProblemCounter.inc()
                 }
             }

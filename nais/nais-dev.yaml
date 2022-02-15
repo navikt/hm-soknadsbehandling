@@ -24,6 +24,10 @@ spec:
     outbound:
       rules:
         - application: hm-soknadsbehandling-db
+        - application: hm-grunndata-api
+        - application: digihot-oppslag
+      external:
+        - host: hm-infotrygd-proxy.dev-fss-pub.nais.io
   azure:
     application:
       enabled: true
@@ -38,6 +42,9 @@ spec:
     enabled: true
   kafka:
     pool: nav-dev
+  envFrom:
+    - secret: hm-influxdb-secret
+    - secret: hm-soknadsbehandling
   env:
     - name: SOKNADSBEHANDLING_DB_BASEURL
       value: http://hm-soknadsbehandling-db.teamdigihot.svc.cluster.local/api

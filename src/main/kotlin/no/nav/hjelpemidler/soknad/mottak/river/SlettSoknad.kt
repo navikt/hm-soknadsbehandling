@@ -1,13 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
 import com.github.guepardoapps.kulid.ULID
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -23,7 +17,8 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) : PacketListenerWithOnError {
+internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) :
+    PacketListenerWithOnError {
 
     init {
         River(rapidsConnection).apply {
@@ -36,21 +31,17 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søkn
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
-            withContext(Dispatchers.IO) {
-                launch {
-                    try {
-                        logger.info { "Bruker har slettet søknad: ${packet.soknadId}" }
-                        val rowsUpdated = update(UUID.fromString(packet.soknadId), Status.SLETTET)
-                        if (rowsUpdated > 0) {
-                            val fnrBruker = søknadForRiverClient.hentFnrForSoknad(UUID.fromString(packet.soknadId))
-                            forward(UUID.fromString(packet.soknadId), fnrBruker, context)
-                        } else {
-                            logger.info { "Søknad som slettes er allerede slettet eller stod ikke til godkjenning, søknadId: ${packet.soknadId}" }
-                        }
-                    } catch (e: Exception) {
-                        throw RuntimeException("Håndtering av brukers sletting av søknad ${packet.soknadId} feilet", e)
-                    }
+            try {
+                logger.info { "Bruker har slettet søknad: ${packet.soknadId}" }
+                val rowsUpdated = update(UUID.fromString(packet.soknadId), Status.SLETTET)
+                if (rowsUpdated > 0) {
+                    val fnrBruker = søknadForRiverClient.hentFnrForSoknad(UUID.fromString(packet.soknadId))
+                    forward(UUID.fromString(packet.soknadId), fnrBruker, context)
+                } else {
+                    logger.info { "Søknad som slettes er allerede slettet eller stod ikke til godkjenning, søknadId: ${packet.soknadId}" }
                 }
+            } catch (e: Exception) {
+                throw RuntimeException("Håndtering av brukers sletting av søknad ${packet.soknadId} feilet", e)
             }
         }
     }
@@ -64,8 +55,8 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søkn
             logger.error(it) { "Failed to update søknad $soknadId med status $status" }
         }.getOrThrow()
 
-    private fun CoroutineScope.forward(soknadId: UUID, fnrBruker: String, context: MessageContext) {
-        launch(Dispatchers.IO + SupervisorJob()) {
+    private fun forward(soknadId: UUID, fnrBruker: String, context: MessageContext) {
+        try {
 
             val soknadGodkjentMessage = JsonMessage("{}", MessageProblems("")).also {
                 it["@id"] = ULID.random()
@@ -76,17 +67,10 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søkn
             }.toJson()
             context.publish(fnrBruker, soknadGodkjentMessage)
             Prometheus.soknadSlettetAvBrukerCounter.inc()
-        }.invokeOnCompletion {
-            when (it) {
-                null -> {
-                    logger.info("Søknad er slettet av bruker: $soknadId")
-                    sikkerlogg.info("Søknad er slettet med søknadsId: $soknadId, fnr: $fnrBruker)")
-                }
-                is CancellationException -> logger.warn("Cancelled: ${it.message}")
-                else -> {
-                    logger.error("Failed: ${it.message}. Soknad: $soknadId")
-                }
-            }
+            logger.info("Søknad er slettet av bruker: $soknadId")
+            sikkerlogg.info("Søknad er slettet med søknadsId: $soknadId, fnr: $fnrBruker)")
+        } catch (e: Exception) {
+            logger.error(e) { "Failed: ${e.message}. Soknad: $soknadId" }
         }
     }
 }

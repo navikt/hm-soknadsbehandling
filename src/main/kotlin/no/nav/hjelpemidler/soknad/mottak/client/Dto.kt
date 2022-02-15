@@ -1,6 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
 import com.fasterxml.jackson.databind.JsonNode
+import java.time.LocalDate
 import java.util.Date
 import java.util.UUID
 
@@ -11,7 +12,8 @@ data class SoknadDataDto(
     val soknadId: UUID? = null,
     val soknad: JsonNode? = null,
     val status: Status? = null,
-    val kommunenavn: String? = null
+    val kommunenavn: String? = null,
+    val soknadGjelder: String? = null,
 )
 
 data class SoknadMedStatus(
@@ -27,4 +29,9 @@ class UtgåttSøknad(
     val søknadId: UUID? = null,
     val status: Status? = null,
     val fnrBruker: String? = null
+)
+
+data class SøknadIdFraVedtaksresultat(
+    val søknadId: UUID,
+    val vedtaksDato: LocalDate?,
 )

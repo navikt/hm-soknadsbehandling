@@ -18,7 +18,7 @@ internal data class OrdrelinjeData(
     val enhet: String,
     val produktgruppe: String,
     val produktgruppeNr: String,
-    val data: JsonNode,
+    val data: JsonNode?,
 ) {
     internal fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {

@@ -10,6 +10,7 @@ import io.mockk.slot
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.metrics.InfluxMetrics
 import no.nav.hjelpemidler.soknad.mottak.river.RiverRequiredKeyMissingException
 import no.nav.hjelpemidler.soknad.mottak.river.SoknadMedFullmaktDataSink
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -22,9 +23,10 @@ internal class SoknadMedFullmaktDataSinkTest {
         coEvery { save(capture(capturedSoknadData)) } returns Unit
         coEvery { soknadFinnes(any()) } returns false
     }
+    private val influxMetricsMock = mockk<InfluxMetrics>(relaxed = true)
 
     private val rapid = TestRapid().apply {
-        SoknadMedFullmaktDataSink(this, mock)
+        SoknadMedFullmaktDataSink(this, mock, influxMetricsMock)
     }
 
     @BeforeEach
@@ -139,6 +141,38 @@ internal class SoknadMedFullmaktDataSinkTest {
                 {
                     "eventName": "nySoknad",
                     "signatur": "FULLMAKT",
+                    "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "fodselNrBruker": "fnrBruker",
+                    "fodselNrInnsender": "fodselNrInnsender",
+                    "soknad": 
+                        {
+                            "soknad":
+                                {
+                                    "date": "2020-06-19",
+                                    "bruker": 
+                                        {
+                                            "fornavn": "fornavn",
+                                            "etternavn": "etternavn"
+                                        },
+                                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
+                                }
+                        },
+                    "kommunenavn": "Oslo"
+                }
+        """.trimMargin()
+
+        rapid.sendTestMessage(okPacket)
+        capturedSoknadData.captured.status shouldBe Status.GODKJENT_MED_FULLMAKT
+    }
+
+    @Test
+    fun `Signatur FRITAK_FRA_FULLMAKT element in JSON is mapped to correct status`() {
+
+        val okPacket =
+            """
+                {
+                    "eventName": "nySoknad",
+                    "signatur": "FRITAK_FRA_FULLMAKT",
                     "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "fodselNrBruker": "fnrBruker",
                     "fodselNrInnsender": "fodselNrInnsender",
