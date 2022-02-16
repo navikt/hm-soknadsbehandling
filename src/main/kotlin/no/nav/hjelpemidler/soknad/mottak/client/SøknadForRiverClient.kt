@@ -17,6 +17,7 @@ import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
+import no.nav.hjelpemidler.soknad.mottak.service.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
@@ -36,8 +37,8 @@ internal interface SøknadForRiverClient {
 
     suspend fun save(soknadData: SoknadData)
     suspend fun soknadFinnes(soknadsId: UUID): Boolean
-    suspend fun ordreSisteDøgn(soknadsId: UUID): Boolean
-    suspend fun harOrdreForSøknad(soknadsId: UUID): Boolean
+    suspend fun ordreSisteDøgn(soknadsId: UUID): HarOrdre
+    suspend fun harOrdreForSøknad(soknadsId: UUID): HarOrdre
     suspend fun hentFnrForSoknad(soknadsId: UUID): String
     suspend fun slettSøknad(soknadsId: UUID): Int
     suspend fun oppdaterStatus(soknadsId: UUID, status: Status): Int
@@ -158,50 +159,44 @@ internal class SøknadForRiverClientImpl(
             .getOrThrow()
     }
 
-    override suspend fun ordreSisteDøgn(soknadsId: UUID): Boolean {
+    override suspend fun ordreSisteDøgn(soknadsId: UUID): HarOrdre {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 "$baseUrl/soknad/ordre/ordrelinje-siste-doegn/$soknadsId".httpGet()
                     .headers()
                     .awaitObject(
-                        object : ResponseDeserializable<JsonNode> {
-                            override fun deserialize(content: String): JsonNode {
-                                return JacksonMapper.objectMapper.readTree(content)
+                        object : ResponseDeserializable<HarOrdre> {
+                            override fun deserialize(content: String): HarOrdre {
+                                return JacksonMapper.objectMapper.readValue(content)
                             }
                         }
                     )
-                    .let {
-                        it.get("second").booleanValue()
-                    }
             }
-                .onFailure {
-                    logger.error { it.message }
-                }
+            .onFailure {
+                logger.error { it.message }
+            }
         }
-            .getOrThrow()
+        .getOrThrow()
     }
 
-    override suspend fun harOrdreForSøknad(soknadsId: UUID): Boolean {
+    override suspend fun harOrdreForSøknad(soknadsId: UUID): HarOrdre {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 "$baseUrl/soknad/ordre/har-ordre/$soknadsId".httpGet()
                     .headers()
                     .awaitObject(
-                        object : ResponseDeserializable<JsonNode> {
-                            override fun deserialize(content: String): JsonNode {
-                                return JacksonMapper.objectMapper.readTree(content)
+                        object : ResponseDeserializable<HarOrdre> {
+                            override fun deserialize(content: String): HarOrdre {
+                                return JacksonMapper.objectMapper.readValue(content)
                             }
                         }
                     )
-                    .let {
-                        it.get("second").booleanValue()
-                    }
             }
-                .onFailure {
-                    logger.error { it.message }
-                }
+            .onFailure {
+                logger.error { it.message }
+            }
         }
-            .getOrThrow()
+        .getOrThrow()
     }
 
     override suspend fun hentFnrForSoknad(soknadsId: UUID): String {

@@ -58,12 +58,17 @@ internal class VedtaksresultatFraInfotrygd(
 
             // Lagre vedtaksstatus og send beskjed til ditt nav
             val vedtaksresultatLagretData =
-                VedtaksresultatLagretData(søknadsId, packet.fnrBruker, packet.vedtaksResultat, mottokOrdrelinjeFørVedtak)
+                VedtaksresultatLagretData(søknadsId, packet.fnrBruker, packet.vedtaksResultat, mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler)
             context.publish(packet.fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatLagret"))
 
             // Hvis vi allerede har ordrelinjer i databasen for denne søknaden: send utsending startet.
-            if (mottokOrdrelinjeFørVedtak) {
+            if (mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler || mottokOrdrelinjeFørVedtak.harOrdreAvTypeDel) {
                 oppdaterStatus(søknadsId, Status.UTSENDING_STARTET)
+
+                if (!mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler) {
+                    // Hvis bare ordrelinje for deler så skipper vi varsel
+                    return@runBlocking
+                }
 
                 val ordrelinjeData = OrdrelinjeData(
                     søknadId = søknadsId,
@@ -79,6 +84,7 @@ internal class VedtaksresultatFraInfotrygd(
                     enhet = "",
                     produktgruppe = "",
                     produktgruppeNr = "",
+                    hjelpemiddeltype = "",
                     data = null,
                 )
                 context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
