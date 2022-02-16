@@ -35,3 +35,8 @@ data class SøknadIdFraVedtaksresultat(
     val søknadId: UUID,
     val vedtaksDato: LocalDate?,
 )
+
+data class HarOrdre (
+    val harOrdreAvTypeHjelpemidler: Boolean,
+    val harOrdreAvTypeDel: Boolean,
+)

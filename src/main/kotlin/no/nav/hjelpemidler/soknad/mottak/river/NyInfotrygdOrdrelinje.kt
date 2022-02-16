@@ -43,6 +43,7 @@ internal class NyInfotrygdOrdrelinje(
     private val JsonMessage.enhet get() = this["data"]["enhet"].textValue()
     private val JsonMessage.produktgruppe get() = this["data"]["produktgruppe"].textValue()
     private val JsonMessage.produktgruppeNr get() = this["data"]["produktgruppeNr"].textValue()
+    private val JsonMessage.hjelpemiddeltype get() = this["data"]["hjelpemiddeltype"].textValue()
     private val JsonMessage.data get() = this["data"]
 
     // Kun brukt til Infotrygd-matching for å finne søknadId
@@ -144,6 +145,7 @@ internal class NyInfotrygdOrdrelinje(
                     enhet = packet.enhet,
                     produktgruppe = packet.produktgruppe,
                     produktgruppeNr = packet.produktgruppeNr,
+                    hjelpemiddeltype = packet.hjelpemiddeltype,
                     data = packet.data,
                 )
 
@@ -157,7 +159,13 @@ internal class NyInfotrygdOrdrelinje(
                 if (!mottokOrdrelinjeFørVedtak) {
                     søknadForRiverClient.oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
 
-                    if (!ordreSisteDøgn) {
+                    if (ordrelinjeData.hjelpemiddeltype == "Del") {
+                        logger.info("Ordrelinje for 'Del' lagret: ${ordrelinjeData.søknadId}")
+                        // Vi skal ikke agere ytterligere på disse
+                        return@runBlocking
+                    }
+
+                    if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
                         context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
                         Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
                         logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
@@ -165,7 +173,7 @@ internal class NyInfotrygdOrdrelinje(
                     } else {
                         logger.info("Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId")
                     }
-                } else if (!ordreSisteDøgn) {
+                } else if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
                     logger.info("Skippet utsending av sms-varsel for innkommende ordrelinje siden vi mottok ordrelinjen før vedtaket!")
                 }
             } catch (e: Exception) {

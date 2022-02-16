@@ -40,6 +40,7 @@ internal class NyHotsakOrdrelinje(
     private val JsonMessage.enhet get() = this["data"]["enhet"].textValue()
     private val JsonMessage.produktgruppe get() = this["data"]["produktgruppe"].textValue()
     private val JsonMessage.produktgruppeNr get() = this["data"]["produktgruppeNr"].textValue()
+    private val JsonMessage.hjelpemiddeltype get() = this["data"]["hjelpemiddeltype"].textValue()
     private val JsonMessage.data get() = this["data"]
 
     private val JsonMessage.saksnummer get() = this["data"]["saksnummer"].textValue()
@@ -83,6 +84,7 @@ internal class NyHotsakOrdrelinje(
                     enhet = packet.enhet,
                     produktgruppe = packet.produktgruppe,
                     produktgruppeNr = packet.produktgruppeNr,
+                    hjelpemiddeltype = packet.hjelpemiddeltype,
                     data = packet.data,
                 )
 
@@ -95,7 +97,13 @@ internal class NyHotsakOrdrelinje(
 
                 søknadForRiverClient.oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
 
-                if (!ordreSisteDøgn) {
+                if (ordrelinjeData.hjelpemiddeltype == "Del") {
+                    logger.info("Ordrelinje for 'Del' lagret: ${ordrelinjeData.søknadId}")
+                    // Vi skal ikke agere ytterligere på disse
+                    return@runBlocking
+                }
+
+                if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
                     context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
                     Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
                     logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
