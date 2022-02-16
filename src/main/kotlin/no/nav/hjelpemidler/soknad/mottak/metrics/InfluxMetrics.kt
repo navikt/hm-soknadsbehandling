@@ -32,7 +32,7 @@ internal class InfluxMetrics(
         withContext(Dispatchers.IO) {
             try {
                 val kommunenr = pdlClient.hentKommunenr(brukersFnr)
-                val sted = kommuneService.kommunenrTilSted(kommunenr) ?: ukjentSted
+                val sted = kommunenrTilSted(kommunenr)
                 writeEvent(
                     STED,
                     mapOf("counter-digital" to 1L),
@@ -48,7 +48,7 @@ internal class InfluxMetrics(
         withContext(Dispatchers.IO) {
             try {
                 val kommunenr = pdlClient.hentKommunenr(brukersFnr)
-                val sted = kommuneService.kommunenrTilSted(kommunenr) ?: ukjentSted
+                val sted = kommunenrTilSted(kommunenr)
                 writeEvent(
                     STED,
                     mapOf("counter-papir" to 1L),
@@ -58,6 +58,15 @@ internal class InfluxMetrics(
                 logg.warn(e) { "Feil under logging av statistikk 'papirsøknad per kommune'." }
             }
         }
+    }
+
+    private fun kommunenrTilSted(kommunenr: String?): KommuneDto {
+        val sted = kommuneService.kommunenrTilSted(kommunenr)
+        if (sted == null) {
+            logg.warn { "Ingen resultat for kommunenr oppslag på kommunenr <$kommunenr>" }
+            return ukjentSted
+        } else
+            return sted
     }
 
     private fun writeEvent(measurement: String, fields: Map<String, Any>, tags: Map<String, String>) = runBlocking {

@@ -5,7 +5,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-
     - name: Run Snyk to check for vulnerabilities
       uses: snyk/actions/gradle-jdk12@master
       env:
