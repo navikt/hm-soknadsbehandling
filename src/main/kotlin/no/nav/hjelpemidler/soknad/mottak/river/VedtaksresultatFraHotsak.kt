@@ -19,7 +19,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class VedtaksresultatFraHotsak(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient
+    private val søknadForRiverClient: SøknadForRiverClient,
 ) : PacketListenerWithOnError {
 
     init {
@@ -36,12 +36,14 @@ internal class VedtaksresultatFraHotsak(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
-
             val søknadsId = UUID.fromString(packet.søknadID)
+            val fnrBruker = packet.fnrBruker
+            val vedtaksresultat = packet.vedtaksResultat
+            val vedtaksDato = packet.vedtaksDato
 
-            lagreVedtaksresultat(søknadsId, packet.vedtaksResultat, packet.vedtaksDato.toLocalDate())
+            lagreVedtaksresultat(søknadsId, vedtaksresultat, vedtaksDato.toLocalDate())
 
-            val status = when (packet.vedtaksResultat) {
+            val status = when (vedtaksresultat) {
                 "I" -> Status.VEDTAKSRESULTAT_INNVILGET
                 "IM" -> Status.VEDTAKSRESULTAT_MUNTLIG_INNVILGET
                 "A" -> Status.VEDTAKSRESULTAT_AVSLÅTT
@@ -50,9 +52,13 @@ internal class VedtaksresultatFraHotsak(
             }
             oppdaterStatus(søknadsId, status)
 
-            val vedtaksresultatLagretData =
-                VedtaksresultatLagretData(søknadsId, packet.fnrBruker, packet.vedtaksResultat)
-            context.publish(packet.fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatFraHotsakLagret"))
+            val vedtaksresultatLagretData = VedtaksresultatLagretData(
+                søknadsId,
+                fnrBruker,
+                vedtaksDato,
+                vedtaksresultat
+            )
+            context.publish(fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatFraHotsakLagret"))
         }
     }
 

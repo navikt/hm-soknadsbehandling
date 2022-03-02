@@ -172,11 +172,11 @@ internal class SøknadForRiverClientImpl(
                         }
                     )
             }
-            .onFailure {
-                logger.error { it.message }
-            }
+                .onFailure {
+                    logger.error { it.message }
+                }
         }
-        .getOrThrow()
+            .getOrThrow()
     }
 
     override suspend fun harOrdreForSøknad(soknadsId: UUID): HarOrdre {
@@ -192,11 +192,11 @@ internal class SøknadForRiverClientImpl(
                         }
                     )
             }
-            .onFailure {
-                logger.error { it.message }
-            }
+                .onFailure {
+                    logger.error { it.message }
+                }
         }
-        .getOrThrow()
+            .getOrThrow()
     }
 
     override suspend fun hentFnrForSoknad(soknadsId: UUID): String {

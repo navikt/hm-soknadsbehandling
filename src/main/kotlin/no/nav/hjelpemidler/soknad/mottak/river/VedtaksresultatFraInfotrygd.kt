@@ -20,7 +20,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class VedtaksresultatFraInfotrygd(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient
+    private val søknadForRiverClient: SøknadForRiverClient,
 ) : PacketListenerWithOnError {
 
     init {
@@ -37,12 +37,14 @@ internal class VedtaksresultatFraInfotrygd(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
-
             val søknadsId = UUID.fromString(packet.søknadID)
+            val fnrBruker = packet.fnrBruker
+            val vedtaksresultat = packet.vedtaksResultat
+            val vedtaksdato = packet.vedtaksDato
 
-            lagreVedtaksresultat(søknadsId, packet.vedtaksResultat, packet.vedtaksDato)
+            lagreVedtaksresultat(søknadsId, vedtaksresultat, vedtaksdato)
 
-            val status = when (packet.vedtaksResultat) {
+            val status = when (vedtaksresultat) {
                 "I" -> Status.VEDTAKSRESULTAT_INNVILGET
                 "IM" -> Status.VEDTAKSRESULTAT_MUNTLIG_INNVILGET
                 "A" -> Status.VEDTAKSRESULTAT_AVSLÅTT
@@ -57,9 +59,14 @@ internal class VedtaksresultatFraInfotrygd(
             val mottokOrdrelinjeFørVedtak = søknadForRiverClient.harOrdreForSøknad(søknadsId)
 
             // Lagre vedtaksstatus og send beskjed til ditt nav
-            val vedtaksresultatLagretData =
-                VedtaksresultatLagretData(søknadsId, packet.fnrBruker, packet.vedtaksResultat, mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler)
-            context.publish(packet.fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatLagret"))
+            val vedtaksresultatLagretData = VedtaksresultatLagretData(
+                søknadsId,
+                fnrBruker,
+                vedtaksdato.atStartOfDay(),
+                vedtaksresultat,
+                mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler
+            )
+            context.publish(fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatLagret"))
 
             // Hvis vi allerede har ordrelinjer i databasen for denne søknaden: send utsending startet.
             if (mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler || mottokOrdrelinjeFørVedtak.harOrdreAvTypeDel) {
@@ -72,7 +79,7 @@ internal class VedtaksresultatFraInfotrygd(
 
                 val ordrelinjeData = OrdrelinjeData(
                     søknadId = søknadsId,
-                    fnrBruker = packet.fnrBruker,
+                    fnrBruker = fnrBruker,
                     // Resten av feltene brukes ikke i json:
                     oebsId = 0,
                     serviceforespørsel = null,

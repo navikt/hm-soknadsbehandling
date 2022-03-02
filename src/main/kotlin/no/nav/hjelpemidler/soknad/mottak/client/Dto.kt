@@ -36,7 +36,7 @@ data class SøknadIdFraVedtaksresultat(
     val vedtaksDato: LocalDate?,
 )
 
-data class HarOrdre (
+data class HarOrdre(
     val harOrdreAvTypeHjelpemidler: Boolean,
     val harOrdreAvTypeDel: Boolean,
 )
