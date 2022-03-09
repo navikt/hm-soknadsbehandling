@@ -7,7 +7,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.metrics.InfluxMetrics
+import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
@@ -20,7 +20,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 internal class SoknadMedFullmaktDataSink(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient,
-    private val influxMetrics: InfluxMetrics
+    private val metrics: Metrics
 ) : PacketListenerWithOnError {
 
     init {
@@ -68,7 +68,7 @@ internal class SoknadMedFullmaktDataSink(
 
                 forward(soknadData, context)
 
-                influxMetrics.digitalSoknad(packet.fnrBruker, packet.soknadId)
+                metrics.digitalSoknad(packet.fnrBruker, packet.soknadId)
             } catch (e: Exception) {
                 throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
             }

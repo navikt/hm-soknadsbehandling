@@ -7,7 +7,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.metrics.InfluxMetrics
+import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
@@ -21,7 +21,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 internal class PapirSøknadEndeligJournalført(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient,
-    private val influxMetrics: InfluxMetrics
+    private val metrics: Metrics
 ) : PacketListenerWithOnError {
     init {
         River(rapidsConnection).apply {
@@ -95,7 +95,7 @@ internal class PapirSøknadEndeligJournalført(
                 )
                 logger.info { "Endelig journalført: Papirsøknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $soknadId" }
 
-                influxMetrics.papirSoknad(packet.fnrBruker)
+                metrics.papirSoknad(packet.fnrBruker)
             } catch (e: Exception) {
                 throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
             }

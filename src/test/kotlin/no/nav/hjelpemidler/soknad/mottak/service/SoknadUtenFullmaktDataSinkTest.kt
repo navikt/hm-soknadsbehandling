@@ -10,7 +10,7 @@ import io.mockk.slot
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.metrics.InfluxMetrics
+import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.river.RiverRequiredKeyMissingException
 import no.nav.hjelpemidler.soknad.mottak.river.SoknadUtenFullmaktDataSink
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -23,7 +23,7 @@ internal class SoknadUtenFullmaktDataSinkTest {
         coEvery { save(capture(capturedSoknadData)) } returns Unit
         coEvery { soknadFinnes(any()) } returns false
     }
-    private val influxMock = mockk<InfluxMetrics>(relaxed = true)
+    private val influxMock = mockk<Metrics>(relaxed = true)
 
     private val rapid = TestRapid().apply {
         SoknadUtenFullmaktDataSink(this, mock, influxMock)

@@ -8,7 +8,7 @@ import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClientImpl
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClientImpl
-import no.nav.hjelpemidler.soknad.mottak.metrics.InfluxMetrics
+import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadAutomatiskJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalførtEtterTilbakeføring
@@ -51,14 +51,14 @@ fun main() {
     val infotrygdProxyClient =
         InfotrygdProxyClientImpl(Configuration.infotrygdProxy.baseUrl, azureClient, Configuration.azure.infotrygdProxyScope)
     val pdlClient = PdlClient(azureClient, Configuration.pdl.baseUrl, Configuration.pdl.apiScope)
-    val influxMetrics = InfluxMetrics(pdlClient)
 
     MonitoreringService(søknadForRiverClient)
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .build().apply {
-            SoknadMedFullmaktDataSink(this, søknadForRiverClient, influxMetrics)
-            SoknadUtenFullmaktDataSink(this, søknadForRiverClient, influxMetrics)
+            val metrics = Metrics(this, pdlClient)
+            SoknadMedFullmaktDataSink(this, søknadForRiverClient, metrics)
+            SoknadUtenFullmaktDataSink(this, søknadForRiverClient, metrics)
             SlettSoknad(this, søknadForRiverClient)
             GodkjennSoknad(this, søknadForRiverClient)
             startSøknadUtgåttScheduling(SøknadsgodkjenningService(søknadForRiverClient, this))
@@ -68,7 +68,7 @@ fun main() {
             NyInfotrygdOrdrelinje(this, søknadForRiverClient, infotrygdProxyClient)
             NyHotsakOrdrelinje(this, søknadForRiverClient)
             VedtaksresultatFraInfotrygd(this, søknadForRiverClient)
-            PapirSøknadEndeligJournalført(this, søknadForRiverClient, influxMetrics)
+            PapirSøknadEndeligJournalført(this, søknadForRiverClient, metrics)
             DigitalSøknadAutomatiskJournalført(this, søknadForRiverClient)
             VedtaksresultatFraHotsak(this, søknadForRiverClient)
             HotsakOpprettet(this, søknadForRiverClient)

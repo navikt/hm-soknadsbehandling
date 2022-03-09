@@ -43,7 +43,7 @@ dependencies {
 
     // Other
     implementation("com.natpryce:konfig:1.6.10.0")
-    implementation("com.github.navikt:rapids-and-rivers:2022.01.19-09.53.b526ca84a9e4")
+    implementation("com.github.navikt:rapids-and-rivers:2022.02.02-14.07.dc18de6a253c")
     implementation("com.github.guepardoapps:kulid:2.0.0.0")
     implementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
 

@@ -7,13 +7,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
+import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.kommune.KommuneDto
 import no.nav.hjelpemidler.soknad.mottak.metrics.kommune.KommuneService
 import java.time.Instant
 
-internal class InfluxMetrics(
+internal class Metrics(
+    messageContext: MessageContext,
     private val pdlClient: PdlClient,
     private val kommuneService: KommuneService = KommuneService(),
     config: Configuration.InfluxDb = Configuration.influxDb
@@ -27,6 +29,7 @@ internal class InfluxMetrics(
         null
     )
     private val writeApi = client.makeWriteApi()
+    private val metricsProducer = MetricsProducer(messageContext)
 
     suspend fun digitalSoknad(brukersFnr: String, soknadId: String) {
         withContext(Dispatchers.IO) {
@@ -79,6 +82,7 @@ internal class InfluxMetrics(
 
             logg.info("Skriv point-objekt til Aiven: ${point.toLineProtocol()}")
             writeApi.writePoint(point)
+            metricsProducer.hendelseOpprettet(measurement, fields, tags)
         } catch (e: Exception) {
             logg.warn(e) { "Skriving av event til influx feilet" }
         }
