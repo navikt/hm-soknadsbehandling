@@ -49,6 +49,7 @@ internal class VedtaksresultatFraInfotrygd(
                 "IM" -> Status.VEDTAKSRESULTAT_MUNTLIG_INNVILGET
                 "A" -> Status.VEDTAKSRESULTAT_AVSLÅTT
                 "DI" -> Status.VEDTAKSRESULTAT_DELVIS_INNVILGET
+                "HB" -> Status.VEDTAKSRESULTAT_HENLAGTBORTFALT
                 else -> Status.VEDTAKSRESULTAT_ANNET
             }
             oppdaterStatus(søknadsId, status)
