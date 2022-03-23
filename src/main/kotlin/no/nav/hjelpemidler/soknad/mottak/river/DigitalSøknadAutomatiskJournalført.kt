@@ -28,9 +28,9 @@ internal class DigitalSøknadAutomatiskJournalført(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         logger.info(
-            """Received journalpostref with søknad id: ${packet["soknadId"].asText()} 
-                and journalpostref: ${packet["joarkRef"].asText()}
-                     """.trimMargin()
+            """
+                Received journalpostref with søknad id: ${packet["soknadId"].asText()} and journalpostref: ${packet["joarkRef"].asText()}
+             """.trimMargin()
         )
 
         val søknadId = packet["soknadId"].asText()

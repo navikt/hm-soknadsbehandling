@@ -34,8 +34,7 @@ internal class OppgaveSinkTest {
     @Test
     fun `Oppdater søknad med journalpostId`() {
 
-        val oppgavePacket =
-            """
+        val oppgavePacket = """
             {
               "soknadId": "$soknadId",
               "eventName": "hm-OppgaveOpprettet",

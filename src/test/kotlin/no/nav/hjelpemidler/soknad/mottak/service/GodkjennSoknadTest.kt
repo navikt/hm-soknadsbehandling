@@ -109,13 +109,12 @@ internal class GodkjennSoknadTest {
     @Test
     fun `Do not forward already godkjent søknad`() {
 
-        val okPacket =
-            """
-                {
-                    "eventName": "godkjentAvBruker",
-                    "fodselNrBruker": "fnrBruker",
-                    "soknadId": "$soknadIdDuplikat"
-                }
+        val okPacket = """
+            {
+                "eventName": "godkjentAvBruker",
+                "fodselNrBruker": "fnrBruker",
+                "soknadId": "$soknadIdDuplikat"
+            }
         """.trimMargin()
 
         rapid.sendTestMessage(okPacket)
@@ -130,13 +129,12 @@ internal class GodkjennSoknadTest {
     @Test
     fun `Update soknad and forward if packet contains required keys`() {
 
-        val okPacket =
-            """
-                {
-                    "eventName": "godkjentAvBruker",
-                    "fodselNrBruker": "fnrBruker",
-                    "soknadId": "$soknadId"
-                }
+        val okPacket = """
+            {
+                "eventName": "godkjentAvBruker",
+                "fodselNrBruker": "fnrBruker",
+                "soknadId": "$soknadId"
+            }
         """.trimMargin()
 
         rapid.sendTestMessage(okPacket)
@@ -163,12 +161,11 @@ internal class GodkjennSoknadTest {
     @Test
     fun `Do not react to events without soknadId key`() {
 
-        val invalidPacket =
-            """
-                {
-                    "eventName": "godkjentAvBruker",
-                    "fodselNrBruker": "fnrBruker"
-                }
+        val invalidPacket = """
+            {
+                "eventName": "godkjentAvBruker",
+                "fodselNrBruker": "fnrBruker"
+            }
         """.trimMargin()
 
         Assertions.assertThrows(RiverRequiredKeyMissingException::class.java) {
@@ -179,13 +176,12 @@ internal class GodkjennSoknadTest {
     @Test
     fun `Do not react to events with irrelevant eventName`() {
 
-        val invalidPacket =
-            """
-                {
-                    "eventName": "theseAreNotTheEventsYouAreLookingFor",
-                    "fodselNrBruker": "fnrBruker",
-                    "soknadId": "$soknadId"
-                }
+        val invalidPacket = """
+            {
+                "eventName": "theseAreNotTheEventsYouAreLookingFor",
+                "fodselNrBruker": "fnrBruker",
+                "soknadId": "$soknadId"
+            }
         """.trimMargin()
 
         rapid.sendTestMessage(invalidPacket)

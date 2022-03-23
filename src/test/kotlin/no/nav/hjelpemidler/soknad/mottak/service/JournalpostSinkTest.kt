@@ -34,8 +34,7 @@ internal class JournalpostSinkTest {
     @Test
     fun `Oppdater søknad med journalpostId`() {
 
-        val journalpostPacket =
-            """
+        val journalpostPacket = """
             {
               "soknadId": "$soknadId",
               "eventName": "hm-SøknadArkivert",

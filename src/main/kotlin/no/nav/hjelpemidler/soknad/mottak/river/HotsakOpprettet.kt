@@ -26,9 +26,9 @@ internal class HotsakOpprettet(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         logger.info(
-            """Received sak-opprettet event with søknadId: ${packet["soknadId"].asText()} 
-                and sakId: ${packet["sakId"].asText()}
-                     """.trimMargin()
+            """
+                Received sak-opprettet event with søknadId: ${packet["soknadId"].asText()} and sakId: ${packet["sakId"].asText()}
+             """.trimMargin()
         )
 
         val søknadId = packet["soknadId"].asText()

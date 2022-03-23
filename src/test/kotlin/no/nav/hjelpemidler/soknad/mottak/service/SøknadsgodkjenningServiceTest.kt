@@ -19,19 +19,17 @@ internal class SøknadsgodkjenningServiceTest {
     private val mockSoknad =
         ObjectMapper().readTree(
             """
-                        {
-                            "soknad":
-                                {
-                                    "date": "2020-06-19",
-                                    "bruker": 
-                                        {
-                                            "fornavn": "fornavn",
-                                            "etternavn": "etternavn"
-                                        },
-                                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
-                                }
-                        }
-        """
+                {
+                    "soknad": {
+                        "date": "2020-06-19",
+                        "bruker": {
+                            "fornavn": "fornavn",
+                            "etternavn": "etternavn"
+                        },
+                        "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
+                    }
+                }
+            """
         )
 
     private val mock = mockk<SøknadForRiverClient>().apply {
@@ -55,12 +53,11 @@ internal class SøknadsgodkjenningServiceTest {
     @Test
     fun `Søknad blir godkjent`() {
 
-        val okPacket =
-            """
-                {
-                    "eventName": "godkjentAvBruker",
-                    "soknadId": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
-                }
+        val okPacket = """
+            {
+                "eventName": "godkjentAvBruker",
+                "soknadId": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
+            }
         """.trimMargin()
 
         rapid.sendTestMessage(okPacket)
