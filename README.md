@@ -39,6 +39,7 @@ at søknaden og dokumenta i søknaden tilhøyrer rett person, og at informasjon 
 - VEDTAKSRESULTAT_MUNTLIG_INNVILGET: Saka har blitt munnleg innvilga i Infotrygd. Brukaren får ikkje brev i posten. 
 - VEDTAKSRESULTAT_DELVIS_INNVILGET: Saka er delvis innvilga i Infotrygd. Brukaren får noko av det som er søkt om, men ikkje alt.
 - VEDTAKSRESULTAT_AVSLÅTT: Saka har fått avslag i Infotrygd sidan kriteria for utlån ikkje er møtt.
+- VEDTAKSRESULTAT_HENLAGTBORTFALT: Dei må kontakte NAV Hjelpemiddelsentral for å få vite meir.
 - VEDTAKSRESULTAT_ANNET: Samlepost for ulike resultat i Infotrygd. Dei må kontakte NAV Hjelpemiddelsentral for å få vite meir.
 - UTSENDING_STARTET: Fyrste ordrelinje mottatt frå OEBS. Utsending av hjelpemiddel til kommunen har starta.
 
