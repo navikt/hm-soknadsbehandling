@@ -41,15 +41,15 @@ configurations.all {
 }
 
 dependencies {
-    // Kotlin
-    implementation(kotlin("stdlib-jdk8"))
-    implementation(kotlin("reflect"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.0") // følger ikke kotlin-versjon
-
     // R&R and Logging fixes
     implementation("com.github.navikt:rapids-and-rivers:2022.04.05-09.40.11a466d7ac70")
     implementation("org.slf4j:slf4j-api:2.0.0-alpha6") // fordi rapids-and-rivers er på logback-classic:1.3.0-alpha10 som krever slf4j >= 2.0.0-alpha4
     implementation("io.github.microutils:kotlin-logging:2.1.21")
+
+    // Kotlin
+    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("reflect"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.0") // følger ikke kotlin-versjon
 
     // Other
     implementation("com.natpryce:konfig:1.6.10.0")
