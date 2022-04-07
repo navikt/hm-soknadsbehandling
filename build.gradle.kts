@@ -35,6 +35,11 @@ java {
 fun ktor(name: String) = "io.ktor:ktor-$name:$ktorVersion"
 fun graphqlKotlin(name: String) = "com.expediagroup:graphql-kotlin-$name:$graphQLClientVersion"
 
+configurations.all {
+    exclude(group = "org.slf4j", module = "slf4j-nop")
+    exclude(group = "org.slf4j", module = "slf4j-log4j12")
+}
+
 dependencies {
     // Kotlin
     implementation(kotlin("stdlib-jdk8"))
