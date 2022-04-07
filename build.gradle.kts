@@ -40,10 +40,34 @@ configurations.all {
     exclude(group = "org.slf4j", module = "slf4j-log4j12")
 }
 
+buildscript {
+    configurations {
+        classpath {
+            resolutionStrategy {
+                force("org.slf4j:slf4j-api:2.0.0-alpha6")
+            }
+        }
+    }
+}
+
 dependencies {
     // R&R and Logging fixes
-    implementation("com.github.navikt:rapids-and-rivers:2022.04.05-09.40.11a466d7ac70")
-    implementation("org.slf4j:slf4j-api:2.0.0-alpha6") // fordi rapids-and-rivers er på logback-classic:1.3.0-alpha10 som krever slf4j >= 2.0.0-alpha4
+    implementation("com.github.navikt:rapids-and-rivers:2022.04.05-09.40.11a466d7ac70") {
+        exclude(group = "ch.qos.logback", module = "logback-classic")
+        exclude(group = "net.logstash.logback", module = "logstash-logback-encoder")
+    }
+    api("ch.qos.logback:logback-classic:1.2.3")
+    api("net.logstash.logback:logstash-logback-encoder:6.6") {
+        exclude("com.fasterxml.jackson.core")
+    }
+
+    /*implementation("org.slf4j:slf4j-api") { // fordi rapids-and-rivers er på logback-classic:1.3.0-alpha10 som krever slf4j >= 2.0.0-alpha4
+        version {
+            strictly("2.0.0-alpha6")
+        }
+    }
+    */
+
     implementation("io.github.microutils:kotlin-logging:2.1.21")
 
     // Kotlin
