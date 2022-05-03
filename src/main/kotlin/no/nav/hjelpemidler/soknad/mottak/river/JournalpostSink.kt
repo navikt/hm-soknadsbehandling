@@ -19,7 +19,7 @@ internal class JournalpostSink(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "hm-SøknadArkivert") }
+            validate { it.demandAny("eventName", listOf("hm-SøknadArkivert", "hm-opprettetOgFerdigstiltJournalpost", "hm-opprettetMottattJournalpost")) }
             validate { it.requireKey("soknadId", "joarkRef") }
         }.register(this)
     }
