@@ -68,7 +68,8 @@ internal interface SøknadForRiverClient {
     suspend fun lagreVedtaksresultat(
         søknadId: UUID,
         vedtaksresultat: String,
-        vedtaksdato: LocalDate
+        vedtaksdato: LocalDate,
+        soknadsType: String,
     ): Int
 
     suspend fun lagreVedtaksresultatFraHotsak(
@@ -444,7 +445,7 @@ internal class SøknadForRiverClientImpl(
 
     data class SoknadFraHotsakNummerDto(val saksnummer: String)
 
-    override suspend fun lagreVedtaksresultat(søknadId: UUID, vedtaksresultat: String, vedtaksdato: LocalDate): Int {
+    override suspend fun lagreVedtaksresultat(søknadId: UUID, vedtaksresultat: String, vedtaksdato: LocalDate, soknadsType: String): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
 
@@ -455,7 +456,8 @@ internal class SøknadForRiverClientImpl(
                             VedtaksresultatDto(
                                 søknadId,
                                 vedtaksresultat,
-                                vedtaksdato
+                                vedtaksdato,
+                                soknadsType,
                             )
                         )
                     )
@@ -486,7 +488,8 @@ internal class SøknadForRiverClientImpl(
                             VedtaksresultatDto(
                                 søknadId,
                                 vedtaksresultat,
-                                vedtaksdato
+                                vedtaksdato,
+                                "n/a",
                             )
                         )
                     )
@@ -502,7 +505,8 @@ internal class SøknadForRiverClientImpl(
     data class VedtaksresultatDto(
         val søknadId: UUID,
         val vedtaksresultat: String,
-        val vedtaksdato: LocalDate
+        val vedtaksdato: LocalDate,
+        val soknadsType: String,
     )
 
     override suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean {

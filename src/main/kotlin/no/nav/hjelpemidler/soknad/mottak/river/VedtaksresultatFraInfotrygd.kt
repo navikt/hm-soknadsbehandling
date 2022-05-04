@@ -34,6 +34,7 @@ internal class VedtaksresultatFraInfotrygd(
     private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
     private val JsonMessage.vedtaksResultat get() = this["vedtaksResultat"].textValue()
     private val JsonMessage.vedtaksDato get() = this["vedtaksDato"].asLocalDate()
+    private val JsonMessage.soknadsType get() = this["soknadsType"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
@@ -41,8 +42,9 @@ internal class VedtaksresultatFraInfotrygd(
             val fnrBruker = packet.fnrBruker
             val vedtaksresultat = packet.vedtaksResultat
             val vedtaksdato = packet.vedtaksDato
+            val soknadsType = packet.soknadsType
 
-            lagreVedtaksresultat(søknadsId, vedtaksresultat, vedtaksdato)
+            lagreVedtaksresultat(søknadsId, vedtaksresultat, vedtaksdato, soknadsType)
 
             val status = when (vedtaksresultat) {
                 "I" -> Status.VEDTAKSRESULTAT_INNVILGET
@@ -102,9 +104,9 @@ internal class VedtaksresultatFraInfotrygd(
         }
     }
 
-    private suspend fun lagreVedtaksresultat(søknadsId: UUID, vedtaksresultat: String, vedtaksdato: LocalDate) {
+    private suspend fun lagreVedtaksresultat(søknadsId: UUID, vedtaksresultat: String, vedtaksdato: LocalDate, soknadsType: String) {
         kotlin.runCatching {
-            søknadForRiverClient.lagreVedtaksresultat(søknadsId, vedtaksresultat, vedtaksdato)
+            søknadForRiverClient.lagreVedtaksresultat(søknadsId, vedtaksresultat, vedtaksdato, soknadsType)
         }.onSuccess {
             if (it == 0) {
                 logger.warn("Ingenting ble endret når vi forsøkte å lagre vedtaksresultat for søknadsId=$søknadsId")
