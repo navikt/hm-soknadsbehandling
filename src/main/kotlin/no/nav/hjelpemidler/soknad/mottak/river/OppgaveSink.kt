@@ -17,7 +17,7 @@ internal class OppgaveSink(rapidsConnection: RapidsConnection, private val søkn
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "hm-OppgaveOpprettet") }
+            validate { it.demandAny("eventName", listOf("hm-OppgaveOpprettet", "hm-opprettetJournalføringsoppgaveForTilbakeførtSak")) }
             validate { it.requireKey("soknadId", "oppgaveId") }
         }.register(this)
     }
