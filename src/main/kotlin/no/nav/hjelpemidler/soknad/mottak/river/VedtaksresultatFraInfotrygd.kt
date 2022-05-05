@@ -26,7 +26,7 @@ internal class VedtaksresultatFraInfotrygd(
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "hm-VedtaksResultatFraInfotrygd") }
-            validate { it.requireKey("søknadID", "fnrBruker", "vedtaksResultat", "vedtaksDato") }
+            validate { it.requireKey("søknadID", "fnrBruker", "vedtaksResultat", "vedtaksDato", "soknadsType") }
         }.register(this)
     }
 
