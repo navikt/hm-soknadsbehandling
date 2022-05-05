@@ -18,7 +18,7 @@ internal class Metrics(
     messageContext: MessageContext,
     private val pdlClient: PdlClient,
     private val kommuneService: KommuneService = KommuneService(),
-    config: Configuration.InfluxDb = Configuration.influxDb
+    config: Configuration.InfluxDb = Configuration.influxDb,
 ) {
 
     private val client = InfluxDBClientFactory.createV1(
@@ -63,6 +63,30 @@ internal class Metrics(
         }
     }
 
+    suspend fun resultatFraInfotrygd(
+        brukersFnr: String,
+        vedtaksresultat: String,
+        soknadsType: String,
+    ) {
+        withContext(Dispatchers.IO) {
+            try {
+                val kommunenr = pdlClient.hentKommunenr(brukersFnr)
+                val sted = kommunenrTilSted(kommunenr)
+                writeEvent(
+                    "$VEDTAKSRESULTAT_INFOTRYGD.$soknadsType",
+                    mapOf("counter" to 1L),
+                    mapOf(
+                        "vedtaksresultat" to vedtaksresultat,
+                        "kommune" to sted.kommunenavn,
+                        "fylke" to sted.fylkenavn,
+                    )
+                )
+            } catch (e: Exception) {
+                logg.warn(e) { "Feil under logging av statistikk 'papirsøknad per kommune'." }
+            }
+        }
+    }
+
     private fun kommunenrTilSted(kommunenr: String?): KommuneDto {
         val sted = kommuneService.kommunenrTilSted(kommunenr)
         if (sted == null) {
@@ -100,3 +124,4 @@ private val DEFAULT_TAGS: Map<String, String> = mapOf(
 
 private const val PREFIX = "hm-soknadsbehandling"
 const val STED = "$PREFIX.sted"
+const val VEDTAKSRESULTAT_INFOTRYGD = "$PREFIX.vedtaksresultat-infotrygd"

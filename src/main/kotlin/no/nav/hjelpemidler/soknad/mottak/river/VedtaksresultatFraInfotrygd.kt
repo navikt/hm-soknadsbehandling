@@ -8,6 +8,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
@@ -21,6 +22,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 internal class VedtaksresultatFraInfotrygd(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient,
+    private val metrics: Metrics
 ) : PacketListenerWithOnError {
 
     init {
@@ -100,6 +102,7 @@ internal class VedtaksresultatFraInfotrygd(
                 context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
                 Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
                 logger.info("Ordrelinje sendt ved vedtak: ${ordrelinjeData.søknadId}")
+                metrics.resultatFraInfotrygd(fnrBruker, vedtaksresultat, soknadsType)
             }
         }
     }

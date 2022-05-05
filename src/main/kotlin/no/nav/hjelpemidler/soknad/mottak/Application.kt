@@ -67,7 +67,7 @@ fun main() {
             DigitalSøknadEndeligJournalført(this, søknadForRiverClient)
             NyInfotrygdOrdrelinje(this, søknadForRiverClient, infotrygdProxyClient)
             NyHotsakOrdrelinje(this, søknadForRiverClient)
-            VedtaksresultatFraInfotrygd(this, søknadForRiverClient)
+            VedtaksresultatFraInfotrygd(this, søknadForRiverClient, metrics)
             PapirSøknadEndeligJournalført(this, søknadForRiverClient, metrics)
             DigitalSøknadAutomatiskJournalført(this, søknadForRiverClient)
             VedtaksresultatFraHotsak(this, søknadForRiverClient)
