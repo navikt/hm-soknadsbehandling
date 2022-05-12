@@ -22,7 +22,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 internal class VedtaksresultatFraInfotrygd(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient,
-    private val metrics: Metrics
+    private val metrics: Metrics,
 ) : PacketListenerWithOnError {
 
     init {
@@ -47,6 +47,8 @@ internal class VedtaksresultatFraInfotrygd(
             val soknadsType = packet.soknadsType
 
             lagreVedtaksresultat(søknadsId, vedtaksresultat, vedtaksdato, soknadsType)
+
+            metrics.resultatFraInfotrygd(fnrBruker, vedtaksresultat, soknadsType)
 
             val status = when (vedtaksresultat) {
                 "I" -> Status.VEDTAKSRESULTAT_INNVILGET
@@ -102,12 +104,16 @@ internal class VedtaksresultatFraInfotrygd(
                 context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
                 Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
                 logger.info("Ordrelinje sendt ved vedtak: ${ordrelinjeData.søknadId}")
-                metrics.resultatFraInfotrygd(fnrBruker, vedtaksresultat, soknadsType)
             }
         }
     }
 
-    private suspend fun lagreVedtaksresultat(søknadsId: UUID, vedtaksresultat: String, vedtaksdato: LocalDate, soknadsType: String) {
+    private suspend fun lagreVedtaksresultat(
+        søknadsId: UUID,
+        vedtaksresultat: String,
+        vedtaksdato: LocalDate,
+        soknadsType: String,
+    ) {
         kotlin.runCatching {
             søknadForRiverClient.lagreVedtaksresultat(søknadsId, vedtaksresultat, vedtaksdato, soknadsType)
         }.onSuccess {
