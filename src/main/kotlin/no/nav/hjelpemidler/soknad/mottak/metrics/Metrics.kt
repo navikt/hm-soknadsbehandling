@@ -82,7 +82,7 @@ internal class Metrics(
                     )
                 )
             } catch (e: Exception) {
-                logg.warn(e) { "Feil under logging av statistikk 'papirsøknad per kommune'." }
+                logg.warn(e) { "Feil under logging av statistikk 'resultat fra infotrygd'." }
             }
         }
     }
