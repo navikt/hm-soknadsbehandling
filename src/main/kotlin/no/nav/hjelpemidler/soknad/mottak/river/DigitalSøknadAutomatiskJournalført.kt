@@ -37,28 +37,29 @@ internal class DigitalSøknadAutomatiskJournalført(
         val fnrBruker = packet["fnrBruker"].asText()
 
         runBlocking {
-            oppdaterStatus(UUID.fromString(søknadId))
-            // Melding til Ditt NAV
-            context.publish(
-                fnrBruker,
-                SøknadUnderBehandlingData(
-                    UUID.fromString(søknadId),
-                    fnrBruker
-                ).toJson("hm-SøknadUnderBehandling")
-            )
+            val rowsUpdated = oppdaterStatus(UUID.fromString(søknadId))
+
+            if (rowsUpdated > 0) {
+                logger.info("Status på søknad sett til endelig journalført: $søknadId")
+
+                // Melding til Ditt NAV
+                context.publish(
+                    fnrBruker,
+                    SøknadUnderBehandlingData(
+                        UUID.fromString(søknadId),
+                        fnrBruker
+                    ).toJson("hm-SøknadUnderBehandling")
+                )
+            } else {
+                logger.warn("Status er allereie sett til endelig journalført: $søknadId")
+            }
         }
     }
 
     private suspend fun oppdaterStatus(søknadId: UUID) =
         kotlin.runCatching {
             søknadForRiverClient.oppdaterStatus(søknadId, Status.ENDELIG_JOURNALFØRT)
-        }.onSuccess {
-            if (it > 0) {
-                logger.info("Status på søknad sett til endelig journalført: $søknadId, it=$it")
-            } else {
-                logger.warn("Status er allereie sett til endelig journalført: $søknadId")
-            }
         }.onFailure {
-            logger.error("Failed to update søknad to endelig journalført: $søknadId")
+            logger.error(it) { "Failed to update søknad to endelig journalført: $søknadId" }
         }.getOrThrow()
 }
