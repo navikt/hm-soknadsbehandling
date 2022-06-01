@@ -9,6 +9,8 @@ import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClientImpl
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClientImpl
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
+import no.nav.hjelpemidler.soknad.mottak.river.BestillingAvvistFraHotsak
+import no.nav.hjelpemidler.soknad.mottak.river.BestillingFerdigstiltFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadAutomatiskJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalførtEtterTilbakeføring
@@ -73,6 +75,8 @@ fun main() {
             VedtaksresultatFraHotsak(this, søknadForRiverClient)
             HotsakOpprettet(this, søknadForRiverClient)
             DigitalSøknadEndeligJournalførtEtterTilbakeføring(this, søknadForRiverClient)
+            BestillingFerdigstiltFraHotsak(this, søknadForRiverClient)
+            BestillingAvvistFraHotsak(this, søknadForRiverClient)
         }
         .start()
 }
