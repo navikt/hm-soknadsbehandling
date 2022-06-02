@@ -20,7 +20,7 @@ internal class BestillingAvvistFraHotsak(
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "hm-BestillingAvvist") }
-            validate { it.requireKey("søknadId", "fodselsnummer", "opprettet", "valgte_arsaker", "begrunnelse") }
+            //validate { it.requireKey("søknadId", "fodselsnummer", "opprettet", "valgte_arsaker", "begrunnelse") }
         }.register(this)
     }
 
@@ -29,6 +29,7 @@ internal class BestillingAvvistFraHotsak(
     private val JsonMessage.begrunnelse get() = this["begrunnelse"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        return
         runBlocking {
             val søknadId = packet.søknadId
             val begrunnelse = packet.begrunnelse

@@ -20,13 +20,14 @@ internal class BestillingFerdigstiltFraHotsak(
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "hm-BestillingFerdigstilt") }
-            validate { it.requireKey("søknadId", "fodselsnummer", "opprettet") }
+            //validate { it.requireKey("søknadId", "fodselsnummer", "opprettet") }
         }.register(this)
     }
 
     private val JsonMessage.søknadId get() = this["søknadId"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        return
         runBlocking {
             val søknadId = packet.søknadId
             oppdaterStatus(UUID.fromString(søknadId), Status.BESTILLING_FERDIGSTILT)
