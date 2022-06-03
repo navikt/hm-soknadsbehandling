@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
+import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
@@ -16,6 +17,10 @@ internal class BestillingFerdigstiltFraHotsak(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient,
 ) : PacketListenerWithOnError {
+    companion object {
+        private val logger = KotlinLogging.logger {}
+        private val skipList = setOf("59ebd5fb-26f5-4fa8-981e-f2994be79e68")
+    }
 
     init {
         River(rapidsConnection).apply {
@@ -32,6 +37,15 @@ internal class BestillingFerdigstiltFraHotsak(
             oppdaterStatus(UUID.fromString(søknadId), Status.BESTILLING_FERDIGSTILT)
 
             // context.publish(fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatFraHotsakLagret"))
+        }
+    }
+
+    override fun onError(problems: MessageProblems, context: MessageContext) {
+        val skip = skipList.find { problems.toExtendedReport().contains(it) }
+        if (skip == null) {
+            super.onError(problems, context)
+        } else {
+            logger.info { "Hopper over melding som inneholder '$skip'" }
         }
     }
 
