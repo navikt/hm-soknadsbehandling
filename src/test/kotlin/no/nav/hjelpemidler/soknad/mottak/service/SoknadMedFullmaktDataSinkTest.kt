@@ -16,6 +16,7 @@ import no.nav.hjelpemidler.soknad.mottak.river.SoknadMedFullmaktDataSink
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 
 internal class SoknadMedFullmaktDataSinkTest {
     private val capturedSoknadData = slot<SoknadData>()
@@ -37,7 +38,6 @@ internal class SoknadMedFullmaktDataSinkTest {
 
     @Test
     fun `Save soknad and mapping if packet contains required keys`() {
-
         val okPacket = """
             {
                 "eventName": "nySoknad",
@@ -47,6 +47,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                 "fodselNrInnsender": "fodselNrInnsender",
                 "soknad": 
                     {
+                        "behovsmeldingType": "SØKNAD",
                         "soknad":
                             {
                                 "date": "2020-06-19",
@@ -67,6 +68,42 @@ internal class SoknadMedFullmaktDataSinkTest {
         capturedSoknadData.captured.fnrBruker shouldBe "fnrBruker"
         capturedSoknadData.captured.fnrInnsender shouldBe "fodselNrInnsender"
         capturedSoknadData.captured.status shouldBe Status.GODKJENT_MED_FULLMAKT
+        capturedSoknadData.captured.soknadGjelder shouldBe "Søknad om hjelpemidler"
+    }
+
+    @Test
+    fun `Save bestilling and mapping if packet contains required keys`() {
+        val okPacket = """
+            {
+                "eventName": "nySoknad",
+                "signatur": "FULLMAKT",
+                "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                "fodselNrBruker": "fnrBruker",
+                "fodselNrInnsender": "fodselNrInnsender",
+                "soknad": 
+                    {
+                        "behovsmeldingType": "BESTILLING",
+                        "soknad":
+                            {
+                                "date": "2020-06-19",
+                                "bruker": 
+                                    {
+                                        "fornavn": "fornavn",
+                                        "etternavn": "etternavn"
+                                    },
+                                "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
+                            }
+                    },
+                "kommunenavn": "Oslo"
+            }
+        """.trimMargin()
+
+        rapid.sendTestMessage(okPacket)
+
+        capturedSoknadData.captured.fnrBruker shouldBe "fnrBruker"
+        capturedSoknadData.captured.fnrInnsender shouldBe "fodselNrInnsender"
+        capturedSoknadData.captured.status shouldBe Status.GODKJENT_MED_FULLMAKT
+        capturedSoknadData.captured.soknadGjelder shouldBe "Bestilling av hjelpemidler"
     }
 
     @Test
@@ -220,6 +257,7 @@ internal class SoknadMedFullmaktDataSinkTest {
         jsonNode["eventName"].textValue() shouldBe "hm-søknadMedFullmaktMottatt"
         jsonNode["opprettet"].textValue() shouldNotBe null
         jsonNode["navnBruker"].textValue() shouldBe "etternavn fornavn"
+        jsonNode["soknadGjelder"].textValue() shouldBe "Søknad om hjelpemidler"
     }
 
     @Test
@@ -254,7 +292,6 @@ internal class SoknadMedFullmaktDataSinkTest {
 
     @Test
     fun `Fail on message with lacking interesting key `() {
-
         val forbiddenPacket = """
             {
                 "eventName": "nySoknad",
@@ -278,5 +315,35 @@ internal class SoknadMedFullmaktDataSinkTest {
         assertThrows(RiverRequiredKeyMissingException::class.java) {
             rapid.sendTestMessage(forbiddenPacket)
         }
+    }
+
+    @Test
+    fun `Does not fail on message lacking behovsmeldingType parameter`() {
+        val okPacket = """
+            {
+                "eventName": "nySoknad",
+                "signatur": "FULLMAKT",
+                "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                "fodselNrBruker": "fnrBruker",
+                "fodselNrInnsender": "fodselNrInnsender",
+                "soknad": 
+                    {
+                        "soknad":
+                            {
+                                "date": "2020-06-19",
+                                "bruker": 
+                                    {
+                                        "fornavn": "fornavn",
+                                        "etternavn": "etternavn"
+                                    },
+                                "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
+                            }
+                    },
+                "kommunenavn": "Oslo"
+            }
+        """.trimMargin()
+
+        assertDoesNotThrow { rapid.sendTestMessage(okPacket) }
+        capturedSoknadData.captured.soknadGjelder shouldBe "Søknad om hjelpemidler"
     }
 }
