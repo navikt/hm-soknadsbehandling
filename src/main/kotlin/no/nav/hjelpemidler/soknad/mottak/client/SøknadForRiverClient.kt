@@ -576,7 +576,7 @@ internal class SøknadForRiverClientImpl(
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
 
-                "$baseUrl/soknad/statusV2/${statusMedÅrsak.søknadId}".httpPut()
+                "$baseUrl/soknad/statusV2".httpPut()
                     .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(statusMedÅrsak))
                     .awaitStringResponse().third.toInt()
