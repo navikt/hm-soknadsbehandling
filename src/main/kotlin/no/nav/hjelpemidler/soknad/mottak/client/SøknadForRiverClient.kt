@@ -17,6 +17,7 @@ import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
+import no.nav.hjelpemidler.soknad.mottak.river.StatusMedÅrsak
 import no.nav.hjelpemidler.soknad.mottak.service.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
@@ -42,6 +43,7 @@ internal interface SøknadForRiverClient {
     suspend fun hentFnrForSoknad(soknadsId: UUID): String
     suspend fun slettSøknad(soknadsId: UUID): Int
     suspend fun oppdaterStatus(soknadsId: UUID, status: Status): Int
+    suspend fun oppdaterStatus(statusMedÅrsak: StatusMedÅrsak): Int
     suspend fun hentSoknadData(soknadsId: UUID): SoknadData?
     suspend fun hentSoknadOpprettetDato(soknadsId: UUID): Date
     suspend fun hentSoknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad>
@@ -55,6 +57,7 @@ internal interface SøknadForRiverClient {
         saksblokkOgSaksnr: String,
         vedtaksdato: LocalDate
     ): UUID?
+
     suspend fun hentSøknadIdFraVedtaksresultatV2(
         fnrBruker: String,
         saksblokkOgSaksnr: String,
@@ -445,7 +448,12 @@ internal class SøknadForRiverClientImpl(
 
     data class SoknadFraHotsakNummerDto(val saksnummer: String)
 
-    override suspend fun lagreVedtaksresultat(søknadId: UUID, vedtaksresultat: String, vedtaksdato: LocalDate, soknadsType: String): Int {
+    override suspend fun lagreVedtaksresultat(
+        søknadId: UUID,
+        vedtaksresultat: String,
+        vedtaksdato: LocalDate,
+        soknadsType: String
+    ): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
 
@@ -553,6 +561,24 @@ internal class SøknadForRiverClientImpl(
                 "$baseUrl/soknad/status/$soknadsId".httpPut()
                     .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(status))
+                    .awaitStringResponse().third.toInt()
+            }
+                .onFailure {
+                    logger.error { it.message }
+                }
+                .getOrThrow()
+        }
+    }
+
+    override suspend fun oppdaterStatus(
+        statusMedÅrsak: StatusMedÅrsak
+    ): Int {
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+
+                "$baseUrl/soknad/statusV2/${statusMedÅrsak.søknadId}".httpPut()
+                    .headers()
+                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(statusMedÅrsak))
                     .awaitStringResponse().third.toInt()
             }
                 .onFailure {
