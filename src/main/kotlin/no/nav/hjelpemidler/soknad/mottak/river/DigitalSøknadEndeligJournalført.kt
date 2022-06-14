@@ -54,6 +54,7 @@ internal class DigitalSøknadEndeligJournalført(
         )
 
         runBlocking {
+            val behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadId)!!
             oppdaterStatus(søknadId)
             opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData, fagsakId)
             context.publish(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
@@ -61,7 +62,7 @@ internal class DigitalSøknadEndeligJournalført(
             // Melding til Ditt NAV
             context.publish(
                 fnrBruker,
-                SøknadUnderBehandlingData(søknadId, fnrBruker).toJson("hm-SøknadUnderBehandling")
+                SøknadUnderBehandlingData(søknadId, fnrBruker, behovsmeldingType).toJson("hm-SøknadUnderBehandling"),
             )
             logger.info { "Endelig journalført: Digital søknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId" }
         }

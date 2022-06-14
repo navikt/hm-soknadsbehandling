@@ -34,20 +34,23 @@ internal class DigitalSøknadAutomatiskJournalført(
         )
 
         val søknadId = packet["soknadId"].asText()
+        val søknadIdUid = UUID.fromString(søknadId)
         val fnrBruker = packet["fnrBruker"].asText()
 
         runBlocking {
-            val rowsUpdated = oppdaterStatus(UUID.fromString(søknadId))
+            val behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadIdUid)!!
+            val rowsUpdated = oppdaterStatus(søknadIdUid)
 
             if (rowsUpdated > 0) {
-                logger.info("Status på søknad sett til endelig journalført: $søknadId")
+                logger.info("Status på ${behovsmeldingType.toString().lowercase()} sett til endelig journalført: $søknadId")
 
                 // Melding til Ditt NAV
                 context.publish(
                     fnrBruker,
                     SøknadUnderBehandlingData(
                         UUID.fromString(søknadId),
-                        fnrBruker
+                        fnrBruker,
+                        behovsmeldingType,
                     ).toJson("hm-SøknadUnderBehandling")
                 )
             } else {

@@ -8,6 +8,7 @@ import java.util.UUID
 internal data class SøknadUnderBehandlingData(
     val søknadId: UUID,
     val fnrBruker: String,
+    val behovsmeldingType: BehovsmeldingType,
 ) {
     internal fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
@@ -15,6 +16,7 @@ internal data class SøknadUnderBehandlingData(
             it["eventId"] = ULID.random()
             it["søknadId"] = this.søknadId
             it["fnrBruker"] = this.fnrBruker
+            it["behovsmeldingType"] = this.behovsmeldingType
         }.toJson()
     }
 }

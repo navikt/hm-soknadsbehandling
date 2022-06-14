@@ -9,6 +9,7 @@ import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadUnderBehandlingData
@@ -91,7 +92,7 @@ internal class PapirSøknadEndeligJournalført(
                 // Send melding til Ditt NAV
                 context.publish(
                     fnrBruker,
-                    SøknadUnderBehandlingData(soknadId, fnrBruker).toJson("hm-SøknadUnderBehandling")
+                    SøknadUnderBehandlingData(soknadId, fnrBruker, BehovsmeldingType.SØKNAD).toJson("hm-SøknadUnderBehandling")
                 )
                 logger.info { "Endelig journalført: Papirsøknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $soknadId" }
 
