@@ -64,7 +64,7 @@ internal class DigitalSøknadEndeligJournalført(
                 fnrBruker,
                 SøknadUnderBehandlingData(søknadId, fnrBruker, behovsmeldingType).toJson("hm-SøknadUnderBehandling"),
             )
-            logger.info { "Endelig journalført: Digital søknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId" }
+            logger.info { "Endelig journalført: Digital ${behovsmeldingType.toString().lowercase()} mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId" }
         }
     }
 
