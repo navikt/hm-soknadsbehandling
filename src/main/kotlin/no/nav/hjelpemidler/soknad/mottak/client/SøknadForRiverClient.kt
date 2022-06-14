@@ -18,6 +18,7 @@ import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
 import no.nav.hjelpemidler.soknad.mottak.river.StatusMedÅrsak
+import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.service.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
@@ -57,6 +58,7 @@ internal interface SøknadForRiverClient {
         saksblokkOgSaksnr: String,
         vedtaksdato: LocalDate
     ): UUID?
+    suspend fun behovsmeldingTypeFor(soknadsId: UUID): BehovsmeldingType?
 
     suspend fun hentSøknadIdFraVedtaksresultatV2(
         fnrBruker: String,
@@ -672,6 +674,27 @@ internal class SøknadForRiverClientImpl(
             }
                 .onFailure {
                     logger.error(it) { "Feil ved GET $baseUrl/soknad/godkjentUtenOppgave/$dager." }
+                }
+        }
+            .getOrThrow()
+    }
+
+    override suspend fun behovsmeldingTypeFor(soknadsId: UUID): BehovsmeldingType? {
+        data class Response(val behovsmeldingType: BehovsmeldingType?)
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+                "$baseUrl/soknad/behovsmeldingType/$soknadsId".httpGet()
+                    .headers()
+                    .awaitObjectResponse(
+                        object : ResponseDeserializable<Response> {
+                            override fun deserialize(content: String): Response {
+                                return JacksonMapper.objectMapper.readValue(content)
+                            }
+                        }
+                    ).third.behovsmeldingType
+            }
+                .onFailure {
+                    logger.error(it) { "Feil ved GET $baseUrl/soknad/behovsmeldingType/$soknadsId." }
                 }
         }
             .getOrThrow()

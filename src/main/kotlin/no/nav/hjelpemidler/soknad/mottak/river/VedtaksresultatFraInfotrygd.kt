@@ -86,6 +86,7 @@ internal class VedtaksresultatFraInfotrygd(
 
                 val ordrelinjeData = OrdrelinjeData(
                     søknadId = søknadsId,
+                    behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadsId)!!,
                     fnrBruker = fnrBruker,
                     // Resten av feltene brukes ikke i json:
                     oebsId = 0,

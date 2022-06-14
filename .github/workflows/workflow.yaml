@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - DIGIHOT-852-dokumentbeskrivelser
+      - legg-ved-behovsmeldingType-for-dittnav-events
 
 env:
   IMAGE: "docker.pkg.github.com/${{ github.repository }}/hm-soknadsbehandling:${{ github.sha }}"

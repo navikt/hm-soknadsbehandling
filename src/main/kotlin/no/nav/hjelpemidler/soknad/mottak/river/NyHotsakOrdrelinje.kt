@@ -73,6 +73,7 @@ internal class NyHotsakOrdrelinje(
 
                 val ordrelinjeData = OrdrelinjeData(
                     søknadId = søknadId,
+                    behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadId)!!,
                     oebsId = packet.oebsId,
                     fnrBruker = packet.fnrBruker,
                     serviceforespørsel = packet.serviceforespørsel,

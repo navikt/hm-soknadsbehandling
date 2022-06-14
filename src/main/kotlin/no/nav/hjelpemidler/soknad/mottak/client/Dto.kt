@@ -40,3 +40,7 @@ data class HarOrdre(
     val harOrdreAvTypeHjelpemidler: Boolean,
     val harOrdreAvTypeDel: Boolean,
 )
+
+enum class BehovsmeldingType {
+    SØKNAD, BESTILLING
+}

@@ -7,6 +7,7 @@ import java.util.UUID
 
 internal data class OrdrelinjeData(
     val søknadId: UUID,
+    val behovsmeldingType: BehovsmeldingType,
     val oebsId: Int,
     val fnrBruker: String,
     val serviceforespørsel: Int?, // Viss det ikkje er ein SF
@@ -27,6 +28,7 @@ internal data class OrdrelinjeData(
             it["eventId"] = UUID.randomUUID().toString()
             it["søknadId"] = this.søknadId
             it["fnrBruker"] = this.fnrBruker
+            it["behovsmeldingType"] = this.behovsmeldingType
         }.toJson()
     }
 }

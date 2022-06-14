@@ -6,7 +6,9 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.service.BestillingGodkjentLagretData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import java.util.UUID
 
@@ -28,13 +30,24 @@ internal class BestillingFerdigstiltFraHotsak(
     }
 
     private val JsonMessage.søknadId get() = this["søknadId"].textValue()
+    private val JsonMessage.fnrBruker get() = this["fodselsnummer"].textValue()
+    private val JsonMessage.opprettet get() = this["opprettet"].asLocalDateTime()
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
-            val søknadId = packet.søknadId
-            oppdaterStatus(UUID.fromString(søknadId), Status.BESTILLING_FERDIGSTILT)
+            val søknadId = UUID.fromString(packet.søknadId)
+            val fnrBruker = packet.fnrBruker
+            val opprettet = packet.opprettet
 
-            // context.publish(fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatFraHotsakLagret"))
+            oppdaterStatus(søknadId, Status.BESTILLING_FERDIGSTILT)
+
+            val bestillingGodkjentLagretData = BestillingGodkjentLagretData(
+                søknadId,
+                fnrBruker,
+                opprettet,
+            )
+
+            context.publish(fnrBruker, bestillingGodkjentLagretData.toJson("hm-BestillingGodkjentFraHotsakLagret"))
         }
     }
 
