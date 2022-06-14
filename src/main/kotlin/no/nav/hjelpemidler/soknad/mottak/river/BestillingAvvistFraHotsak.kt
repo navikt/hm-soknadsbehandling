@@ -6,8 +6,10 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.hjelpemidler.soknad.mottak.asObject
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.service.BestillingAvvistLagretData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import java.util.UUID
 
@@ -26,22 +28,34 @@ internal class BestillingAvvistFraHotsak(
     }
 
     private val JsonMessage.søknadId get() = this["søknadId"].textValue()
+    private val JsonMessage.fnrBruker get() = this["fodselsnummer"].textValue()
+    private val JsonMessage.opprettet get() = this["opprettet"].asLocalDateTime()
     private val JsonMessage.valgtÅrsaker get() = this["valgte_arsaker"].asObject<Set<String>>()
     private val JsonMessage.begrunnelse get() = this["begrunnelse"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
-            val søknadId = packet.søknadId
+            val søknadId = UUID.fromString(packet.søknadId)
+            val fnrBruker = packet.fnrBruker
+            val opprettet = packet.opprettet
             val begrunnelse = packet.begrunnelse
             val valgtÅrsaker = packet.valgtÅrsaker
             oppdaterStatus(
-                UUID.fromString(søknadId),
+                søknadId,
                 Status.BESTILLING_AVVIST,
                 valgtÅrsaker,
                 begrunnelse
             )
-            // todo send med årsak og begrunnelse
-            // context.publish(fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatFraHotsakLagret"))
+
+            val bestillingAvvistLagretData = BestillingAvvistLagretData(
+                søknadId,
+                fnrBruker,
+                opprettet,
+                begrunnelse,
+                valgtÅrsaker.toList(),
+            )
+
+            context.publish(fnrBruker, bestillingAvvistLagretData.toJson("hm-BestillingAvvistFraHotsakLagret"))
         }
     }
 
