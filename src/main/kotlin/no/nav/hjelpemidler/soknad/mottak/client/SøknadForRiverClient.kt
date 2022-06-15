@@ -106,6 +106,7 @@ internal class SøknadForRiverClientImpl(
                 .onFailure {
                     logger.error { it.message }
                 }
+                .getOrThrow()
         }
     }
 
