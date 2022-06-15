@@ -681,23 +681,26 @@ internal class SøknadForRiverClientImpl(
 
     override suspend fun behovsmeldingTypeFor(soknadsId: UUID): BehovsmeldingType? {
         data class Response(val behovsmeldingType: BehovsmeldingType?)
-        return withContext(Dispatchers.IO) {
+        val resp = withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 "$baseUrl/soknad/behovsmeldingType/$soknadsId".httpGet()
                     .headers()
                     .awaitObjectResponse(
                         object : ResponseDeserializable<Response> {
                             override fun deserialize(content: String): Response {
+                                logger.info("DEBUG DEBUG: Response (raw): $content")
                                 return JacksonMapper.objectMapper.readValue(content)
                             }
                         }
-                    ).third.behovsmeldingType
+                    ).third
             }
+                .onSuccess { logger.info("DEBUG DEBUG: Response: $it") }
                 .onFailure {
                     logger.error(it) { "Feil ved GET $baseUrl/soknad/behovsmeldingType/$soknadsId." }
                 }
         }
-            .getOrThrow()
+            .getOrNull()
+        return resp?.behovsmeldingType
     }
 
     private fun Request.headers() = this.header(
