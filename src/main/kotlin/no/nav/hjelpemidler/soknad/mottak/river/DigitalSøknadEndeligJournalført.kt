@@ -44,6 +44,13 @@ internal class DigitalSøknadEndeligJournalført(
         val fnrBruker = packet.fnrBruker
         val fagsakId = packet.fagsakId
 
+        if (packet.søknadId == "1a404d1a-4cd9-4eb9-89f9-fa964230b8fe") {
+            logger.info("Tar ${packet.søknadId} ut av køen og logger til sikkerlogg her")
+            val rawJson = packet.toJson()
+            sikkerlogg.info("DEBUG DEBUG: rawJson for skipped soknad: søknadId=${packet.søknadId}: $rawJson")
+            return
+        }
+
         // På dette tidspunktet har det ikkje blitt gjort eit vedtak i Infotrygd, så resultat og vedtaksdato er null
         val vedtaksresultatData = VedtaksresultatData(
             søknadId,
