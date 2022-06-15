@@ -74,15 +74,7 @@ internal class NyHotsakOrdrelinje(
 
                 val ordrelinjeData = OrdrelinjeData(
                     søknadId = søknadId,
-                    behovsmeldingType = runCatching { søknadForRiverClient.behovsmeldingTypeFor(søknadId)!! }.getOrElse {
-                        if (søknadId.toString() == "367af3cf-582b-4a45-b9bf-960f7352c85f") {
-                            // FIXME: Remove again, bug fix
-                            sikkerlogg.info("DEBUG: DEBUG: soknadsId=$søknadId rawJson: ${packet.toJson()}")
-                            BehovsmeldingType.SØKNAD
-                        } else {
-                            throw it
-                        }
-                    },
+                    behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadId) ?: BehovsmeldingType.SØKNAD,
                     oebsId = packet.oebsId,
                     fnrBruker = packet.fnrBruker,
                     serviceforespørsel = packet.serviceforespørsel,

@@ -10,6 +10,7 @@ import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import java.util.UUID
@@ -134,7 +135,7 @@ internal class NyInfotrygdOrdrelinje(
 
                 val ordrelinjeData = OrdrelinjeData(
                     søknadId = søknadId,
-                    behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadId)!!,
+                    behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadId) ?: BehovsmeldingType.SØKNAD,
                     oebsId = packet.oebsId,
                     fnrBruker = packet.fnrBruker,
                     serviceforespørsel = packet.serviceforespørsel,

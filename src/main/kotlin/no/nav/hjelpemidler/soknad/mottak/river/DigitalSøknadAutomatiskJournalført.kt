@@ -7,6 +7,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadUnderBehandlingData
 import java.util.UUID
@@ -38,7 +39,7 @@ internal class DigitalSøknadAutomatiskJournalført(
         val fnrBruker = packet["fnrBruker"].asText()
 
         runBlocking {
-            val behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadIdUid)!!
+            val behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadIdUid) ?: BehovsmeldingType.SØKNAD
             val rowsUpdated = oppdaterStatus(søknadIdUid)
 
             if (rowsUpdated > 0) {

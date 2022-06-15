@@ -8,6 +8,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadUnderBehandlingData
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
@@ -61,7 +62,7 @@ internal class DigitalSøknadEndeligJournalført(
         )
 
         runBlocking {
-            val behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadId)!!
+            val behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadId) ?: BehovsmeldingType.SØKNAD
             oppdaterStatus(søknadId)
             opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData, fagsakId)
             context.publish(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))

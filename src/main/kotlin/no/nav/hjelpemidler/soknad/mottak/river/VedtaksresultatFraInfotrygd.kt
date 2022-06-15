@@ -10,6 +10,7 @@ import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatLagretData
@@ -86,7 +87,7 @@ internal class VedtaksresultatFraInfotrygd(
 
                 val ordrelinjeData = OrdrelinjeData(
                     søknadId = søknadsId,
-                    behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadsId)!!,
+                    behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadsId) ?: BehovsmeldingType.SØKNAD,
                     fnrBruker = fnrBruker,
                     // Resten av feltene brukes ikke i json:
                     oebsId = 0,
