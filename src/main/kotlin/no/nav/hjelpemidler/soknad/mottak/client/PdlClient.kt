@@ -19,16 +19,14 @@ private val logger = KotlinLogging.logger {}
 internal class PdlClient(
     private val azureClient: AzureClient,
     private val baseUrl: String,
-    private val accesstokenScope: String,
+    private val accesstokenScope: String
 ) {
 
     suspend fun hentKommunenr(fnrBruker: String): String? {
-
         val body = KommunenrQuery(query = hentKommunenrQuery, variables = mapOf("ident" to fnrBruker))
 
         val jsonNode = withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 baseUrl.httpPost()
                     .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(body))

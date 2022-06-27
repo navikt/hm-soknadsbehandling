@@ -37,7 +37,6 @@ private val logger = KotlinLogging.logger {}
 
 @ExperimentalTime
 fun main() {
-
     if (Configuration.application.profile == Profile.LOCAL) {
         WiremockServer(Configuration).startServer()
     }
@@ -51,7 +50,11 @@ fun main() {
     val søknadForRiverClient =
         SøknadForRiverClientImpl(Configuration.soknadsbehandlingDb.baseUrl, azureClient, Configuration.azure.dbApiScope)
     val infotrygdProxyClient =
-        InfotrygdProxyClientImpl(Configuration.infotrygdProxy.baseUrl, azureClient, Configuration.azure.infotrygdProxyScope)
+        InfotrygdProxyClientImpl(
+            Configuration.infotrygdProxy.baseUrl,
+            azureClient,
+            Configuration.azure.infotrygdProxyScope
+        )
     val pdlClient = PdlClient(azureClient, Configuration.pdl.baseUrl, Configuration.pdl.apiScope)
 
     MonitoreringService(søknadForRiverClient)

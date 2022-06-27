@@ -18,7 +18,7 @@ internal class Metrics(
     messageContext: MessageContext,
     private val pdlClient: PdlClient,
     private val kommuneService: KommuneService = KommuneService(),
-    config: Configuration.InfluxDb = Configuration.influxDb,
+    config: Configuration.InfluxDb = Configuration.influxDb
 ) {
 
     private val client = InfluxDBClientFactory.createV1(
@@ -66,7 +66,7 @@ internal class Metrics(
     suspend fun resultatFraInfotrygd(
         brukersFnr: String,
         vedtaksresultat: String,
-        soknadsType: String,
+        soknadsType: String
     ) {
         withContext(Dispatchers.IO) {
             try {
@@ -78,7 +78,7 @@ internal class Metrics(
                     mapOf(
                         "vedtaksresultat" to vedtaksresultat,
                         "kommune" to sted.kommunenavn,
-                        "fylke" to sted.fylkenavn,
+                        "fylke" to sted.fylkenavn
                     )
                 )
             } catch (e: Exception) {
@@ -89,11 +89,12 @@ internal class Metrics(
 
     private fun kommunenrTilSted(kommunenr: String?): KommuneDto {
         val sted = kommuneService.kommunenrTilSted(kommunenr)
-        if (sted == null) {
+        return if (sted == null) {
             logg.warn { "Ingen resultat for kommunenr oppslag på kommunenr <$kommunenr>" }
-            return ukjentSted
-        } else
-            return sted
+            ukjentSted
+        } else {
+            sted
+        }
     }
 
     private fun writeEvent(measurement: String, fields: Map<String, Any>, tags: Map<String, String>) = runBlocking {
@@ -119,7 +120,7 @@ private val logg = KotlinLogging.logger {}
 
 private val DEFAULT_TAGS: Map<String, String> = mapOf(
     "application" to Configuration.appName,
-    "cluster" to Configuration.cluster,
+    "cluster" to Configuration.cluster
 )
 
 private const val PREFIX = "hm-soknadsbehandling"

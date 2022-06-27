@@ -39,7 +39,7 @@ private val localProperties = ConfigurationMap(
         "SLACK_HOOK" to "http://dummy",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "false",
         "OPPSLAG_URL" to "http://digihot-oppslag.dev.intern.nav.no/api",
-        "GRUNNDATA_API_URL" to "https://hm-grunndata-api.dev.intern.nav.no",
+        "GRUNNDATA_API_URL" to "https://hm-grunndata-api.dev.intern.nav.no"
     )
 )
 
@@ -58,7 +58,7 @@ private val devProperties = ConfigurationMap(
         "PDL_API_SCOPE" to "api://dev-fss.pdl.pdl-api/.default",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "false",
         "OPPSLAG_URL" to "http://digihot-oppslag/api",
-        "GRUNNDATA_API_URL" to "http://hm-grunndata-api",
+        "GRUNNDATA_API_URL" to "http://hm-grunndata-api"
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -76,7 +76,7 @@ private val prodProperties = ConfigurationMap(
         "PDL_API_SCOPE" to "api://prod-fss.pdl.pdl-api/.default",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "true",
         "OPPSLAG_URL" to "http://digihot-oppslag/api",
-        "GRUNNDATA_API_URL" to "http://hm-grunndata-api",
+        "GRUNNDATA_API_URL" to "http://hm-grunndata-api"
     )
 )
 
@@ -111,13 +111,13 @@ internal object Configuration {
         "KAFKA_TRUSTSTORE_PATH" to config[Key("KAFKA_TRUSTSTORE_PATH", stringType)],
         "KAFKA_CREDSTORE_PASSWORD" to config[Key("KAFKA_CREDSTORE_PASSWORD", stringType)],
         "KAFKA_KEYSTORE_PATH" to config[Key("KAFKA_KEYSTORE_PATH", stringType)],
-        "HTTP_PORT" to config[Key("application.httpPort", stringType)],
+        "HTTP_PORT" to config[Key("application.httpPort", stringType)]
     ) + System.getenv().filter { it.key.startsWith("NAIS_") }
 
     data class Application(
         val id: String = config.getOrElse(Key("", stringType), "hm-soknadsbehandling-v1"),
         val profile: Profile = config[Key("application.profile", stringType)].let { Profile.valueOf(it) },
-        val httpPort: Int = config[Key("application.httpPort", intType)],
+        val httpPort: Int = config[Key("application.httpPort", intType)]
     )
 
     data class Azure(
@@ -126,7 +126,7 @@ internal object Configuration {
         val clientId: String = config[Key("AZURE_APP_CLIENT_ID", stringType)],
         val clientSecret: String = config[Key("AZURE_APP_CLIENT_SECRET", stringType)],
         val dbApiScope: String = config[Key("DBAPI_SCOPE", stringType)],
-        val infotrygdProxyScope: String = config[Key("INFOTRYGD_PROXY_SCOPE", stringType)],
+        val infotrygdProxyScope: String = config[Key("INFOTRYGD_PROXY_SCOPE", stringType)]
     )
 
     data class InfluxDb(
@@ -143,21 +143,21 @@ internal object Configuration {
     )
 
     data class SoknadsbehandlingDb(
-        val baseUrl: String = config[Key("SOKNADSBEHANDLING_DB_BASEURL", stringType)],
+        val baseUrl: String = config[Key("SOKNADSBEHANDLING_DB_BASEURL", stringType)]
     )
 
     data class InfotrygdProxy(
-        val baseUrl: String = config[Key("INFOTRYGD_PROXY_BASEURL", stringType)],
+        val baseUrl: String = config[Key("INFOTRYGD_PROXY_BASEURL", stringType)]
     )
 
     data class Hmdb(
-        val grunndataApi: String = config[Key("GRUNNDATA_API_URL", stringType)],
+        val grunndataApi: String = config[Key("GRUNNDATA_API_URL", stringType)]
     )
 
     data class Slack(
         val slackHook: String = config[Key("SLACK_HOOK", stringType)],
         val postDokumentbeskrivelseToSlack: String = config[Key("POST_DOKUMENTBESKRIVELSE_TO_SLACK", stringType)],
-        val environment: String = config[Key("application.profile", stringType)],
+        val environment: String = config[Key("application.profile", stringType)]
     )
 }
 

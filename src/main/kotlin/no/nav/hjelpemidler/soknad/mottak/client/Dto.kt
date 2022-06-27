@@ -13,7 +13,7 @@ data class SoknadDataDto(
     val soknad: JsonNode? = null,
     val status: Status? = null,
     val kommunenavn: String? = null,
-    val soknadGjelder: String? = null,
+    val soknadGjelder: String? = null
 )
 
 data class SoknadMedStatus(
@@ -33,12 +33,12 @@ class UtgåttSøknad(
 
 data class SøknadIdFraVedtaksresultat(
     val søknadId: UUID,
-    val vedtaksDato: LocalDate?,
+    val vedtaksDato: LocalDate?
 )
 
 data class HarOrdre(
     val harOrdreAvTypeHjelpemidler: Boolean,
-    val harOrdreAvTypeDel: Boolean,
+    val harOrdreAvTypeDel: Boolean
 )
 
 enum class BehovsmeldingType {

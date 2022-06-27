@@ -58,15 +58,16 @@ internal interface SøknadForRiverClient {
         saksblokkOgSaksnr: String,
         vedtaksdato: LocalDate
     ): UUID?
+
     suspend fun behovsmeldingTypeFor(soknadsId: UUID): BehovsmeldingType?
 
     suspend fun hentSøknadIdFraVedtaksresultatV2(
         fnrBruker: String,
-        saksblokkOgSaksnr: String,
+        saksblokkOgSaksnr: String
     ): List<SøknadIdFraVedtaksresultat>
 
     suspend fun hentSøknadIdFraHotsakSaksnummer(
-        saksnummer: String,
+        saksnummer: String
     ): UUID?
 
     suspend fun save(ordrelinje: OrdrelinjeData): Int
@@ -74,7 +75,7 @@ internal interface SøknadForRiverClient {
         søknadId: UUID,
         vedtaksresultat: String,
         vedtaksdato: LocalDate,
-        soknadsType: String,
+        soknadsType: String
     ): Int
 
     suspend fun lagreVedtaksresultatFraHotsak(
@@ -91,13 +92,12 @@ internal interface SøknadForRiverClient {
 internal class SøknadForRiverClientImpl(
     private val baseUrl: String,
     private val azureClient: AzureClient,
-    private val accesstokenScope: String,
+    private val accesstokenScope: String
 ) : SøknadForRiverClient {
 
     override suspend fun save(soknadData: SoknadData) {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/soknad/bruker".httpPost()
                     .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadData))
@@ -113,7 +113,6 @@ internal class SøknadForRiverClientImpl(
     override suspend fun savePapir(soknadData: PapirSøknadData): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/soknad/papir".httpPost()
                     .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadData))
@@ -129,7 +128,6 @@ internal class SøknadForRiverClientImpl(
     override suspend fun save(ordrelinje: OrdrelinjeData): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/ordre".httpPost()
                     .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(ordrelinje))
@@ -145,7 +143,6 @@ internal class SøknadForRiverClientImpl(
     override suspend fun soknadFinnes(soknadsId: UUID): Boolean {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/soknad/bruker/finnes/$soknadsId".httpGet()
                     .headers()
                     .awaitObject(
@@ -209,7 +206,6 @@ internal class SøknadForRiverClientImpl(
     override suspend fun hentFnrForSoknad(soknadsId: UUID): String {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/soknad/fnr/$soknadsId".httpGet()
                     .headers()
                     .awaitStringResponse()
@@ -227,7 +223,6 @@ internal class SøknadForRiverClientImpl(
     override suspend fun slettSøknad(soknadsId: UUID): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/soknad/bruker".httpDelete()
                     .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadsId))
@@ -243,7 +238,6 @@ internal class SøknadForRiverClientImpl(
     override suspend fun slettUtløptSøknad(soknadsId: UUID): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/soknad/utlopt/bruker".httpDelete()
                     .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadsId))
@@ -259,7 +253,6 @@ internal class SøknadForRiverClientImpl(
     override suspend fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/soknad/journalpost-id/$soknadsId".httpPut()
                     .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(mapOf("journalpostId" to journalpostId)))
@@ -275,7 +268,6 @@ internal class SøknadForRiverClientImpl(
     override suspend fun oppdaterOppgaveId(soknadsId: UUID, oppgaveId: String): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/soknad/oppgave-id/$soknadsId".httpPut()
                     .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(mapOf("oppgaveId" to oppgaveId)))
@@ -291,7 +283,6 @@ internal class SøknadForRiverClientImpl(
     override suspend fun lagKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/infotrygd/fagsak".httpPost()
                     .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(vedtaksresultatData))
@@ -307,7 +298,6 @@ internal class SøknadForRiverClientImpl(
     override suspend fun lagKnytningMellomHotsakOgSøknad(soknadsId: UUID, sakId: String): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/hotsak/sak".httpPost()
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
@@ -335,7 +325,6 @@ internal class SøknadForRiverClientImpl(
     ): UUID? {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/soknad/fra-vedtaksresultat".httpPost()
                     .headers()
                     .jsonBody(
@@ -406,7 +395,6 @@ internal class SøknadForRiverClientImpl(
     ): UUID? {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/soknad/hotsak/fra-saknummer".httpPost()
                     .headers()
                     .jsonBody(
@@ -446,7 +434,7 @@ internal class SøknadForRiverClientImpl(
 
     data class SoknadFraVedtaksresultatV2Dto(
         val fnrBruker: String,
-        val saksblokkOgSaksnr: String,
+        val saksblokkOgSaksnr: String
     )
 
     data class SoknadFraHotsakNummerDto(val saksnummer: String)
@@ -488,7 +476,6 @@ internal class SøknadForRiverClientImpl(
     ): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/hotsak/vedtaksresultat".httpPost()
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
@@ -517,13 +504,12 @@ internal class SøknadForRiverClientImpl(
         val søknadId: UUID,
         val vedtaksresultat: String,
         val vedtaksdato: LocalDate,
-        val soknadsType: String,
+        val soknadsType: String
     )
 
     override suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/infotrygd/fnr-jounralpost".httpPost()
                     .headers()
                     .jsonBody(
@@ -560,7 +546,6 @@ internal class SøknadForRiverClientImpl(
     override suspend fun oppdaterStatus(soknadsId: UUID, status: Status): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/soknad/status/$soknadsId".httpPut()
                     .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(status))
@@ -578,7 +563,6 @@ internal class SøknadForRiverClientImpl(
     ): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
                 "$baseUrl/soknad/statusV2".httpPut()
                     .headers()
                     .jsonBody(JacksonMapper.objectMapper.writeValueAsString(statusMedÅrsak))
@@ -593,9 +577,7 @@ internal class SøknadForRiverClientImpl(
 
     override suspend fun hentSoknadData(soknadsId: UUID): SoknadData {
         return withContext(Dispatchers.IO) {
-
             kotlin.runCatching {
-
                 "$baseUrl/soknadsdata/bruker/$soknadsId".httpGet()
                     .headers()
                     .awaitObjectResponse(
@@ -616,9 +598,7 @@ internal class SøknadForRiverClientImpl(
 
     override suspend fun hentSoknadOpprettetDato(soknadsId: UUID): Date {
         return withContext(Dispatchers.IO) {
-
             kotlin.runCatching {
-
                 "$baseUrl/soknad/opprettet-dato/$soknadsId".httpGet()
                     .headers()
                     .awaitObjectResponse(
@@ -638,10 +618,8 @@ internal class SøknadForRiverClientImpl(
 
     override suspend fun hentSoknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad> {
         return withContext(Dispatchers.IO) {
-
             SoknadMedStatus(UUID.randomUUID(), Date(), Date(), Status.UTLØPT, true, "")
             kotlin.runCatching {
-
                 "$baseUrl/soknad/utgaatt/$dager".httpGet()
                     .headers()
                     .awaitObjectResponse(
@@ -682,6 +660,7 @@ internal class SøknadForRiverClientImpl(
 
     override suspend fun behovsmeldingTypeFor(soknadsId: UUID): BehovsmeldingType? {
         data class Response(val behovsmeldingType: BehovsmeldingType?)
+
         val resp = withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 "$baseUrl/soknad/behovsmeldingType/$soknadsId".httpGet()

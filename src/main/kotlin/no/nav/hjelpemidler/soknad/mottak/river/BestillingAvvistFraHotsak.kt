@@ -17,7 +17,7 @@ private val logger = KotlinLogging.logger {}
 
 internal class BestillingAvvistFraHotsak(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient,
+    private val søknadForRiverClient: SøknadForRiverClient
 ) : PacketListenerWithOnError {
 
     init {

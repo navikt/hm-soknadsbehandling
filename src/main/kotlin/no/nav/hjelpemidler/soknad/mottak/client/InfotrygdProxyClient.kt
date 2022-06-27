@@ -23,7 +23,7 @@ internal interface InfotrygdProxyClient {
 internal class InfotrygdProxyClientImpl(
     private val baseUrl: String,
     private val azureClient: AzureClient,
-    private val accesstokenScope: String,
+    private val accesstokenScope: String
 ) : InfotrygdProxyClient {
 
     override suspend fun harVedtakFor(fnr: String, saksblokk: String, saksnr: String, vedtaksDato: LocalDate): Boolean {
@@ -31,10 +31,11 @@ internal class InfotrygdProxyClientImpl(
             val fnr: String,
             val saksblokk: String,
             val saksnr: String,
-            val vedtaksDato: LocalDate,
+            val vedtaksDato: LocalDate
         )
+
         data class Response(
-            val resultat: Boolean,
+            val resultat: Boolean
         )
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
@@ -46,7 +47,7 @@ internal class InfotrygdProxyClientImpl(
                                 fnr,
                                 saksblokk,
                                 saksnr,
-                                vedtaksDato,
+                                vedtaksDato
                             )
                         )
                     )
