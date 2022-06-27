@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - legg-ved-behovsmeldingType-for-dittnav-events
+      - DIGIHOT-842-varsel-når-søknad-mangler-oppgave
 
 env:
   IMAGE: "docker.pkg.github.com/${{ github.repository }}/hm-soknadsbehandling:${{ github.sha }}"

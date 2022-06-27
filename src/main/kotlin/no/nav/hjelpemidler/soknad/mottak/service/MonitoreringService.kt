@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import mu.KLogger
 import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus.søknaderSomManglerOppgaveGauge
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -46,6 +47,8 @@ internal class MonitoreringService(
                         "søknads-IDer (max 10): ${godkjenteSøknaderUtenOppgave.take(10).joinToString()}"
                 }
             }
+            // Trigger alerts til Slack ved å følge med på denne Prometheus-metrikken
+            søknaderSomManglerOppgaveGauge.set(godkjenteSøknaderUtenOppgave.size.toDouble())
         } catch (e: Exception) {
             logger.error(e) { "Feil under rapportering av godkjente søknader som mangler oppgave." }
         }

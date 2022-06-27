@@ -2,6 +2,7 @@ package no.nav.hjelpemidler.soknad.mottak.metrics
 
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.Counter
+import io.prometheus.client.Gauge
 import io.prometheus.client.Histogram
 
 internal object Prometheus {
@@ -74,5 +75,11 @@ internal object Prometheus {
         .build()
         .name("hm_knytning_mellom_infotrygd_og_soeknad_oppretta_problem")
         .help("Mengda problem for knytning mellom søknadar og Infotrygd-sak")
+        .register(collectorRegistry)
+
+    val søknaderSomManglerOppgaveGauge = Gauge
+        .build()
+        .name("hm_antall_soknader_som_mangler_oppgave")
+        .help("Antall søknader som mangler oppgave, og sannsynligvis har stoppet opp i søknadsflyten")
         .register(collectorRegistry)
 }
