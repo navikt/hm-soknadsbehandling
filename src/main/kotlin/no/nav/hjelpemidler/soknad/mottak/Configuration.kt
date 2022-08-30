@@ -78,7 +78,8 @@ private val prodProperties = ConfigurationMap(
         "PDL_API_SCOPE" to "api://prod-fss.pdl.pdl-api/.default",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "true",
         "OPPSLAG_URL" to "http://digihot-oppslag/api",
-        "GRUNNDATA_API_URL" to "http://hm-grunndata-api"
+        "GRUNNDATA_API_URL" to "http://hm-grunndata-api",
+        "CONSUMER_GROUP_ID" to "hm-soknadsbehandling-v1"
     )
 )
 
