@@ -39,7 +39,8 @@ private val localProperties = ConfigurationMap(
         "SLACK_HOOK" to "http://dummy",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "false",
         "OPPSLAG_URL" to "http://digihot-oppslag.dev.intern.nav.no/api",
-        "GRUNNDATA_API_URL" to "https://hm-grunndata-api.dev.intern.nav.no"
+        "GRUNNDATA_API_URL" to "https://hm-grunndata-api.dev.intern.nav.no",
+        "CONSUMER_GROUP_ID" to "hm-soknadsbehandling-v1"
     )
 )
 
@@ -47,7 +48,7 @@ private val devProperties = ConfigurationMap(
     mapOf(
         "application.httpPort" to "8080",
         "application.profile" to "DEV",
-        "KAFKA_RESET_POLICY" to "earliest",
+        "KAFKA_RESET_POLICY" to "latest",
         "KAFKA_TOPIC" to "teamdigihot.hm-soknadsbehandling-v1",
         "AZURE_TENANT_BASEURL" to "https://login.microsoftonline.com",
         "DBAPI_SCOPE" to "api://dev-gcp.teamdigihot.hm-soknadsbehandling-db/.default",
@@ -58,7 +59,8 @@ private val devProperties = ConfigurationMap(
         "PDL_API_SCOPE" to "api://dev-fss.pdl.pdl-api/.default",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "false",
         "OPPSLAG_URL" to "http://digihot-oppslag/api",
-        "GRUNNDATA_API_URL" to "http://hm-grunndata-api"
+        "GRUNNDATA_API_URL" to "http://hm-grunndata-api",
+        "CONSUMER_GROUP_ID" to "hm-soknadsbehandling-v2"
     )
 )
 private val prodProperties = ConfigurationMap(
@@ -105,7 +107,7 @@ internal object Configuration {
         "RAPID_KAFKA_CLUSTER" to "gcp",
         "RAPID_APP_NAME" to "hm-soknadsbehandling",
         "KAFKA_BROKERS" to config[Key("KAFKA_BROKERS", stringType)],
-        "KAFKA_CONSUMER_GROUP_ID" to application.id,
+        "KAFKA_CONSUMER_GROUP_ID" to config[Key("CONSUMER_GROUP_ID", stringType)],
         "KAFKA_RAPID_TOPIC" to config[Key("KAFKA_TOPIC", stringType)],
         "KAFKA_RESET_POLICY" to config[Key("KAFKA_RESET_POLICY", stringType)],
         "KAFKA_TRUSTSTORE_PATH" to config[Key("KAFKA_TRUSTSTORE_PATH", stringType)],
