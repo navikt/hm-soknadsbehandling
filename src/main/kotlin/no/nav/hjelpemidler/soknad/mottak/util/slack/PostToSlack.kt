@@ -16,7 +16,7 @@ class PostToSlack {
     private val environment = Configuration.slack.environment
     private val hookUrl = Configuration.slack.slackHook
     private val channel = "#digihot-brukers-hjelpemiddelside-dev"
-    private val GRENSE_FOR_LANG_DOKUMENTBESKRIVELSE = 80
+    private val GRENSE_FOR_LANG_DOKUMENTBESKRIVELSE = 100
 
     fun post(message: String) {
         if (slackIntegrationEnabled && message.length > GRENSE_FOR_LANG_DOKUMENTBESKRIVELSE) {
