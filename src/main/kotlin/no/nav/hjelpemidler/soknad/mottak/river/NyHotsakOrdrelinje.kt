@@ -6,8 +6,10 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.hjelpemidler.soknad.mottak.asObject
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import no.nav.hjelpemidler.soknad.mottak.publish
 import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
@@ -18,7 +20,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class NyHotsakOrdrelinje(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient
+    private val søknadForRiverClient: SøknadForRiverClient,
 ) : PacketListenerWithOnError {
 
     init {
@@ -98,6 +100,16 @@ internal class NyHotsakOrdrelinje(
                 }
 
                 søknadForRiverClient.oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
+
+                context.publish(
+                    ordrelinjeData.fnrBruker,
+                    packet.data.asObject<Map<String, Any?>>() + mapOf<String, Any?>(
+                        "eventId" to UUID.randomUUID(),
+                        "eventName" to "hm-OrdrelinjeMottatt",
+                        "opprettet" to packet.opprettet,
+                        "søknadId" to søknadId,
+                    )
+                )
 
                 if (ordrelinjeData.hjelpemiddeltype == "Del") {
                     logger.info("Ordrelinje for 'Del' lagret: ${ordrelinjeData.søknadId}")

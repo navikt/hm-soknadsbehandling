@@ -1,4 +1,4 @@
-package no.nav.hjelpemidler.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.river
 
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
@@ -7,7 +7,9 @@ import io.mockk.slot
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
-import no.nav.hjelpemidler.soknad.mottak.river.PapirSøknadEndeligJournalført
+import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
+import no.nav.hjelpemidler.soknad.mottak.service.Status
+import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

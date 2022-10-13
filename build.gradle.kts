@@ -2,14 +2,14 @@ import com.expediagroup.graphql.plugin.gradle.tasks.GraphQLIntrospectSchemaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val ktorVersion = "1.6.7"
-val jacksonVersion = "2.13.1"
+val jacksonVersion = "2.13.4"
 val fuelVersion = "2.3.1"
 val graphQLClientVersion = "5.3.2"
-val kotestVersion = "5.1.0"
+val kotestVersion = "5.5.0"
 
 plugins {
     application
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.7.20"
     id("com.expediagroup.graphql") version "5.3.2"
     id("com.diffplug.spotless") version "6.2.0"
 }
@@ -42,7 +42,7 @@ dependencies {
         exclude(group = "net.logstash.logback", module = "logstash-logback-encoder")
     }
     api("ch.qos.logback:logback-classic:1.2.3")
-    api("net.logstash.logback:logstash-logback-encoder:6.6") {
+    api("net.logstash.logback:logstash-logback-encoder:7.2") {
         exclude("com.fasterxml.jackson.core")
     }
 
@@ -51,7 +51,7 @@ dependencies {
     // Kotlin
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.0") // følger ikke kotlin-versjon
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.4") // følger ikke kotlin-versjon
 
     // Other
     implementation("com.natpryce:konfig:1.6.10.0")
@@ -81,8 +81,8 @@ dependencies {
     implementation("com.github.kittinunf.fuel:fuel-coroutines:$fuelVersion")
 
     // InfluxDB
-    implementation("org.influxdb:influxdb-java:2.22")
-    implementation("com.influxdb:influxdb-client-kotlin:4.1.0")
+    implementation("org.influxdb:influxdb-java:2.23")
+    implementation("com.influxdb:influxdb-client-kotlin:6.6.0")
 
     // GraphQL Client
     implementation(graphqlKotlin("ktor-client")) {
@@ -95,7 +95,7 @@ dependencies {
     // Test
     testImplementation(kotlin("test"))
     testImplementation(ktor("server-test-host"))
-    testImplementation("io.mockk:mockk:1.12.2")
+    testImplementation("io.mockk:mockk:1.13.2")
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
 }
