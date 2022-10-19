@@ -1,0 +1,6 @@
+query HentProdukter($hmsnr: [String!]!) {
+  produkter(filter: { hmsnr: $hmsnr }) {
+    hmsnr
+    isokortnavn
+  }
+}

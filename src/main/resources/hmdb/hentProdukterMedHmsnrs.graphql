@@ -1,6 +1,0 @@
-query HentIsokortnavnForProdukterMedHmsnrs($hmsnrs: [String!]!) {
-  produkter: hentProdukterMedHmsnrs(hmsnrs: $hmsnrs) {
-    hmsnr
-    isokortnavn
-  }
-}
