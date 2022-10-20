@@ -108,6 +108,7 @@ internal class NyHotsakOrdrelinje(
                         "eventName" to "hm-OrdrelinjeMottatt",
                         "opprettet" to packet.opprettet,
                         "søknadId" to søknadId,
+                        "behovsmeldingType" to ordrelinjeData.behovsmeldingType,
                     )
                 )
 
