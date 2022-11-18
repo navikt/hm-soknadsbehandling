@@ -1,16 +1,13 @@
 import com.expediagroup.graphql.plugin.gradle.tasks.GraphQLIntrospectSchemaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val ktorVersion = "1.6.7"
-val jacksonVersion = "2.13.4"
 val fuelVersion = "2.3.1"
-val graphQLClientVersion = "5.3.2"
-val kotestVersion = "5.5.0"
+val graphQLClientVersion = "6.1.0"
 
 plugins {
     application
     kotlin("jvm") version "1.7.20"
-    id("com.expediagroup.graphql") version "5.3.2"
+    id("com.expediagroup.graphql") version "6.1.0"
     id("com.diffplug.spotless") version "6.2.0"
 }
 
@@ -32,21 +29,22 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+val ktorVersion = "2.1.3"
 fun ktor(name: String) = "io.ktor:ktor-$name:$ktorVersion"
 fun graphqlKotlin(name: String) = "com.expediagroup:graphql-kotlin-$name:$graphQLClientVersion"
 
 dependencies {
     // R&R and Logging fixes
-    implementation("com.github.navikt:rapids-and-rivers:2022.04.05-09.40.11a466d7ac70") {
+    implementation("com.github.navikt:rapids-and-rivers:2022111011111668075098.65e508dcde8b") {
         exclude(group = "ch.qos.logback", module = "logback-classic")
         exclude(group = "net.logstash.logback", module = "logstash-logback-encoder")
     }
-    api("ch.qos.logback:logback-classic:1.2.3")
+    api("ch.qos.logback:logback-classic:1.4.4")
     api("net.logstash.logback:logstash-logback-encoder:7.2") {
         exclude("com.fasterxml.jackson.core")
     }
 
-    implementation("io.github.microutils:kotlin-logging:2.1.21")
+    implementation("io.github.microutils:kotlin-logging:3.0.4")
 
     // Kotlin
     implementation(kotlin("stdlib-jdk8"))
@@ -59,22 +57,15 @@ dependencies {
     implementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
 
     // Jackson
+    val jacksonVersion = "2.14.0"
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
-    // Ktor Server
-    implementation(ktor("server-core"))
-    implementation(ktor("server-netty"))
-    implementation(ktor("jackson"))
-    implementation(ktor("auth"))
-    implementation(ktor("auth-jwt"))
-    implementation(ktor("metrics-micrometer"))
-
     // Ktor Client
     implementation(ktor("client-core"))
     implementation(ktor("client-apache"))
-    implementation(ktor("client-jackson"))
+    implementation(ktor("serialization-jackson"))
 
     // Fuel -> todo: fjern, bruk ktor-client som også er i bruk
     implementation("com.github.kittinunf.fuel:fuel:$fuelVersion")
@@ -82,7 +73,7 @@ dependencies {
 
     // InfluxDB
     implementation("org.influxdb:influxdb-java:2.23")
-    implementation("com.influxdb:influxdb-client-kotlin:6.6.0")
+    implementation("com.influxdb:influxdb-client-kotlin:6.7.0")
 
     // GraphQL Client
     implementation(graphqlKotlin("ktor-client")) {
@@ -96,6 +87,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(ktor("server-test-host"))
     testImplementation("io.mockk:mockk:1.13.2")
+    val kotestVersion = "5.5.4"
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
 }

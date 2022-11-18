@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - DIGIHOT-842-varsel-når-søknad-mangler-oppgave
+      - snyk-2022-11-18
 
 env:
   IMAGE: "docker.pkg.github.com/${{ github.repository }}/hm-soknadsbehandling:${{ github.sha }}"
