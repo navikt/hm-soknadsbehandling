@@ -43,6 +43,7 @@ internal interface SøknadForRiverClient {
     suspend fun harOrdreForSøknad(soknadsId: UUID): HarOrdre
     suspend fun hentFnrForSoknad(soknadsId: UUID): String
     suspend fun slettSøknad(soknadsId: UUID): Int
+    suspend fun hentSøknadsTypeForSøknad(soknadsId: UUID): String?
     suspend fun oppdaterStatus(soknadsId: UUID, status: Status): Int
     suspend fun oppdaterStatus(statusMedÅrsak: StatusMedÅrsak): Int
     suspend fun hentSoknadData(soknadsId: UUID): SoknadData?
@@ -542,6 +543,27 @@ internal class SøknadForRiverClientImpl(
         val fnrBruker: String,
         val journalpostId: Int
     )
+
+    override suspend fun hentSøknadsTypeForSøknad(soknadsId: UUID): String? {
+        data class Response(val søknadsType: String?)
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+                "$baseUrl/infotrygd/søknadsType/$soknadsId".httpGet()
+                    .headers()
+                    .awaitObjectResponse(
+                        object : ResponseDeserializable<Response> {
+                            override fun deserialize(content: String): Response {
+                                return JacksonMapper.objectMapper.readValue(content, Response::class.java)
+                            }
+                        }
+                    ).third.søknadsType
+            }
+                .onFailure {
+                    logger.error { it.message }
+                }
+                .getOrThrow()
+        }
+    }
 
     override suspend fun oppdaterStatus(soknadsId: UUID, status: Status): Int {
         return withContext(Dispatchers.IO) {

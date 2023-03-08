@@ -22,13 +22,14 @@ internal data class OrdrelinjeData(
     val hjelpemiddeltype: String,
     val data: JsonNode?,
 ) {
-    internal fun toJson(eventName: String): String {
+    internal fun toJson(eventName: String, søknadsType: String?): String {
         return JsonMessage("{}", MessageProblems("")).also {
             it["eventName"] = eventName
             it["eventId"] = UUID.randomUUID().toString()
             it["søknadId"] = this.søknadId
             it["fnrBruker"] = this.fnrBruker
             it["behovsmeldingType"] = this.behovsmeldingType
+            søknadsType?.let { st -> it["søknadsType"] = st }
         }.toJson()
     }
 }

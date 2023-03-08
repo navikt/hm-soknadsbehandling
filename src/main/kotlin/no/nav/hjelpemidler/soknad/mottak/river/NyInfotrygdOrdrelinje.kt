@@ -168,7 +168,8 @@ internal class NyInfotrygdOrdrelinje(
                     }
 
                     if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
-                        context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
+                        val søknadsType = søknadForRiverClient.hentSøknadsTypeForSøknad(søknadId)
+                        context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret", søknadsType))
                         Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
                         logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
                         sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
