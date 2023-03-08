@@ -74,7 +74,7 @@ internal class VedtaksresultatFraInfotrygd(
                 vedtaksresultat,
                 mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler
             )
-            context.publish(fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatLagret"))
+            context.publish(fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatLagret", packet.soknadsType))
 
             // Hvis vi allerede har ordrelinjer i databasen for denne søknaden: send utsending startet.
             if (mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler || mottokOrdrelinjeFørVedtak.harOrdreAvTypeDel) {
@@ -103,7 +103,7 @@ internal class VedtaksresultatFraInfotrygd(
                     hjelpemiddeltype = "",
                     data = null,
                 )
-                context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret", packet.soknadsType))
+                context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
                 Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
                 logger.info("Ordrelinje sendt ved vedtak: ${ordrelinjeData.søknadId}")
             }

@@ -59,7 +59,7 @@ internal class VedtaksresultatFraHotsak(
                 vedtaksDato,
                 vedtaksresultat
             )
-            context.publish(fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatFraHotsakLagret"))
+            context.publish(fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatFraHotsakLagret", null))
         }
     }
 
