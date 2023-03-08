@@ -1,9 +1,12 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
 import com.fasterxml.jackson.databind.JsonNode
+import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import java.util.UUID
+
+private val logg = KotlinLogging.logger {}
 
 internal data class OrdrelinjeData(
     val søknadId: UUID,
@@ -29,7 +32,10 @@ internal data class OrdrelinjeData(
             it["søknadId"] = this.søknadId
             it["fnrBruker"] = this.fnrBruker
             it["behovsmeldingType"] = this.behovsmeldingType
-            søknadsType?.let { st -> it["søknadsType"] = st }
+            søknadsType?.let { st ->
+                logg.info("DEBUG: sender ordrelinje til ditt-nav med søknadsType=$st")
+                it["søknadsType"] = st
+            }
         }.toJson()
     }
 }
