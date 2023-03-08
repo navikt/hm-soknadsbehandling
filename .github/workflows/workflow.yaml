@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - snyk-2022-11-18
+      - egen-avslagstekst-for-aktivitetshjelpemidler
 
 env:
   IMAGE: "docker.pkg.github.com/${{ github.repository }}/hm-soknadsbehandling:${{ github.sha }}"

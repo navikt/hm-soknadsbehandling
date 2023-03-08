@@ -53,8 +53,8 @@ internal class MonitoreringService(
             if (godkjenteSøknaderUtenOppgave.isNotEmpty()) {
                 logger.error {
                     "Det finnes ${godkjenteSøknaderUtenOppgave.size} godkjente søknader uten oppgave som er eldre enn $TO_DAGER dager. " +
-                            "Undersøk hvorfor disse har stoppet opp i systemet. " +
-                            "søknads-IDer (max 10): ${godkjenteSøknaderUtenOppgave.take(10).joinToString()}"
+                        "Undersøk hvorfor disse har stoppet opp i systemet. " +
+                        "søknads-IDer (max 10): ${godkjenteSøknaderUtenOppgave.take(10).joinToString()}"
                 }
             }
             // Trigger alerts til Slack ved å følge med på denne Prometheus-metrikken

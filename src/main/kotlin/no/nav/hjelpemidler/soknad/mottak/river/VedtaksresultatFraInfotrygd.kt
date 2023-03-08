@@ -103,7 +103,7 @@ internal class VedtaksresultatFraInfotrygd(
                     hjelpemiddeltype = "",
                     data = null,
                 )
-                context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
+                context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret", packet.soknadsType))
                 Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
                 logger.info("Ordrelinje sendt ved vedtak: ${ordrelinjeData.søknadId}")
             }

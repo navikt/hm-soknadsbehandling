@@ -95,5 +95,4 @@ internal class SoknadMedFullmaktDataSink(
             logger.error(e) { "forward() failed: ${e.message}. Soknad: ${søknadData.soknadId}" }
         }
     }
-    
 }
