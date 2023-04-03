@@ -1,16 +1,17 @@
 package no.nav.hjelpemidler.soknad.mottak.metrics.kommune
 
-import com.github.kittinunf.fuel.core.FuelError
+import java.net.ConnectException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class KommuneServiceTest {
 
+    // TODO: denne er kanskje litt tullete?
     @Test
     fun `skal kaste exception når oppslag feiler`() {
         val ugyldigUrl = "http://localhost:8089/ugyldig"
 
-        assertThrows<FuelError> {
+        assertThrows<ConnectException> {
             KommuneService(OppslagClient(ugyldigUrl))
         }
     }
