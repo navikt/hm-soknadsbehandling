@@ -66,7 +66,6 @@ dependencies {
     implementation(ktor("client-core"))
     implementation(ktor("client-apache"))
     implementation(ktor("serialization-jackson"))
-    implementation(ktor("client-logging"))
     implementation(ktor("client-content-negotiation"))
     implementation(ktor("client-jackson"))
 
