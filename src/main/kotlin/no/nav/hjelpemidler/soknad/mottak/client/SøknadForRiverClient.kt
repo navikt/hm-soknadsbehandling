@@ -1,22 +1,22 @@
 package no.nav.hjelpemidler.soknad.mottak.client
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.github.kittinunf.fuel.core.Request
-import com.github.kittinunf.fuel.core.ResponseDeserializable
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.coroutines.awaitObject
-import com.github.kittinunf.fuel.coroutines.awaitObjectResponse
-import com.github.kittinunf.fuel.coroutines.awaitStringResponse
-import com.github.kittinunf.fuel.httpDelete
-import com.github.kittinunf.fuel.httpGet
-import com.github.kittinunf.fuel.httpPost
-import com.github.kittinunf.fuel.httpPut
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.accept
+import io.ktor.client.request.header
+import io.ktor.client.request.headers
+import io.ktor.client.request.request
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.HttpMessageBuilder
+import io.ktor.http.HttpMethod
+import io.ktor.http.contentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
+import no.nav.hjelpemidler.soknad.mottak.httpClient
 import no.nav.hjelpemidler.soknad.mottak.river.StatusMedÅrsak
 import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.service.HarOrdre
@@ -93,16 +93,20 @@ internal interface SøknadForRiverClient {
 internal class SøknadForRiverClientImpl(
     private val baseUrl: String,
     private val azureClient: AzureClient,
-    private val accesstokenScope: String
+    private val accesstokenScope: String,
+    private val httpClient: HttpClient = httpClient()
 ) : SøknadForRiverClient {
 
     override suspend fun save(soknadData: SoknadData) {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/bruker".httpPost()
-                    .headers()
-                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadData))
-                    .awaitStringResponse()
+                httpClient
+                    .request("$baseUrl/soknad/bruker") {
+                        method = HttpMethod.Post
+                        headers()
+                        setBody(soknadData)
+                    }
+                    .body<String>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -114,10 +118,13 @@ internal class SøknadForRiverClientImpl(
     override suspend fun savePapir(soknadData: PapirSøknadData): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/papir".httpPost()
-                    .headers()
-                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadData))
-                    .awaitStringResponse().third.toInt()
+                httpClient
+                    .request("$baseUrl/soknad/papir") {
+                        method = HttpMethod.Post
+                        headers()
+                        setBody(soknadData)
+                    }
+                    .body<Int>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -129,10 +136,13 @@ internal class SøknadForRiverClientImpl(
     override suspend fun save(ordrelinje: OrdrelinjeData): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/ordre".httpPost()
-                    .headers()
-                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(ordrelinje))
-                    .awaitStringResponse().third.toInt()
+                httpClient
+                    .request("$baseUrl/ordre") {
+                        method = HttpMethod.Post
+                        headers()
+                        setBody(ordrelinje)
+                    }
+                    .body<Int>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -144,18 +154,12 @@ internal class SøknadForRiverClientImpl(
     override suspend fun soknadFinnes(soknadsId: UUID): Boolean {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/bruker/finnes/$soknadsId".httpGet()
-                    .headers()
-                    .awaitObject(
-                        object : ResponseDeserializable<JsonNode> {
-                            override fun deserialize(content: String): JsonNode {
-                                return JacksonMapper.objectMapper.readTree(content)
-                            }
-                        }
-                    )
-                    .let {
-                        it.get("second").booleanValue()
+                httpClient
+                    .request("$baseUrl/soknad/bruker/finnes/$soknadsId") {
+                        method = HttpMethod.Get
+                        headers()
                     }
+                    .body<JsonNode>().get("second").booleanValue()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -167,15 +171,12 @@ internal class SøknadForRiverClientImpl(
     override suspend fun ordreSisteDøgn(soknadsId: UUID): HarOrdre {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/ordre/ordrelinje-siste-doegn/$soknadsId".httpGet()
-                    .headers()
-                    .awaitObject(
-                        object : ResponseDeserializable<HarOrdre> {
-                            override fun deserialize(content: String): HarOrdre {
-                                return JacksonMapper.objectMapper.readValue(content)
-                            }
-                        }
-                    )
+                httpClient
+                    .request("$baseUrl/soknad/ordre/ordrelinje-siste-doegn/$soknadsId") {
+                        method = HttpMethod.Get
+                        headers()
+                    }
+                    .body<HarOrdre>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -187,15 +188,12 @@ internal class SøknadForRiverClientImpl(
     override suspend fun harOrdreForSøknad(soknadsId: UUID): HarOrdre {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/ordre/har-ordre/$soknadsId".httpGet()
-                    .headers()
-                    .awaitObject(
-                        object : ResponseDeserializable<HarOrdre> {
-                            override fun deserialize(content: String): HarOrdre {
-                                return JacksonMapper.objectMapper.readValue(content)
-                            }
-                        }
-                    )
+                httpClient
+                    .request("$baseUrl/soknad/ordre/har-ordre/$soknadsId") {
+                        method = HttpMethod.Get
+                        headers()
+                    }
+                    .body<HarOrdre>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -207,12 +205,12 @@ internal class SøknadForRiverClientImpl(
     override suspend fun hentFnrForSoknad(soknadsId: UUID): String {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/fnr/$soknadsId".httpGet()
-                    .headers()
-                    .awaitStringResponse()
-                    .let {
-                        it.third
+                httpClient
+                    .request("$baseUrl/soknad/fnr/$soknadsId") {
+                        method = HttpMethod.Get
+                        headers()
                     }
+                    .body<String>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -224,10 +222,13 @@ internal class SøknadForRiverClientImpl(
     override suspend fun slettSøknad(soknadsId: UUID): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/bruker".httpDelete()
-                    .headers()
-                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadsId))
-                    .awaitStringResponse().third.toInt()
+                httpClient
+                    .request("$baseUrl/soknad/bruker") {
+                        method = HttpMethod.Delete
+                        headers()
+                        setBody(soknadsId)
+                    }
+                    .body<Int>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -239,10 +240,13 @@ internal class SøknadForRiverClientImpl(
     override suspend fun slettUtløptSøknad(soknadsId: UUID): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/utlopt/bruker".httpDelete()
-                    .headers()
-                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(soknadsId))
-                    .awaitStringResponse().third.toInt()
+                httpClient
+                    .request("$baseUrl/soknad/utlopt/bruker") {
+                        method = HttpMethod.Delete
+                        headers()
+                        setBody(soknadsId)
+                    }
+                    .body<Int>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -254,10 +258,13 @@ internal class SøknadForRiverClientImpl(
     override suspend fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/journalpost-id/$soknadsId".httpPut()
-                    .headers()
-                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(mapOf("journalpostId" to journalpostId)))
-                    .awaitStringResponse().third.toInt()
+                httpClient
+                    .request("$baseUrl/soknad/journalpost-id/$soknadsId") {
+                        method = HttpMethod.Put
+                        headers()
+                        setBody(mapOf("journalpostId" to journalpostId))
+                    }
+                    .body<Int>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -269,10 +276,13 @@ internal class SøknadForRiverClientImpl(
     override suspend fun oppdaterOppgaveId(soknadsId: UUID, oppgaveId: String): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/oppgave-id/$soknadsId".httpPut()
-                    .headers()
-                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(mapOf("oppgaveId" to oppgaveId)))
-                    .awaitStringResponse().third.toInt()
+                httpClient
+                    .request("$baseUrl/soknad/oppgave-id/$soknadsId") {
+                        method = HttpMethod.Put
+                        headers()
+                        setBody(mapOf("oppgaveId" to oppgaveId))
+                    }
+                    .body<Int>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -284,10 +294,13 @@ internal class SøknadForRiverClientImpl(
     override suspend fun lagKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/infotrygd/fagsak".httpPost()
-                    .headers()
-                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(vedtaksresultatData))
-                    .awaitStringResponse().third.toInt()
+                httpClient
+                    .request("$baseUrl/infotrygd/fagsak") {
+                        method = HttpMethod.Post
+                        headers()
+                        setBody(vedtaksresultatData)
+                    }
+                    .body<Int>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -299,13 +312,13 @@ internal class SøknadForRiverClientImpl(
     override suspend fun lagKnytningMellomHotsakOgSøknad(soknadsId: UUID, sakId: String): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/hotsak/sak".httpPost()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
-                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(HotsakTilknytningData(soknadsId, sakId)))
-                    .awaitStringResponse().third.toInt()
+                httpClient
+                    .request("$baseUrl/hotsak/sak") {
+                        method = HttpMethod.Post
+                        headers()
+                        setBody(HotsakTilknytningData(soknadsId, sakId))
+                    }
+                    .body<Int>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -326,24 +339,13 @@ internal class SøknadForRiverClientImpl(
     ): UUID? {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/fra-vedtaksresultat".httpPost()
-                    .headers()
-                    .jsonBody(
-                        JacksonMapper.objectMapper.writeValueAsString(
-                            SoknadFraVedtaksresultatDto(
-                                fnrBruker,
-                                saksblokkOgSaksnr,
-                                vedtaksdato
-                            )
-                        )
-                    )
-                    .awaitObject(
-                        object : ResponseDeserializable<JsonNode> {
-                            override fun deserialize(content: String): JsonNode {
-                                return JacksonMapper.objectMapper.readTree(content)
-                            }
-                        }
-                    )
+                httpClient
+                    .request("$baseUrl/soknad/fra-vedtaksresultat") {
+                        method = HttpMethod.Post
+                        headers()
+                        setBody(SoknadFraVedtaksresultatDto(fnrBruker, saksblokkOgSaksnr, vedtaksdato))
+                    }
+                    .body<JsonNode>()
                     .let {
                         if (it.get("soknadId").textValue() != null) {
                             UUID.fromString(it.get("soknadId").textValue())
@@ -365,24 +367,13 @@ internal class SøknadForRiverClientImpl(
     ): List<SøknadIdFraVedtaksresultat> {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/fra-vedtaksresultat-v2".httpPost()
-                    .headers()
-                    .jsonBody(
-                        JacksonMapper.objectMapper.writeValueAsString(
-                            SoknadFraVedtaksresultatV2Dto(
-                                fnrBruker,
-                                saksblokkOgSaksnr,
-                            )
-                        )
-                    )
-                    .awaitObject(
-                        object : ResponseDeserializable<Array<SøknadIdFraVedtaksresultat>> {
-                            override fun deserialize(content: String): Array<SøknadIdFraVedtaksresultat> {
-                                return JacksonMapper.objectMapper.readValue(content)
-                            }
-                        }
-                    )
-                    .toList()
+                httpClient
+                    .request("$baseUrl/soknad/fra-vedtaksresultat-v2") {
+                        method = HttpMethod.Post
+                        headers()
+                        setBody(SoknadFraVedtaksresultatV2Dto(fnrBruker, saksblokkOgSaksnr))
+                    }
+                    .body<Array<SøknadIdFraVedtaksresultat>>().toList()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -396,22 +387,13 @@ internal class SøknadForRiverClientImpl(
     ): UUID? {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/hotsak/fra-saknummer".httpPost()
-                    .headers()
-                    .jsonBody(
-                        JacksonMapper.objectMapper.writeValueAsString(
-                            SoknadFraHotsakNummerDto(
-                                saksnummer,
-                            )
-                        )
-                    )
-                    .awaitObject(
-                        object : ResponseDeserializable<JsonNode> {
-                            override fun deserialize(content: String): JsonNode {
-                                return JacksonMapper.objectMapper.readTree(content)
-                            }
-                        }
-                    )
+                httpClient
+                    .request("$baseUrl/soknad/hotsak/fra-saknummer") {
+                        method = HttpMethod.Post
+                        headers()
+                        setBody(SoknadFraHotsakNummerDto(saksnummer))
+                    }
+                    .body<JsonNode>()
                     .let {
                         if (it.get("soknadId")?.textValue() != null) {
                             UUID.fromString(it.get("soknadId").textValue())
@@ -448,20 +430,13 @@ internal class SøknadForRiverClientImpl(
     ): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-
-                "$baseUrl/infotrygd/vedtaksresultat".httpPost()
-                    .headers()
-                    .jsonBody(
-                        JacksonMapper.objectMapper.writeValueAsString(
-                            VedtaksresultatDto(
-                                søknadId,
-                                vedtaksresultat,
-                                vedtaksdato,
-                                soknadsType,
-                            )
-                        )
-                    )
-                    .awaitStringResponse().third.toInt()
+                httpClient
+                    .request("$baseUrl/infotrygd/vedtaksresultat") {
+                        method = HttpMethod.Post
+                        headers()
+                        setBody(VedtaksresultatDto(søknadId, vedtaksresultat, vedtaksdato, soknadsType))
+                    }
+                    .body<Int>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -477,22 +452,13 @@ internal class SøknadForRiverClientImpl(
     ): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/hotsak/vedtaksresultat".httpPost()
-                    .header("Content-Type", "application/json")
-                    .header("Accept", "application/json")
-                    .header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                    .header("X-Correlation-ID", UUID.randomUUID().toString())
-                    .jsonBody(
-                        JacksonMapper.objectMapper.writeValueAsString(
-                            VedtaksresultatDto(
-                                søknadId,
-                                vedtaksresultat,
-                                vedtaksdato,
-                                "n/a",
-                            )
-                        )
-                    )
-                    .awaitStringResponse().third.toInt()
+                httpClient
+                    .request("$baseUrl/hotsak/vedtaksresultat") {
+                        method = HttpMethod.Post
+                        headers()
+                        setBody(VedtaksresultatDto(søknadId, vedtaksresultat, vedtaksdato, "n/a"))
+                    }
+                    .body<Int>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -511,26 +477,13 @@ internal class SøknadForRiverClientImpl(
     override suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/infotrygd/fnr-jounralpost".httpPost()
-                    .headers()
-                    .jsonBody(
-                        JacksonMapper.objectMapper.writeValueAsString(
-                            FnrOgJournalpostIdFinnesDto(
-                                fnrBruker,
-                                journalpostId
-                            )
-                        )
-                    )
-                    .awaitObject(
-                        object : ResponseDeserializable<JsonNode> {
-                            override fun deserialize(content: String): JsonNode {
-                                return JacksonMapper.objectMapper.readTree(content)
-                            }
-                        }
-                    )
-                    .let {
-                        it.get("second").booleanValue()
+                httpClient
+                    .request("$baseUrl/infotrygd/fnr-jounralpost") {
+                        method = HttpMethod.Post
+                        headers()
+                        setBody(FnrOgJournalpostIdFinnesDto(fnrBruker, journalpostId))
                     }
+                    .body<JsonNode>()["second"].booleanValue()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -548,15 +501,12 @@ internal class SøknadForRiverClientImpl(
         data class Response(val søknadsType: String?)
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/infotrygd/søknadsType/$soknadsId".httpGet()
-                    .headers()
-                    .awaitObjectResponse(
-                        object : ResponseDeserializable<Response> {
-                            override fun deserialize(content: String): Response {
-                                return JacksonMapper.objectMapper.readValue(content, Response::class.java)
-                            }
-                        }
-                    ).third.søknadsType
+                httpClient
+                    .request("$baseUrl/infotrygd/søknadsType/$soknadsId") {
+                        method = HttpMethod.Get
+                        headers()
+                    }
+                    .body<Response>().søknadsType
             }
                 .onFailure {
                     logger.error { it.message }
@@ -568,10 +518,13 @@ internal class SøknadForRiverClientImpl(
     override suspend fun oppdaterStatus(soknadsId: UUID, status: Status): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/status/$soknadsId".httpPut()
-                    .headers()
-                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(status))
-                    .awaitStringResponse().third.toInt()
+                httpClient
+                    .request("$baseUrl/soknad/status/$soknadsId") {
+                        method = HttpMethod.Put
+                        headers()
+                        setBody(status)
+                    }
+                    .body<Int>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -585,10 +538,13 @@ internal class SøknadForRiverClientImpl(
     ): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/statusV2".httpPut()
-                    .headers()
-                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(statusMedÅrsak))
-                    .awaitStringResponse().third.toInt()
+                httpClient
+                    .request("$baseUrl/soknad/statusV2") {
+                        method = HttpMethod.Put
+                        headers()
+                        setBody(statusMedÅrsak)
+                    }
+                    .body<Int>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -600,15 +556,12 @@ internal class SøknadForRiverClientImpl(
     override suspend fun hentSoknadData(soknadsId: UUID): SoknadData {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknadsdata/bruker/$soknadsId".httpGet()
-                    .headers()
-                    .awaitObjectResponse(
-                        object : ResponseDeserializable<SoknadDataDto> {
-                            override fun deserialize(content: String): SoknadDataDto {
-                                return JacksonMapper.objectMapper.readValue(content, SoknadDataDto::class.java)
-                            }
-                        }
-                    ).third
+                httpClient
+                    .request("$baseUrl/soknadsdata/bruker/$soknadsId") {
+                        method = HttpMethod.Get
+                        headers()
+                    }
+                    .body<SoknadDataDto>()
                     .let { SoknadData.mapFraDto(it) }
             }
                 .onFailure {
@@ -621,15 +574,12 @@ internal class SøknadForRiverClientImpl(
     override suspend fun hentSoknadOpprettetDato(soknadsId: UUID): Date {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/opprettet-dato/$soknadsId".httpGet()
-                    .headers()
-                    .awaitObjectResponse(
-                        object : ResponseDeserializable<Date> {
-                            override fun deserialize(content: String): Date {
-                                return JacksonMapper.objectMapper.readValue(content, Date::class.java)
-                            }
-                        }
-                    ).third
+                httpClient
+                    .request("$baseUrl/soknad/opprettet-dato/$soknadsId") {
+                        method = HttpMethod.Get
+                        headers()
+                    }
+                    .body<Date>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -642,16 +592,12 @@ internal class SøknadForRiverClientImpl(
         return withContext(Dispatchers.IO) {
             SoknadMedStatus(UUID.randomUUID(), Date(), Date(), Status.UTLØPT, true, "")
             kotlin.runCatching {
-                "$baseUrl/soknad/utgaatt/$dager".httpGet()
-                    .headers()
-                    .awaitObjectResponse(
-                        object : ResponseDeserializable<List<UtgåttSøknad>> {
-                            override fun deserialize(content: String): List<UtgåttSøknad> {
-                                return JacksonMapper.objectMapper.readValue(content, Array<UtgåttSøknad>::class.java)
-                                    .toList()
-                            }
-                        }
-                    ).third
+                httpClient
+                    .request("$baseUrl/soknad/utgaatt/$dager") {
+                        method = HttpMethod.Get
+                        headers()
+                    }
+                    .body<List<UtgåttSøknad>>()
             }
                 .onFailure {
                     logger.error { it.message }
@@ -663,15 +609,12 @@ internal class SøknadForRiverClientImpl(
     override suspend fun hentGodkjenteSøknaderUtenOppgaveEldreEnn(dager: Int): List<String> {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/godkjentUtenOppgave/$dager".httpGet()
-                    .headers()
-                    .awaitObjectResponse(
-                        object : ResponseDeserializable<List<String>> {
-                            override fun deserialize(content: String): List<String> {
-                                return JacksonMapper.objectMapper.readValue(content, Array<String>::class.java).toList()
-                            }
-                        }
-                    ).third
+                httpClient
+                    .request("$baseUrl/soknad/godkjentUtenOppgave/$dager") {
+                        method = HttpMethod.Get
+                        headers()
+                    }
+                    .body<List<String>>()
             }
                 .onFailure {
                     logger.error(it) { "Feil ved GET $baseUrl/soknad/godkjentUtenOppgave/$dager." }
@@ -685,16 +628,12 @@ internal class SøknadForRiverClientImpl(
 
         val resp = withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                "$baseUrl/soknad/behovsmeldingType/$soknadsId".httpGet()
-                    .headers()
-                    .awaitObjectResponse(
-                        object : ResponseDeserializable<Response> {
-                            override fun deserialize(content: String): Response {
-                                logger.info("DEBUG DEBUG: Response (raw): $content")
-                                return JacksonMapper.objectMapper.readValue(content)
-                            }
-                        }
-                    ).third
+                httpClient
+                    .request("$baseUrl/soknad/behovsmeldingType/$soknadsId") {
+                        method = HttpMethod.Get
+                        headers()
+                    }
+                    .body<Response>()
             }
                 .onSuccess { logger.info("DEBUG DEBUG: Response: $it") }
                 .onFailure {
@@ -705,12 +644,10 @@ internal class SøknadForRiverClientImpl(
         return resp?.behovsmeldingType
     }
 
-    private fun Request.headers() = this.header(
-        mapOf(
-            "Content-Type" to "application/json",
-            "Accept" to "application/json",
-            "Authorization" to "Bearer ${azureClient.getToken(accesstokenScope).accessToken}",
-            "X-Correlation-ID" to UUID.randomUUID().toString()
-        )
-    )
+    private fun HttpMessageBuilder.headers() = this.headers {
+        contentType(ContentType.Application.Json)
+        accept(ContentType.Application.Json)
+        header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
+        header("X-Correlation-ID", UUID.randomUUID().toString())
+    }
 }
