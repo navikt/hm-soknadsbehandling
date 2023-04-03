@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - egen-avslagstekst-for-aktivitetshjelpemidler
+      - oppdater-versjoner
 
 env:
   IMAGE: "docker.pkg.github.com/${{ github.repository }}/hm-soknadsbehandling:${{ github.sha }}"
