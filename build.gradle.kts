@@ -6,7 +6,7 @@ val graphQLClientVersion = "6.1.0"
 
 plugins {
     application
-    kotlin("jvm") version "1.7.20"
+    kotlin("jvm") version "1.8.20"
     id("com.expediagroup.graphql") version "6.1.0"
     id("com.diffplug.spotless") version "6.2.0"
 }
