@@ -29,7 +29,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-val ktorVersion = "2.1.3"
+val ktorVersion = "2.2.4"
 fun ktor(name: String) = "io.ktor:ktor-$name:$ktorVersion"
 fun graphqlKotlin(name: String) = "com.expediagroup:graphql-kotlin-$name:$graphQLClientVersion"
 
