@@ -6,7 +6,7 @@ val graphQLClientVersion = "6.1.0"
 
 plugins {
     application
-    kotlin("jvm") version "1.7.20"
+    kotlin("jvm") version "1.8.20"
     id("com.expediagroup.graphql") version "6.1.0"
     id("com.diffplug.spotless") version "6.2.0"
 }
@@ -29,7 +29,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-val ktorVersion = "2.1.3"
+val ktorVersion = "2.2.4"
 fun ktor(name: String) = "io.ktor:ktor-$name:$ktorVersion"
 fun graphqlKotlin(name: String) = "com.expediagroup:graphql-kotlin-$name:$graphQLClientVersion"
 
