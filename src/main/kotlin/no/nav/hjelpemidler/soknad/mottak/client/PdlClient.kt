@@ -1,17 +1,21 @@
 package no.nav.hjelpemidler.soknad.mottak.client
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.kittinunf.fuel.core.Request
-import com.github.kittinunf.fuel.core.ResponseDeserializable
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.coroutines.awaitObject
-import com.github.kittinunf.fuel.httpPost
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.accept
+import io.ktor.client.request.header
+import io.ktor.client.request.headers
+import io.ktor.client.request.request
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
+import io.ktor.http.contentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
+import no.nav.hjelpemidler.soknad.mottak.httpClient
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -19,7 +23,8 @@ private val logger = KotlinLogging.logger {}
 internal class PdlClient(
     private val azureClient: AzureClient,
     private val baseUrl: String,
-    private val accesstokenScope: String
+    private val accesstokenScope: String,
+    private val httpClient: HttpClient = httpClient()
 ) {
 
     suspend fun hentKommunenr(fnrBruker: String): String? {
@@ -27,16 +32,19 @@ internal class PdlClient(
 
         val jsonNode = withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                baseUrl.httpPost()
-                    .headers()
-                    .jsonBody(JacksonMapper.objectMapper.writeValueAsString(body))
-                    .awaitObject(
-                        object : ResponseDeserializable<JsonNode> {
-                            override fun deserialize(content: String): JsonNode {
-                                return ObjectMapper().readTree(content)
-                            }
+                httpClient
+                    .request(baseUrl) {
+                        method = HttpMethod.Post
+                        headers {
+                            contentType(ContentType.Application.Json)
+                            accept(ContentType.Application.Json)
+                            header("Tema", "HJE")
+                            header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
+                            header("X-Correlation-ID", UUID.randomUUID().toString())
                         }
-                    )
+                        setBody(body)
+                    }
+                    .body<JsonNode>()
             }
                 .onSuccess {
                     if (it.has("errors")) {
@@ -52,16 +60,6 @@ internal class PdlClient(
         return jsonNode["data"].get("hentPerson")?.get("bostedsadresse")?.firstOrNull()?.get("vegadresse")
             ?.get("kommunenummer")?.textValue()
     }
-
-    private fun Request.headers() = this.header(
-        mapOf(
-            "Content-Type" to "application/json",
-            "Accept" to "application/json",
-            "Tema" to "HJE",
-            "Authorization" to "Bearer ${azureClient.getToken(accesstokenScope).accessToken}",
-            "X-Correlation-ID" to UUID.randomUUID().toString()
-        )
-    )
 }
 
 internal data class KommunenrQuery(val query: String, val variables: Map<String, String>)
