@@ -42,20 +42,19 @@ internal class InfotrygdProxyClientImpl(
         data class Response(
             val resultat: Boolean
         )
+
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/har-vedtak-for") {
-                        method = HttpMethod.Post
-                        headers {
-                            contentType(ContentType.Application.Json)
-                            accept(ContentType.Application.Json)
-                            header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                            header("X-Correlation-ID", UUID.randomUUID().toString())
-                        }
-                        setBody(Request(fnr, saksblokk, saksnr, vedtaksDato))
+                httpClient.request("$baseUrl/har-vedtak-for") {
+                    method = HttpMethod.Post
+                    headers {
+                        contentType(ContentType.Application.Json)
+                        accept(ContentType.Application.Json)
+                        header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
+                        header("X-Correlation-ID", UUID.randomUUID().toString())
                     }
-                    .body<Response>().resultat
+                    setBody(Request(fnr, saksblokk, saksnr, vedtaksDato))
+                }.body<Response>().resultat
             }.onFailure {
                 logger.error { it.message }
             }.getOrDefault(false)

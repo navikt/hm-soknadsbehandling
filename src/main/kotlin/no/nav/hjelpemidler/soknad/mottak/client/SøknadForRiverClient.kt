@@ -100,230 +100,179 @@ internal class SøknadForRiverClientImpl(
     override suspend fun save(soknadData: SoknadData) {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/bruker") {
-                        method = HttpMethod.Post
-                        headers()
-                        setBody(soknadData)
-                    }
-                    .body<String>()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/soknad/bruker") {
+                    method = HttpMethod.Post
+                    headers()
+                    setBody(soknadData)
+                }.body<String>()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
     override suspend fun savePapir(soknadData: PapirSøknadData): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/papir") {
-                        method = HttpMethod.Post
-                        headers()
-                        setBody(soknadData)
-                    }
-                    .body<Int>()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/soknad/papir") {
+                    method = HttpMethod.Post
+                    headers()
+                    setBody(soknadData)
+                }.body<Int>()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
     override suspend fun save(ordrelinje: OrdrelinjeData): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/ordre") {
-                        method = HttpMethod.Post
-                        headers()
-                        setBody(ordrelinje)
-                    }
-                    .body<Int>()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/ordre") {
+                    method = HttpMethod.Post
+                    headers()
+                    setBody(ordrelinje)
+                }.body<Int>()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
     override suspend fun soknadFinnes(soknadsId: UUID): Boolean {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/bruker/finnes/$soknadsId") {
-                        method = HttpMethod.Get
-                        headers()
-                    }
-                    .body<JsonNode>().get("second").booleanValue()
+                httpClient.request("$baseUrl/soknad/bruker/finnes/$soknadsId") {
+                    method = HttpMethod.Get
+                    headers()
+                }.body<JsonNode>().get("second").booleanValue()
+            }.onFailure {
+                logger.error { it.message }
             }
-                .onFailure {
-                    logger.error { it.message }
-                }
-        }
-            .getOrThrow()
+        }.getOrThrow()
     }
 
     override suspend fun ordreSisteDøgn(soknadsId: UUID): HarOrdre {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/ordre/ordrelinje-siste-doegn/$soknadsId") {
-                        method = HttpMethod.Get
-                        headers()
-                    }
-                    .body<HarOrdre>()
-            }
-                .onFailure {
-                    logger.error { it.message }
+                httpClient.request("$baseUrl/soknad/ordre/ordrelinje-siste-doegn/$soknadsId") {
+                    method = HttpMethod.Get
+                    headers()
                 }
-        }
-            .getOrThrow()
+                    .body<HarOrdre>()
+            }.onFailure {
+                logger.error { it.message }
+            }
+        }.getOrThrow()
     }
 
     override suspend fun harOrdreForSøknad(soknadsId: UUID): HarOrdre {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/ordre/har-ordre/$soknadsId") {
-                        method = HttpMethod.Get
-                        headers()
-                    }
-                    .body<HarOrdre>()
+                httpClient.request("$baseUrl/soknad/ordre/har-ordre/$soknadsId") {
+                    method = HttpMethod.Get
+                    headers()
+                }.body<HarOrdre>()
+            }.onFailure {
+                logger.error { it.message }
             }
-                .onFailure {
-                    logger.error { it.message }
-                }
-        }
-            .getOrThrow()
+        }.getOrThrow()
     }
 
     override suspend fun hentFnrForSoknad(soknadsId: UUID): String {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/fnr/$soknadsId") {
-                        method = HttpMethod.Get
-                        headers()
-                    }
-                    .body<String>()
+                httpClient.request("$baseUrl/soknad/fnr/$soknadsId") {
+                    method = HttpMethod.Get
+                    headers()
+                }.body<String>()
+            }.onFailure {
+                logger.error { it.message }
             }
-                .onFailure {
-                    logger.error { it.message }
-                }
-        }
-            .getOrThrow()
+        }.getOrThrow()
     }
 
     override suspend fun slettSøknad(soknadsId: UUID): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/bruker") {
-                        method = HttpMethod.Delete
-                        headers()
-                        setBody(soknadsId)
-                    }
-                    .body<Int>()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/soknad/bruker") {
+                    method = HttpMethod.Delete
+                    headers()
+                    setBody(soknadsId)
+                }.body<Int>()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
     override suspend fun slettUtløptSøknad(soknadsId: UUID): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/utlopt/bruker") {
-                        method = HttpMethod.Delete
-                        headers()
-                        setBody(soknadsId)
-                    }
-                    .body<Int>()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/soknad/utlopt/bruker") {
+                    method = HttpMethod.Delete
+                    headers()
+                    setBody(soknadsId)
+                }.body<Int>()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
     override suspend fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/journalpost-id/$soknadsId") {
-                        method = HttpMethod.Put
-                        headers()
-                        setBody(mapOf("journalpostId" to journalpostId))
-                    }
-                    .body<Int>()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/soknad/journalpost-id/$soknadsId") {
+                    method = HttpMethod.Put
+                    headers()
+                    setBody(mapOf("journalpostId" to journalpostId))
+                }.body<Int>()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
     override suspend fun oppdaterOppgaveId(soknadsId: UUID, oppgaveId: String): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/oppgave-id/$soknadsId") {
-                        method = HttpMethod.Put
-                        headers()
-                        setBody(mapOf("oppgaveId" to oppgaveId))
-                    }
-                    .body<Int>()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/soknad/oppgave-id/$soknadsId") {
+                    method = HttpMethod.Put
+                    headers()
+                    setBody(mapOf("oppgaveId" to oppgaveId))
+                }.body<Int>()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
     override suspend fun lagKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/infotrygd/fagsak") {
-                        method = HttpMethod.Post
-                        headers()
-                        setBody(vedtaksresultatData)
-                    }
-                    .body<Int>()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/infotrygd/fagsak") {
+                    method = HttpMethod.Post
+                    headers()
+                    setBody(vedtaksresultatData)
+                }.body<Int>()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
     override suspend fun lagKnytningMellomHotsakOgSøknad(soknadsId: UUID, sakId: String): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/hotsak/sak") {
-                        method = HttpMethod.Post
-                        headers()
-                        setBody(HotsakTilknytningData(soknadsId, sakId))
-                    }
-                    .body<Int>()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/hotsak/sak") {
+                    method = HttpMethod.Post
+                    headers()
+                    setBody(HotsakTilknytningData(soknadsId, sakId))
+                }.body<Int>()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
@@ -339,25 +288,20 @@ internal class SøknadForRiverClientImpl(
     ): UUID? {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/fra-vedtaksresultat") {
-                        method = HttpMethod.Post
-                        headers()
-                        setBody(SoknadFraVedtaksresultatDto(fnrBruker, saksblokkOgSaksnr, vedtaksdato))
+                httpClient.request("$baseUrl/soknad/fra-vedtaksresultat") {
+                    method = HttpMethod.Post
+                    headers()
+                    setBody(SoknadFraVedtaksresultatDto(fnrBruker, saksblokkOgSaksnr, vedtaksdato))
+                }.body<JsonNode>().let {
+                    if (it.get("soknadId").textValue() != null) {
+                        UUID.fromString(it.get("soknadId").textValue())
+                    } else {
+                        null
                     }
-                    .body<JsonNode>()
-                    .let {
-                        if (it.get("soknadId").textValue() != null) {
-                            UUID.fromString(it.get("soknadId").textValue())
-                        } else {
-                            null
-                        }
-                    }
-            }
-                .onFailure {
-                    logger.error { it.message }
                 }
-                .getOrThrow()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
@@ -367,18 +311,14 @@ internal class SøknadForRiverClientImpl(
     ): List<SøknadIdFraVedtaksresultat> {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/fra-vedtaksresultat-v2") {
-                        method = HttpMethod.Post
-                        headers()
-                        setBody(SoknadFraVedtaksresultatV2Dto(fnrBruker, saksblokkOgSaksnr))
-                    }
-                    .body<Array<SøknadIdFraVedtaksresultat>>().toList()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/soknad/fra-vedtaksresultat-v2") {
+                    method = HttpMethod.Post
+                    headers()
+                    setBody(SoknadFraVedtaksresultatV2Dto(fnrBruker, saksblokkOgSaksnr))
+                }.body<Array<SøknadIdFraVedtaksresultat>>().toList()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
@@ -387,25 +327,20 @@ internal class SøknadForRiverClientImpl(
     ): UUID? {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/hotsak/fra-saknummer") {
-                        method = HttpMethod.Post
-                        headers()
-                        setBody(SoknadFraHotsakNummerDto(saksnummer))
+                httpClient.request("$baseUrl/soknad/hotsak/fra-saknummer") {
+                    method = HttpMethod.Post
+                    headers()
+                    setBody(SoknadFraHotsakNummerDto(saksnummer))
+                }.body<JsonNode>().let {
+                    if (it.get("soknadId")?.textValue() != null) {
+                        UUID.fromString(it.get("soknadId").textValue())
+                    } else {
+                        null
                     }
-                    .body<JsonNode>()
-                    .let {
-                        if (it.get("soknadId")?.textValue() != null) {
-                            UUID.fromString(it.get("soknadId").textValue())
-                        } else {
-                            null
-                        }
-                    }
-            }
-                .onFailure {
-                    logger.error { it.message }
                 }
-                .getOrThrow()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
@@ -430,18 +365,14 @@ internal class SøknadForRiverClientImpl(
     ): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/infotrygd/vedtaksresultat") {
-                        method = HttpMethod.Post
-                        headers()
-                        setBody(VedtaksresultatDto(søknadId, vedtaksresultat, vedtaksdato, soknadsType))
-                    }
-                    .body<Int>()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/infotrygd/vedtaksresultat") {
+                    method = HttpMethod.Post
+                    headers()
+                    setBody(VedtaksresultatDto(søknadId, vedtaksresultat, vedtaksdato, soknadsType))
+                }.body<Int>()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
@@ -452,18 +383,14 @@ internal class SøknadForRiverClientImpl(
     ): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/hotsak/vedtaksresultat") {
-                        method = HttpMethod.Post
-                        headers()
-                        setBody(VedtaksresultatDto(søknadId, vedtaksresultat, vedtaksdato, "n/a"))
-                    }
-                    .body<Int>()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/hotsak/vedtaksresultat") {
+                    method = HttpMethod.Post
+                    headers()
+                    setBody(VedtaksresultatDto(søknadId, vedtaksresultat, vedtaksdato, "n/a"))
+                }.body<Int>()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
@@ -477,18 +404,14 @@ internal class SøknadForRiverClientImpl(
     override suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/infotrygd/fnr-jounralpost") {
-                        method = HttpMethod.Post
-                        headers()
-                        setBody(FnrOgJournalpostIdFinnesDto(fnrBruker, journalpostId))
-                    }
-                    .body<JsonNode>()["second"].booleanValue()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/infotrygd/fnr-jounralpost") {
+                    method = HttpMethod.Post
+                    headers()
+                    setBody(FnrOgJournalpostIdFinnesDto(fnrBruker, journalpostId))
+                }.body<JsonNode>()["second"].booleanValue()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
@@ -499,37 +422,30 @@ internal class SøknadForRiverClientImpl(
 
     override suspend fun hentSøknadsTypeForSøknad(soknadsId: UUID): String? {
         data class Response(val søknadsType: String?)
+
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/infotrygd/søknadsType/$soknadsId") {
-                        method = HttpMethod.Get
-                        headers()
-                    }
-                    .body<Response>().søknadsType
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/infotrygd/søknadsType/$soknadsId") {
+                    method = HttpMethod.Get
+                    headers()
+                }.body<Response>().søknadsType
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
     override suspend fun oppdaterStatus(soknadsId: UUID, status: Status): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/status/$soknadsId") {
-                        method = HttpMethod.Put
-                        headers()
-                        setBody(status)
-                    }
-                    .body<Int>()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/soknad/status/$soknadsId") {
+                    method = HttpMethod.Put
+                    headers()
+                    setBody(status)
+                }.body<Int>()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
@@ -538,89 +454,69 @@ internal class SøknadForRiverClientImpl(
     ): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/statusV2") {
-                        method = HttpMethod.Put
-                        headers()
-                        setBody(statusMedÅrsak)
-                    }
-                    .body<Int>()
-            }
-                .onFailure {
-                    logger.error { it.message }
-                }
-                .getOrThrow()
+                httpClient.request("$baseUrl/soknad/statusV2") {
+                    method = HttpMethod.Put
+                    headers()
+                    setBody(statusMedÅrsak)
+                }.body<Int>()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
         }
     }
 
     override suspend fun hentSoknadData(soknadsId: UUID): SoknadData {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknadsdata/bruker/$soknadsId") {
-                        method = HttpMethod.Get
-                        headers()
-                    }
-                    .body<SoknadDataDto>()
-                    .let { SoknadData.mapFraDto(it) }
+                httpClient.request("$baseUrl/soknadsdata/bruker/$soknadsId") {
+                    method = HttpMethod.Get
+                    headers()
+                }.body<SoknadDataDto>().let { SoknadData.mapFraDto(it) }
+            }.onFailure {
+                logger.error { it.message }
             }
-                .onFailure {
-                    logger.error { it.message }
-                }
-        }
-            .getOrThrow()
+        }.getOrThrow()
     }
 
     override suspend fun hentSoknadOpprettetDato(soknadsId: UUID): Date {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/opprettet-dato/$soknadsId") {
-                        method = HttpMethod.Get
-                        headers()
-                    }
-                    .body<Date>()
+                httpClient.request("$baseUrl/soknad/opprettet-dato/$soknadsId") {
+                    method = HttpMethod.Get
+                    headers()
+                }.body<Date>()
+            }.onFailure {
+                logger.error { it.message }
             }
-                .onFailure {
-                    logger.error { it.message }
-                }
-        }
-            .getOrThrow()
+        }.getOrThrow()
     }
 
     override suspend fun hentSoknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad> {
         return withContext(Dispatchers.IO) {
             SoknadMedStatus(UUID.randomUUID(), Date(), Date(), Status.UTLØPT, true, "")
+
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/utgaatt/$dager") {
-                        method = HttpMethod.Get
-                        headers()
-                    }
-                    .body<List<UtgåttSøknad>>()
+                httpClient.request("$baseUrl/soknad/utgaatt/$dager") {
+                    method = HttpMethod.Get
+                    headers()
+                }.body<List<UtgåttSøknad>>()
+            }.onFailure {
+                logger.error { it.message }
             }
-                .onFailure {
-                    logger.error { it.message }
-                }
-        }
-            .getOrThrow()
+        }.getOrThrow()
     }
 
     override suspend fun hentGodkjenteSøknaderUtenOppgaveEldreEnn(dager: Int): List<String> {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/godkjentUtenOppgave/$dager") {
-                        method = HttpMethod.Get
-                        headers()
-                    }
-                    .body<List<String>>()
+                httpClient.request("$baseUrl/soknad/godkjentUtenOppgave/$dager") {
+                    method = HttpMethod.Get
+                    headers()
+                }.body<List<String>>()
+            }.onFailure {
+                logger.error(it) { "Feil ved GET $baseUrl/soknad/godkjentUtenOppgave/$dager." }
             }
-                .onFailure {
-                    logger.error(it) { "Feil ved GET $baseUrl/soknad/godkjentUtenOppgave/$dager." }
-                }
-        }
-            .getOrThrow()
+        }.getOrThrow()
     }
 
     override suspend fun behovsmeldingTypeFor(soknadsId: UUID): BehovsmeldingType? {
@@ -628,19 +524,17 @@ internal class SøknadForRiverClientImpl(
 
         val resp = withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request("$baseUrl/soknad/behovsmeldingType/$soknadsId") {
-                        method = HttpMethod.Get
-                        headers()
-                    }
-                    .body<Response>()
+                httpClient.request("$baseUrl/soknad/behovsmeldingType/$soknadsId") {
+                    method = HttpMethod.Get
+                    headers()
+                }.body<Response>()
+            }.onSuccess {
+                logger.info("DEBUG DEBUG: Response: $it")
+            }.onFailure {
+                logger.error(it) { "Feil ved GET $baseUrl/soknad/behovsmeldingType/$soknadsId." }
             }
-                .onSuccess { logger.info("DEBUG DEBUG: Response: $it") }
-                .onFailure {
-                    logger.error(it) { "Feil ved GET $baseUrl/soknad/behovsmeldingType/$soknadsId." }
-                }
-        }
-            .getOrNull()
+        }.getOrNull()
+
         return resp?.behovsmeldingType
     }
 

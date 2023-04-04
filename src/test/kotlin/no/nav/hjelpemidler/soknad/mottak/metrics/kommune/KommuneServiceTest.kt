@@ -1,8 +1,8 @@
 package no.nav.hjelpemidler.soknad.mottak.metrics.kommune
 
-import java.net.ConnectException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.net.ConnectException
 
 internal class KommuneServiceTest {
 

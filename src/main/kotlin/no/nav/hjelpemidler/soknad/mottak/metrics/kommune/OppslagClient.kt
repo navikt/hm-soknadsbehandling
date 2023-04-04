@@ -34,11 +34,9 @@ class OppslagClient(
                         header("X-Correlation-ID", UUID.randomUUID().toString())
                     }
                 }.body<Map<String, KommuneDto>>()
+            }.onFailure {
+                logger.error(it) { "Henting av kommune feilet: ${it.message}" }
             }
-                .onFailure {
-                    logger.error(it) { "Henting av kommune feilet: ${it.message}" }
-                }
-        }
-            .getOrThrow()
+        }.getOrThrow()
     }
 }

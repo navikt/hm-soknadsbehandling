@@ -32,30 +32,25 @@ internal class PdlClient(
 
         val jsonNode = withContext(Dispatchers.IO) {
             kotlin.runCatching {
-                httpClient
-                    .request(baseUrl) {
-                        method = HttpMethod.Post
-                        headers {
-                            contentType(ContentType.Application.Json)
-                            accept(ContentType.Application.Json)
-                            header("Tema", "HJE")
-                            header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
-                            header("X-Correlation-ID", UUID.randomUUID().toString())
-                        }
-                        setBody(body)
+                httpClient.request(baseUrl) {
+                    method = HttpMethod.Post
+                    headers {
+                        contentType(ContentType.Application.Json)
+                        accept(ContentType.Application.Json)
+                        header("Tema", "HJE")
+                        header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
+                        header("X-Correlation-ID", UUID.randomUUID().toString())
                     }
-                    .body<JsonNode>()
-            }
-                .onSuccess {
-                    if (it.has("errors")) {
-                        throw RuntimeException("Feil ved henting av personinformasjon fra PDL ${it.get("errors")}")
-                    }
+                    setBody(body)
+                }.body<JsonNode>()
+            }.onSuccess {
+                if (it.has("errors")) {
+                    throw RuntimeException("Feil ved henting av personinformasjon fra PDL ${it.get("errors")}")
                 }
-                .onFailure {
-                    logger.error("Feil ved kall til PDL ${it.message}", it)
-                    throw it
-                }
-                .getOrThrow()
+            }.onFailure {
+                logger.error("Feil ved kall til PDL ${it.message}", it)
+                throw it
+            }.getOrThrow()
         }
         return jsonNode["data"].get("hentPerson")?.get("bostedsadresse")?.firstOrNull()?.get("vegadresse")
             ?.get("kommunenummer")?.textValue()
