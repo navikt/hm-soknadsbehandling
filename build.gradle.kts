@@ -1,7 +1,6 @@
 import com.expediagroup.graphql.plugin.gradle.tasks.GraphQLIntrospectSchemaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val fuelVersion = "2.3.1"
 val graphQLClientVersion = "6.1.0"
 
 plugins {
@@ -68,10 +67,6 @@ dependencies {
     implementation(ktor("serialization-jackson"))
     implementation(ktor("client-content-negotiation"))
     implementation(ktor("client-jackson"))
-
-    // Fuel -> todo: fjern, bruk ktor-client som også er i bruk
-    implementation("com.github.kittinunf.fuel:fuel:$fuelVersion")
-    implementation("com.github.kittinunf.fuel:fuel-coroutines:$fuelVersion")
 
     // InfluxDB
     implementation("org.influxdb:influxdb-java:2.23")
