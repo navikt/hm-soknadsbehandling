@@ -12,6 +12,8 @@ jobs:
     permissions:
       contents: "read"
       id-token: "write"
+    outputs:
+      image: ${{ steps.docker-push.outputs.image }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -50,7 +52,7 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: nais/nais-dev.yaml,nais/alerts-dev.yaml
-          IMAGE: ${{ steps.docker-push.outputs.image }}
+          IMAGE: ${{ needs.build.outputs.image }}
 
   deploy-prod:
     name: Deploy to Production
@@ -64,4 +66,4 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-gcp
           RESOURCE: nais/nais-prod.yaml,nais/alerts-prod.yaml
-          IMAGE: ${{ steps.docker-push.outputs.image }}
+          IMAGE: ${{ needs.build.outputs.image }}
