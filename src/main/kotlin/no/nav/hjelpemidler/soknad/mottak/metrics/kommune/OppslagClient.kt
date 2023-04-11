@@ -1,43 +1,42 @@
 package no.nav.hjelpemidler.soknad.mottak.metrics.kommune
 
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.github.kittinunf.fuel.core.ResponseDeserializable
-import com.github.kittinunf.fuel.coroutines.awaitObjectResponse
-import com.github.kittinunf.fuel.httpGet
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.accept
+import io.ktor.client.request.header
+import io.ktor.client.request.headers
+import io.ktor.client.request.request
+import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.Configuration
-import no.nav.hjelpemidler.soknad.mottak.JacksonMapper
-import org.slf4j.LoggerFactory
+import no.nav.hjelpemidler.soknad.mottak.httpClient
 import java.util.UUID
 
+private val logger = KotlinLogging.logger {}
+
 class OppslagClient(
-    private val oppslagUrl: String = Configuration.oppslagUrl
+    private val oppslagUrl: String = Configuration.oppslagUrl,
+    private val httpClient: HttpClient = httpClient()
 ) {
     suspend fun hentAlleKommuner(): Map<String, KommuneDto> {
         val kommunenrUrl = "$oppslagUrl/geografi/kommunenr"
-        LOG.info("Henter alle kommuner fra $kommunenrUrl")
+        logger.info("Henter alle kommuner fra $kommunenrUrl")
 
-        try {
-            return kommunenrUrl.httpGet()
-                .header(
-                    mapOf(
-                        "Accept" to "application/json",
-                        "X-Correlation-ID" to UUID.randomUUID().toString()
-                    )
-                )
-                .awaitObjectResponse(
-                    object : ResponseDeserializable<Map<String, KommuneDto>> {
-                        override fun deserialize(content: String): Map<String, KommuneDto> {
-                            return JacksonMapper.objectMapper.readValue(content)
-                        }
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+                httpClient.request(kommunenrUrl) {
+                    method = HttpMethod.Get
+                    headers {
+                        accept(ContentType.Application.Json)
+                        header("X-Correlation-ID", UUID.randomUUID().toString())
                     }
-                ).third
-        } catch (e: Exception) {
-            LOG.error("Henting av kommune feilet", e)
-            throw e
-        }
-    }
-
-    companion object {
-        private val LOG = LoggerFactory.getLogger(OppslagClient::class.java)
+                }.body<Map<String, KommuneDto>>()
+            }.onFailure {
+                logger.error(it) { "Henting av kommune feilet: ${it.message}" }
+            }
+        }.getOrThrow()
     }
 }
