@@ -38,7 +38,7 @@ private val localProperties = ConfigurationMap(
         "PDL_API_SCOPE" to "api://dev-gcp.pdl.pdl-api/.default",
         "SLACK_HOOK" to "http://dummy",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "false",
-        "OPPSLAG_URL" to "http://digihot-oppslag.dev.intern.nav.no/api",
+        "OPPSLAG_URL" to "http://digihot-oppslag.intern.dev.nav.no/api",
         "GRUNNDATA_API_URL" to "https://hm-grunndata-api.dev.intern.nav.no",
         "CONSUMER_GROUP_ID" to "hm-soknadsbehandling-v1"
     )
