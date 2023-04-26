@@ -70,7 +70,7 @@ jobs:
 
   trivy-imagescan:
     name: Scan dockerimage with Trivy
-    needs: build-and-deploy
+    needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
