@@ -8,9 +8,11 @@ import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClientImpl
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClientImpl
+import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.river.BestillingAvvistFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.BestillingFerdigstiltFraHotsak
+import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingStatus
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadAutomatiskJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalførtEtterTilbakeføring
@@ -57,6 +59,8 @@ fun main() {
         )
     val pdlClient = PdlClient(azureClient, Configuration.pdl.baseUrl, Configuration.pdl.apiScope)
 
+    val delbestillingClient = DelbestillingClient(Configuration.delbestillingApi.baseUrl, azureClient, Configuration.azure.delbestillingApiScope)
+
     MonitoreringService(søknadForRiverClient)
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
@@ -80,6 +84,8 @@ fun main() {
             DigitalSøknadEndeligJournalførtEtterTilbakeføring(this, søknadForRiverClient)
             BestillingFerdigstiltFraHotsak(this, søknadForRiverClient)
             BestillingAvvistFraHotsak(this, søknadForRiverClient)
+            // Delbestilling
+            DelbestillingStatus(this, delbestillingClient)
         }
         .start()
 }

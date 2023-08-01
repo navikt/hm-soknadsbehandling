@@ -32,6 +32,7 @@ private val localProperties = ConfigurationMap(
         "INFLUX_USER" to "user",
         "INFLUX_PASSWORD" to "password",
         "SOKNADSBEHANDLING_DB_BASEURL" to "http://localhost:8083/api",
+        "DELBESTILLING_API_BASEURL" to "http://localhost:8084/api",
         "SOKNADSBEHANDLING_DB_CLIENT_ID" to "local:hm-soknadsbehandling-db",
         "INFOTRYGD_PROXY_BASEURL" to "http://localhost:8083/infotrygdproxy",
         "PDL_API_URL" to "http://localhost:9098/pdl",
@@ -52,6 +53,7 @@ private val devProperties = ConfigurationMap(
         "KAFKA_TOPIC" to "teamdigihot.hm-soknadsbehandling-v1",
         "AZURE_TENANT_BASEURL" to "https://login.microsoftonline.com",
         "DBAPI_SCOPE" to "api://dev-gcp.teamdigihot.hm-soknadsbehandling-db/.default",
+        "DELBESTILLING_API_SCOPE" to "api://dev-gcp.teamdigihot.hm-delbestilling-api/.default",
         "INFOTRYGD_PROXY_SCOPE" to "api://dev-fss.teamdigihot.hm-infotrygd-proxy/.default",
         "SOKNADSBEHANDLING_DB_CLIENT_ID" to "dev-gcp:teamdigihot:hm-soknadsbehandling-db",
         "INFOTRYGD_PROXY_BASEURL" to "https://hm-infotrygd-proxy.dev-fss-pub.nais.io",
@@ -71,6 +73,7 @@ private val prodProperties = ConfigurationMap(
         "KAFKA_TOPIC" to "teamdigihot.hm-soknadsbehandling-v1",
         "AZURE_TENANT_BASEURL" to "https://login.microsoftonline.com",
         "DBAPI_SCOPE" to "api://prod-gcp.teamdigihot.hm-soknadsbehandling-db/.default",
+        "DELBESTILLING_API_SCOPE" to "api://prod-gcp.teamdigihot.hm-delbestilling-api/.default",
         "INFOTRYGD_PROXY_SCOPE" to "api://prod-fss.teamdigihot.hm-infotrygd-proxy/.default",
         "SOKNADSBEHANDLING_DB_CLIENT_ID" to "prod-gcp:teamdigihot:hm-soknadsbehandling-db",
         "INFOTRYGD_PROXY_BASEURL" to "https://hm-infotrygd-proxy.prod-fss-pub.nais.io",
@@ -96,6 +99,7 @@ internal object Configuration {
     }
 
     val soknadsbehandlingDb: SoknadsbehandlingDb = SoknadsbehandlingDb()
+    val delbestillingApi: DelbestillingApi = DelbestillingApi()
     val infotrygdProxy: InfotrygdProxy = InfotrygdProxy()
     val hmdb: Hmdb = Hmdb()
     val slack: Slack = Slack()
@@ -129,6 +133,7 @@ internal object Configuration {
         val clientId: String = config[Key("AZURE_APP_CLIENT_ID", stringType)],
         val clientSecret: String = config[Key("AZURE_APP_CLIENT_SECRET", stringType)],
         val dbApiScope: String = config[Key("DBAPI_SCOPE", stringType)],
+        val delbestillingApiScope: String = config[Key("DELBESTILLING_API_SCOPE", stringType)],
         val infotrygdProxyScope: String = config[Key("INFOTRYGD_PROXY_SCOPE", stringType)]
     )
 
@@ -147,6 +152,10 @@ internal object Configuration {
 
     data class SoknadsbehandlingDb(
         val baseUrl: String = config[Key("SOKNADSBEHANDLING_DB_BASEURL", stringType)]
+    )
+
+    data class DelbestillingApi(
+        val baseUrl: String = config[Key("DELBESTILLING_API_BASEURL", stringType)]
     )
 
     data class InfotrygdProxy(
