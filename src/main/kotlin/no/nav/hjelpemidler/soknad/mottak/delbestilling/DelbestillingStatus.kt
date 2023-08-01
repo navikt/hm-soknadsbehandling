@@ -9,7 +9,6 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.hjelpemidler.soknad.mottak.river.PacketListenerWithOnError
-import no.nav.hjelpemidler.soknad.mottak.service.BestillingGodkjentLagretData
 import java.util.UUID
 
 data class Ordrekvittering(
@@ -30,7 +29,7 @@ internal class DelbestillingStatus(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandAny("eventName", listOf("hm-ordrekvittering-delbestilling-mottatt"))}
+            validate { it.demandAny("eventName", listOf("hm-ordrekvittering-delbestilling-mottatt")) }
             validate { it.requireKey("eventId", "opprettet", "kvittering") }
         }.register(this)
     }
