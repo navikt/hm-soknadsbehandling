@@ -19,13 +19,12 @@ data class Ordrekvittering(
     val status: Status,
 )
 
+private val logger = KotlinLogging.logger {}
+
 internal class DelbestillingStatus(
     rapidsConnection: RapidsConnection,
     private val delbestillingClient: DelbestillingClient,
 ) : PacketListenerWithOnError {
-    companion object {
-        private val logger = KotlinLogging.logger {}
-    }
 
     init {
         River(rapidsConnection).apply {
@@ -43,8 +42,12 @@ internal class DelbestillingStatus(
             val eventId = UUID.fromString(packet.eventId)
             val opprettet = packet.opprettet
             val kvittering = packet.kvittering
+            val saksnummer = kvittering.saksnummer
+            val status = kvittering.status
 
-            delbestillingClient.oppdaterStatus(kvittering.saksnummer, kvittering.status)
+            logger.info { "Oppdaterer status for delbestilling $saksnummer (aka hmdel_$saksnummer til status $status" }
+            delbestillingClient.oppdaterStatus(saksnummer, status)
+            logger.info { "Status  for delbestilling $saksnummer (hmdel_$saksnummer) oppdatert OK" }
         }
     }
 }
