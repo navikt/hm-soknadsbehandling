@@ -43,6 +43,14 @@ at søknaden og dokumenta i søknaden tilhøyrer rett person, og at informasjon 
 - VEDTAKSRESULTAT_ANNET: Samlepost for ulike resultat i Infotrygd. Dei må kontakte NAV Hjelpemiddelsentral for å få vite meir.
 - UTSENDING_STARTET: Fyrste ordrelinje mottatt frå OEBS. Utsending av hjelpemiddel til kommunen har starta.
 
+# Statusendringer for delbestillinger
+For delbestillinger så gjelder følgende statuser (som kommer fra OEBS):
+- REGISTRERT: bestillingen er mottatt i OeBS
+- KLARGJORT: ?? (avventer info fra OeBS-gjengen)
+- LUKKET: ??
+
+Kall for å oppdatere disse blir gjort mot hm-delbestilling-api (ikke hm-soknadsbehandling-db som for søknader).
+
 # Henvendelser
 
 Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på GitHub.

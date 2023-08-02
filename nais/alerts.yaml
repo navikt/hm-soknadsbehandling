@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: hm-soknadsbehandling
+  namespace: teamdigihot
+  labels:
+    team: teamdigihot
+spec:
+  groups:
+    - name: hm-soknadsbehandling-dev-gcp-alerts
+      rules:
+        - alert: feil i selftest
+          expr: selftests_aggregate_result_status{app="hm-soknadsbehandling"} > 0
+          for: 1m
+          annotations:
+            summary: "hm-soknadsbehandling sin selftest feiler"
+            action: "Sjekk {{ $labels.app }} i {{ $labels.namespace }} sine selftest for å se hva som er galt"
+          labels:
+            namespace: teamdigihot
