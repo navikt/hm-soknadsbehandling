@@ -44,7 +44,7 @@ internal class DelbestillingStatus(
             val opprettet = packet.opprettet
             val kvittering = packet.kvittering
 
-            oppdaterStatus(kvittering.id, kvittering.status)
+            oppdaterStatus(kvittering.saksnummer, kvittering.status)
         }
     }
 
