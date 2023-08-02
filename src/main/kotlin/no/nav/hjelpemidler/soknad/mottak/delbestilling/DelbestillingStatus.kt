@@ -44,20 +44,7 @@ internal class DelbestillingStatus(
             val opprettet = packet.opprettet
             val kvittering = packet.kvittering
 
-            oppdaterStatus(kvittering.saksnummer, kvittering.status)
+            delbestillingClient.oppdaterStatus(kvittering.saksnummer, kvittering.status)
         }
     }
-
-    private suspend fun oppdaterStatus(delbestillingId: String, status: Status) =
-        kotlin.runCatching {
-            delbestillingClient.oppdaterStatus(delbestillingId, status)
-        }.onSuccess {
-            if (it > 0) {
-                logger.info("Status på delbestilling satt til $status for delbestillingId $delbestillingId, it=$it")
-            } else {
-                logger.warn("Status er allereie sett til $status for delbestillingId $delbestillingId")
-            }
-        }.onFailure {
-            logger.error("Failed to update status to $status for delbestillingId $delbestillingId")
-        }.getOrThrow()
 }

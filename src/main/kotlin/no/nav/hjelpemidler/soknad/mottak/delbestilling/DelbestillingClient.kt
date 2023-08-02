@@ -1,7 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.delbestilling
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.header
 import io.ktor.client.request.headers
@@ -27,17 +26,18 @@ internal class DelbestillingClient(
     private val httpClient: HttpClient = httpClient(),
 ) {
 
-    suspend fun oppdaterStatus(delbestillingId: String, status: Status): Int {
+    suspend fun oppdaterStatus(delbestillingId: String, status: Status) {
         return withContext(Dispatchers.IO) {
-            kotlin.runCatching {
+            try {
                 httpClient.request("$baseUrl/delbestilling/status/$delbestillingId") {
                     method = HttpMethod.Put
                     headers()
                     setBody(status)
-                }.body<Int>()
-            }.onFailure {
-                logger.error { it.message }
-            }.getOrThrow()
+                }
+            } catch (e: Exception) {
+                logger.error(e) { "Request for å oppdatere status for $delbestillingId feilet" }
+                throw e
+            }
         }
     }
 
