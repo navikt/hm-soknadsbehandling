@@ -51,7 +51,7 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
-          RESOURCE: nais/nais-dev.yaml,nais/alerts-dev.yaml
+          RESOURCE: nais/nais-dev.yaml,nais/alerts.yaml
           IMAGE: ${{ needs.build.outputs.image }}
 
   deploy-prod:
@@ -65,7 +65,7 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-gcp
-          RESOURCE: nais/nais-prod.yaml,nais/alerts-prod.yaml
+          RESOURCE: nais/nais-prod.yaml,nais/alerts.yaml
           IMAGE: ${{ needs.build.outputs.image }}
 
   trivy-imagescan:
