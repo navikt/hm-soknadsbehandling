@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - gha0308
+      - deps-0408
 
 jobs:
   build:

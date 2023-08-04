@@ -28,22 +28,22 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-val ktorVersion = "2.2.4"
+val ktorVersion = "2.3.3"
 fun ktor(name: String) = "io.ktor:ktor-$name:$ktorVersion"
 fun graphqlKotlin(name: String) = "com.expediagroup:graphql-kotlin-$name:$graphQLClientVersion"
 
 dependencies {
     // R&R and Logging fixes
-    implementation("com.github.navikt:rapids-and-rivers:2022111011111668075098.65e508dcde8b") {
+    implementation("com.github.navikt:rapids-and-rivers:2023080113411690890096.310ed8e5ed93") {
         exclude(group = "ch.qos.logback", module = "logback-classic")
         exclude(group = "net.logstash.logback", module = "logstash-logback-encoder")
     }
-    api("ch.qos.logback:logback-classic:1.4.4")
-    api("net.logstash.logback:logstash-logback-encoder:7.2") {
+    api("ch.qos.logback:logback-classic:1.4.7")
+    api("net.logstash.logback:logstash-logback-encoder:7.3") {
         exclude("com.fasterxml.jackson.core")
     }
 
-    implementation("io.github.microutils:kotlin-logging:3.0.4")
+    implementation("io.github.microutils:kotlin-logging:3.0.5")
 
     // Kotlin
     implementation(kotlin("stdlib-jdk8"))
@@ -56,7 +56,7 @@ dependencies {
     implementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
 
     // Jackson
-    val jacksonVersion = "2.14.0"
+    val jacksonVersion = "2.15.1"
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
@@ -83,8 +83,8 @@ dependencies {
     // Test
     testImplementation(kotlin("test"))
     testImplementation(ktor("server-test-host"))
-    testImplementation("io.mockk:mockk:1.13.2")
-    val kotestVersion = "5.5.4"
+    testImplementation("io.mockk:mockk:1.13.4")
+    val kotestVersion = "5.5.5"
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
 }
