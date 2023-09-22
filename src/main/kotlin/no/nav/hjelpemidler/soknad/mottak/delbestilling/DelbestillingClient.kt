@@ -26,13 +26,13 @@ internal class DelbestillingClient(
     private val httpClient: HttpClient = httpClient(),
 ) {
 
-    suspend fun oppdaterStatus(delbestillingId: String, status: Status) {
+    suspend fun oppdaterStatus(delbestillingId: String, status: Status, ordrenummer: String) {
         return withContext(Dispatchers.IO) {
             try {
-                httpClient.request("$baseUrl/delbestilling/status/$delbestillingId") {
+                httpClient.request("$baseUrl/delbestilling/status/v2/$delbestillingId") {
                     method = HttpMethod.Put
                     headers()
-                    setBody(status)
+                    setBody(StatusOppdateringDto(status, ordrenummer))
                 }
             } catch (e: Exception) {
                 logger.error(e) { "Request for å oppdatere status for $delbestillingId feilet" }
@@ -48,3 +48,8 @@ internal class DelbestillingClient(
         header("X-Correlation-ID", UUID.randomUUID().toString())
     }
 }
+
+private data class StatusOppdateringDto(
+    val status: Status,
+    val oebsOrdrenummer: String,
+)
