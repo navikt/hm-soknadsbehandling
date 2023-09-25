@@ -8,10 +8,8 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.hjelpemidler.soknad.mottak.river.PacketListenerWithOnError
 import java.time.LocalDate
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
@@ -27,23 +25,29 @@ internal class DelbestillingOrdrelinjeStatus(
         }.register(this)
     }
 
-    private val JsonMessage.eventId get() = this["eventId"].textValue()
-    private val JsonMessage.opprettet get() = this["eventCreated"].asLocalDateTime()
     private val JsonMessage.ordrelinje get() = jsonMapper.convertValue<Ordrelinje>(this["orderLine"])
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
             try {
-                val eventId = UUID.fromString(packet.eventId)
-                val opprettet = packet.opprettet
                 val ordrelinje = packet.ordrelinje
-
                 val ordrenummer = ordrelinje.ordrenr
                 val hmsnr = ordrelinje.artikkelnr
+                val hjelpemiddeltype = ordrelinje.hjelpemiddeltype
 
-                logger.info { "Mottok skipningsbekreftelse for ordrenummer $ordrenummer på hmsnr $hmsnr" }
+                if (hjelpemiddeltype == "Del") {
+                    /* Her vet vi egentlig ikke om dette er skipningsbekreftelse for en delbestilling.
+                    * Men hm-delbestilling-api vet det utifra om den kjenner igjen ordrenummeret.
+                    * Så vi sender alt til hm-delbestilling-api, så må den ignorere det som ikke er relatert til delbestillinger.
+                    */
+                    logger.info { "Mottok skipningsbekreftelse for ordrenummer $ordrenummer på hmsnr $hmsnr" }
+                    delbestillingClient.oppdaterDellinjeStatus(ordrenummer, Status.SKIPNINGSBEKREFTET, hmsnr)
+                } else {
+                    logger.info { "Ignorerer skipningsbekreftelse for ordrenummer $ordrenummer med hjelpemiddeltype $hjelpemiddeltype" }
+                }
+
             } catch (e: Exception) {
-                logger.error(e) { "Parsing av hm-uvalidert-ordrelinje event feilet" }
+                logger.error(e) { "Håndtering av hm-uvalidert-ordrelinje event feilet" }
             }
         }
     }

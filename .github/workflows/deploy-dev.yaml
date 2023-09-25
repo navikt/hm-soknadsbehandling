@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - skipningsbekreftelse-del2
+      - skipningsbekreftelse2
 
 jobs:
   build:
