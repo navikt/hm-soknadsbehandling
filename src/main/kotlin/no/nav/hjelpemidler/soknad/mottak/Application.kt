@@ -9,6 +9,7 @@ import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClientImpl
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClientImpl
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingClient
+import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingOrdrelinjeStatus
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingStatus
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.river.BestillingAvvistFraHotsak
@@ -86,6 +87,7 @@ fun main() {
             BestillingAvvistFraHotsak(this, søknadForRiverClient)
             // Delbestilling
             DelbestillingStatus(this, delbestillingClient)
+            DelbestillingOrdrelinjeStatus(this, delbestillingClient)
         }
         .start()
 }
