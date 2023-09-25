@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - deps-0408
+      - skipningsbekreftelse
 
 jobs:
   build:

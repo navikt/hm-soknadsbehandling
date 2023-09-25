@@ -44,10 +44,11 @@ internal class DelbestillingStatus(
             val kvittering = packet.kvittering
             val saksnummer = kvittering.saksnummer
             val status = kvittering.status
+            val ordrenummer = kvittering.ordrenummer
 
-            logger.info { "Oppdaterer status for delbestilling $saksnummer (aka hmdel_$saksnummer til status $status" }
-            delbestillingClient.oppdaterStatus(saksnummer, status)
-            logger.info { "Status  for delbestilling $saksnummer (hmdel_$saksnummer) oppdatert OK" }
+            logger.info { "Oppdaterer status for delbestilling $saksnummer (aka hmdel_$saksnummer, OeBS ordrenummer $ordrenummer) til status $status" }
+            delbestillingClient.oppdaterStatus(saksnummer, status, ordrenummer)
+            logger.info { "Status  for delbestilling $saksnummer (hmdel_$saksnummer, OeBS ordrenummer $ordrenummer) oppdatert OK" }
         }
     }
 }
