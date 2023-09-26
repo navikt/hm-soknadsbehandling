@@ -45,9 +45,10 @@ at søknaden og dokumenta i søknaden tilhøyrer rett person, og at informasjon 
 
 # Statusendringer for delbestillinger
 For delbestillinger så gjelder følgende statuser (som kommer fra OEBS):
-- REGISTRERT: bestillingen er mottatt i OeBS
-- KLARGJORT: ?? (avventer info fra OeBS-gjengen)
-- LUKKET: ??
+- REGISTRERT: Status når ordre er opprettet i OeBS
+- KLARGJORT: Ordre fra DigiHot klargjøres automatisk umiddelbart etter at otdre er opprettet og "Arbeidsflyt" bakgrunnsprosesser er kjørt (automatisk). Skipning av ordrelinjer m.m. skjer men ordren har status Klargjort. Vi mottar som regel KLARGJORT og REGISTRERT (omtrent) samtidig fra OeBS.
+- SKIPNINGSBEKREFTET: 5.17 skjema skrevet ut, og artikkelen er klar til levering
+- LUKKET: Ordren lukkes siste dag i måneden dersom alle ordrelinjene tilknyttet ordren er lukket. Ordrelinjer får status Lukket en gang etter at de er sendt ut.  
 
 Kall for å oppdatere disse blir gjort mot hm-delbestilling-api (ikke hm-soknadsbehandling-db som for søknader).
 

@@ -41,6 +41,21 @@ internal class DelbestillingClient(
         }
     }
 
+    suspend fun oppdaterDellinjeStatus(ordrenummer: Int, status: Status, hmsnr: String) {
+        return withContext(Dispatchers.IO) {
+            try {
+                httpClient.request("$baseUrl/delbestilling/status/dellinje/$ordrenummer") {
+                    method = HttpMethod.Put
+                    headers()
+                    setBody(DellinjeStatusOppdateringDto(status, hmsnr))
+                }
+            } catch (e: Exception) {
+                logger.error(e) { "Request for å skipningsbekrefte dellinje feilet. Ordrenr: $ordrenummer, hmsnr: $hmsnr." }
+                throw e
+            }
+        }
+    }
+
     private fun HttpMessageBuilder.headers() = this.headers {
         contentType(ContentType.Application.Json)
         accept(ContentType.Application.Json)
@@ -52,4 +67,9 @@ internal class DelbestillingClient(
 private data class StatusOppdateringDto(
     val status: Status,
     val oebsOrdrenummer: String,
+)
+
+private data class DellinjeStatusOppdateringDto(
+    val status: Status,
+    val hmsnr: String,
 )
