@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
 import no.nav.hjelpemidler.soknad.mottak.httpClient
+import java.time.LocalDate
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -41,13 +42,13 @@ internal class DelbestillingClient(
         }
     }
 
-    suspend fun oppdaterDellinjeStatus(ordrenummer: Int, status: Status, hmsnr: String) {
+    suspend fun oppdaterDellinjeStatus(ordrenummer: Int, status: Status, hmsnr: String, datoOppdatert: LocalDate) {
         return withContext(Dispatchers.IO) {
             try {
                 httpClient.request("$baseUrl/delbestilling/status/dellinje/$ordrenummer") {
                     method = HttpMethod.Put
                     headers()
-                    setBody(DellinjeStatusOppdateringDto(status, hmsnr))
+                    setBody(DellinjeStatusOppdateringDto(status, hmsnr, datoOppdatert))
                 }
             } catch (e: Exception) {
                 logger.error(e) { "Request for å skipningsbekrefte dellinje feilet. Ordrenr: $ordrenummer, hmsnr: $hmsnr." }
@@ -72,4 +73,5 @@ private data class StatusOppdateringDto(
 private data class DellinjeStatusOppdateringDto(
     val status: Status,
     val hmsnr: String,
+    val datoOppdatert: LocalDate
 )

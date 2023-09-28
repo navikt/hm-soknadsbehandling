@@ -34,6 +34,7 @@ internal class DelbestillingOrdrelinjeStatus(
                 val ordrenummer = ordrelinje.ordrenr
                 val hmsnr = ordrelinje.artikkelnr
                 val hjelpemiddeltype = ordrelinje.hjelpemiddeltype
+                val datoOppdatert = ordrelinje.sistOppdatert
 
                 if (hjelpemiddeltype == "Del") {
                     /* Her vet vi egentlig ikke om dette er skipningsbekreftelse for en delbestilling.
@@ -41,7 +42,12 @@ internal class DelbestillingOrdrelinjeStatus(
                     * Så vi sender alt til hm-delbestilling-api, så må den ignorere det som ikke er relatert til delbestillinger.
                     */
                     logger.info { "Mottok skipningsbekreftelse for ordrenummer $ordrenummer på hmsnr $hmsnr" }
-                    delbestillingClient.oppdaterDellinjeStatus(ordrenummer, Status.SKIPNINGSBEKREFTET, hmsnr)
+                    delbestillingClient.oppdaterDellinjeStatus(
+                        ordrenummer,
+                        Status.SKIPNINGSBEKREFTET,
+                        hmsnr,
+                        datoOppdatert
+                    )
                 } else {
                     logger.info { "Ignorerer skipningsbekreftelse for ordrenummer $ordrenummer med hjelpemiddeltype $hjelpemiddeltype" }
                 }
