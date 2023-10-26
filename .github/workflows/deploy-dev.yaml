@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - skipningsbekreftelse2
+      - deps231026
 
 jobs:
   build:
