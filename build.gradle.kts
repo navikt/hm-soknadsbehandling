@@ -1,13 +1,12 @@
 import com.expediagroup.graphql.plugin.gradle.tasks.GraphQLIntrospectSchemaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val graphQLClientVersion = "6.1.0"
+val graphQLClientVersion = "6.5.6"
 
 plugins {
     application
     kotlin("jvm") version "1.8.20"
-    id("com.expediagroup.graphql") version "6.1.0"
-    id("com.diffplug.spotless") version "6.2.0"
+    id("com.expediagroup.graphql") version "6.5.6"
 }
 
 group = "no.nav.hjelpemidler.soknad.mottak"
@@ -28,18 +27,18 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-val ktorVersion = "2.3.3"
+val ktorVersion = "2.3.5"
 fun ktor(name: String) = "io.ktor:ktor-$name:$ktorVersion"
 fun graphqlKotlin(name: String) = "com.expediagroup:graphql-kotlin-$name:$graphQLClientVersion"
 
 dependencies {
     // R&R and Logging fixes
-    implementation("com.github.navikt:rapids-and-rivers:2023080113411690890096.310ed8e5ed93") {
+    implementation("com.github.navikt:rapids-and-rivers:2023101613431697456627.0cdd93eb696f") {
         exclude(group = "ch.qos.logback", module = "logback-classic")
         exclude(group = "net.logstash.logback", module = "logstash-logback-encoder")
     }
-    api("ch.qos.logback:logback-classic:1.4.7")
-    api("net.logstash.logback:logstash-logback-encoder:7.3") {
+    api("ch.qos.logback:logback-classic:1.4.11")
+    api("net.logstash.logback:logstash-logback-encoder:7.4") {
         exclude("com.fasterxml.jackson.core")
     }
 
@@ -48,7 +47,7 @@ dependencies {
     // Kotlin
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.4") // følger ikke kotlin-versjon
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.3") // følger ikke kotlin-versjon
 
     // Other
     implementation("com.natpryce:konfig:1.6.10.0")
@@ -56,7 +55,7 @@ dependencies {
     implementation("com.github.tomakehurst:wiremock-standalone:2.27.2")
 
     // Jackson
-    val jacksonVersion = "2.15.1"
+    val jacksonVersion = "2.15.3"
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
@@ -70,7 +69,7 @@ dependencies {
 
     // InfluxDB
     implementation("org.influxdb:influxdb-java:2.23")
-    implementation("com.influxdb:influxdb-client-kotlin:6.7.0")
+    implementation("com.influxdb:influxdb-client-kotlin:6.10.0")
 
     // GraphQL Client
     implementation(graphqlKotlin("ktor-client")) {
@@ -83,27 +82,13 @@ dependencies {
     // Test
     testImplementation(kotlin("test"))
     testImplementation(ktor("server-test-host"))
-    testImplementation("io.mockk:mockk:1.13.4")
-    val kotestVersion = "5.5.5"
+    testImplementation("io.mockk:mockk:1.13.8")
+    val kotestVersion = "5.7.2"
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
 }
 
-spotless {
-    kotlin {
-        ktlint()
-        targetExclude("**/generated/**")
-    }
-    kotlinGradle {
-        target("*.gradle.kts")
-        ktlint()
-    }
-}
-
 tasks.withType<KotlinCompile> {
-    dependsOn("spotlessApply")
-    dependsOn("spotlessCheck")
-
     kotlinOptions.jvmTarget = "17"
 }
 
