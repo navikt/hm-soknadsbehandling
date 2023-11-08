@@ -17,7 +17,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class SoknadMedFullmaktDataSink(
+internal class SoknadMedFullmaktDataSink( // TODO finn bedre navn. denne plukker opp alt som er ferdig signert, eller ikke trenger fullmakt
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient,
     private val metrics: Metrics
@@ -26,7 +26,7 @@ internal class SoknadMedFullmaktDataSink(
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "nySoknad") }
-            validate { it.demandAny("signatur", listOf("FULLMAKT", "FRITAK_FRA_FULLMAKT")) }
+            validate { it.demandAny("signatur", listOf("FULLMAKT", "FRITAK_FRA_FULLMAKT", "IKKE_INNHENTET_FORDI_BYTTE")) }
             validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId", "kommunenavn") }
             validate { it.forbid("soknadId") }
         }.register(this)
