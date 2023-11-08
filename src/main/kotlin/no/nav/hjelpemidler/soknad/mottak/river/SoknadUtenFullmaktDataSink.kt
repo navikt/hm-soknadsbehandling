@@ -20,7 +20,7 @@ import java.util.UUID
 private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class SoknadUtenFullmaktDataSink(
+internal class SoknadUtenFullmaktDataSink( // TODO finn bedre navn. Denne plukker opp søknader som mangler signatur fra bruker
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient,
     private val metrics: Metrics
