@@ -42,5 +42,5 @@ data class HarOrdre(
 )
 
 enum class BehovsmeldingType {
-    SØKNAD, BESTILLING
+    SØKNAD, BESTILLING, BYTTE
 }
