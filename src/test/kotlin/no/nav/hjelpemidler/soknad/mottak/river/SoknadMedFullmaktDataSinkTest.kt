@@ -27,7 +27,7 @@ internal class SoknadMedFullmaktDataSinkTest {
     private val metricsMock = mockk<Metrics>(relaxed = true)
 
     private val rapid = TestRapid().apply {
-        SoknadMedFullmaktDataSink(this, mock, metricsMock)
+        BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(this, mock, metricsMock)
     }
 
     @BeforeEach
@@ -215,6 +215,34 @@ internal class SoknadMedFullmaktDataSinkTest {
 
         rapid.sendTestMessage(okPacket)
         capturedSoknadData.captured.status shouldBe Status.GODKJENT_MED_FULLMAKT
+    }
+
+    @Test
+    fun `Byttemelding med signatur IKKE_INNHENTET_FORDI_BYTTE får riktig status`() {
+
+        val okPacket = """
+            {
+                "eventName": "nySoknad",
+                "signatur": "IKKE_INNHENTET_FORDI_BYTTE",
+                "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                "fodselNrBruker": "fnrBruker",
+                "fodselNrInnsender": "fodselNrInnsender",
+                "soknad": {
+                    "soknad": {
+                        "date": "2020-06-19",
+                        "bruker": {
+                                "fornavn": "fornavn",
+                                "etternavn": "etternavn"
+                            },
+                        "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
+                    }
+                },
+                "kommunenavn": "Oslo"
+            }
+        """.trimMargin()
+
+        rapid.sendTestMessage(okPacket)
+        capturedSoknadData.captured.status shouldBe Status.INNSENDT_FULLMAKT_IKKE_PÅKREVD
     }
 
     @Test

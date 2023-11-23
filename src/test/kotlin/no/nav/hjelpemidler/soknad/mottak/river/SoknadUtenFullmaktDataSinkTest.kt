@@ -26,7 +26,7 @@ internal class SoknadUtenFullmaktDataSinkTest {
     private val influxMock = mockk<Metrics>(relaxed = true)
 
     private val rapid = TestRapid().apply {
-        SoknadUtenFullmaktDataSink(this, mock, influxMock)
+        BehovsmeldingTilBrukerbekreftelseDataSink(this, mock, influxMock)
     }
 
     @BeforeEach
