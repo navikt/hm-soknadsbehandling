@@ -28,6 +28,7 @@ at søknaden og dokumenta i søknaden tilhøyrer rett person, og at informasjon 
 
 #### Status knytta til digital søknad der formidlar har to ulike val for signeringsform
 - GODKJENT_MED_FULLMAKT: Søknad sendt inn med fullmakt.
+- INNSENDT_FULLMAKT_IKKE_PÅKREVD: Behovsmelding sendt inn som ikke trenger bekreftelse fra bruker. Foreløpig bare BYTTE-saker. 
 - VENTER_GODKJENNING: Søknad sendt inn med brukargodkjenning. Søknaden er ikkje godkjend av brukar enda.
 - GODKJENT: Søknad sendt inn med brukargodkjenning. Godkjend av brukar før utløpsfristen.
 - SLETTET: Søknad sendt inn med brukargodkjenning. Sletta av brukar fordi dei ikkje er samde i innhaldet.

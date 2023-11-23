@@ -25,8 +25,8 @@ import no.nav.hjelpemidler.soknad.mottak.river.NyInfotrygdOrdrelinje
 import no.nav.hjelpemidler.soknad.mottak.river.OppgaveSink
 import no.nav.hjelpemidler.soknad.mottak.river.PapirSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.SlettSoknad
-import no.nav.hjelpemidler.soknad.mottak.river.SoknadMedFullmaktDataSink
-import no.nav.hjelpemidler.soknad.mottak.river.SoknadUtenFullmaktDataSink
+import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink
+import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingTilBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
 import no.nav.hjelpemidler.soknad.mottak.service.MonitoreringService
@@ -67,8 +67,8 @@ fun main() {
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .build().apply {
             val metrics = Metrics(this, pdlClient)
-            SoknadMedFullmaktDataSink(this, søknadForRiverClient, metrics)
-            SoknadUtenFullmaktDataSink(this, søknadForRiverClient, metrics)
+            BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(this, søknadForRiverClient, metrics)
+            BehovsmeldingTilBrukerbekreftelseDataSink(this, søknadForRiverClient, metrics)
             SlettSoknad(this, søknadForRiverClient)
             GodkjennSoknad(this, søknadForRiverClient)
             startSøknadUtgåttScheduling(SøknadsgodkjenningService(søknadForRiverClient, this))
