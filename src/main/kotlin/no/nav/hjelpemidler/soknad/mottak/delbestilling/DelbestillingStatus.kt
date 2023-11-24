@@ -47,6 +47,9 @@ internal class DelbestillingStatus(
             val ordrenummer = kvittering.ordrenummer
 
             logger.info { "Oppdaterer status for delbestilling $saksnummer (aka hmdel_$saksnummer, OeBS ordrenummer $ordrenummer) til status $status" }
+            if (status == Status.ANNULLERT) {
+                throw NotImplementedError("Håndtering av status ANNULLERT mangler")
+            }
             delbestillingClient.oppdaterStatus(saksnummer, status, ordrenummer)
             logger.info { "Status  for delbestilling $saksnummer (hmdel_$saksnummer, OeBS ordrenummer $ordrenummer) oppdatert OK" }
         }

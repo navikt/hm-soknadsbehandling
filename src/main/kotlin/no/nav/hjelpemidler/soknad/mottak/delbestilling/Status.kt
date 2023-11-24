@@ -1,5 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.delbestilling
 
 enum class Status {
-    REGISTRERT, KLARGJORT, SKIPNINGSBEKREFTET, LUKKET
+    REGISTRERT, KLARGJORT, SKIPNINGSBEKREFTET, LUKKET, ANNULLERT
 }
