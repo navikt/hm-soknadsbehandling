@@ -37,7 +37,7 @@ dependencies {
         exclude(group = "ch.qos.logback", module = "logback-classic")
         exclude(group = "net.logstash.logback", module = "logstash-logback-encoder")
     }
-    api("ch.qos.logback:logback-classic:1.4.11")
+    api("ch.qos.logback:logback-classic:1.4.12")
     api("net.logstash.logback:logstash-logback-encoder:7.4") {
         exclude("com.fasterxml.jackson.core")
     }
