@@ -1,3 +1,5 @@
+
+import com.expediagroup.graphql.plugin.gradle.tasks.GraphQLGenerateClientTask
 import com.expediagroup.graphql.plugin.gradle.tasks.GraphQLIntrospectSchemaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -114,14 +116,25 @@ graphql {
         queryFileDirectory = "src/main/resources/hmdb"
         packageName = "no.nav.hjelpemidler.soknad.mottak.client.hmdb"
     }
-    client {
-        schemaFile = file("src/main/resources/hmdb-ng/schema.graphqls")
-        queryFileDirectory = "src/main/resources/hmdb-ng"
-        packageName = "no.nav.hjelpemidler.soknad.mottak.client.hmdb-ng"
-    }
 }
 
 val graphqlIntrospectSchema by tasks.getting(GraphQLIntrospectSchemaTask::class) {
     endpoint.set("https://hm-grunndata-api.dev.intern.nav.no/graphql")
     outputFile.set(file("src/main/resources/hmdb/schema.graphql"))
+}
+
+// Add secondary hmdb client
+val graphqlGenerateOtherClient by tasks.registering(GraphQLGenerateClientTask::class) {
+    packageName.set("no.nav.hjelpemidler.soknad.mottak.client.hmdb-ng")
+    schemaFile.set(file("src/main/resources/hmdb-ng/schema.graphqls"))
+    queryFileDirectory.set(file("${project.projectDir.absolutePath}/src/main/resources/hmdb-ng"))
+    outputDirectory.set(file(project.layout.buildDirectory.dir("generated/source/graphql/main")))
+}
+
+tasks {
+    // original client generation task will automatically add itself to compileKotlin dependency
+    // make sure that before we run compile task it will generate other client as well
+    compileKotlin {
+        dependsOn("graphqlGenerateOtherClient")
+    }
 }
