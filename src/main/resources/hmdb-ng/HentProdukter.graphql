@@ -1,5 +1,5 @@
 query HentProdukter($hmsnrs: [String!]!) {
-  products(hmsnrs: $hmsnr) {
+  products(hmsnrs: $hmsnrs) {
     hmsArtNr
     isoCategoryTextShort
   }
