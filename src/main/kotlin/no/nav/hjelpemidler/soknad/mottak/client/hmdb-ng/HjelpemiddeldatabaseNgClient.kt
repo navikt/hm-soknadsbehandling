@@ -6,7 +6,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
 import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.Configuration
-import no.nav.hjelpemidler.soknad.mottak.client.`hmdb-ng`.products.Product
+import no.nav.hjelpemidler.soknad.mottak.client.`hmdb-ng`.hentprodukter.Product
 import java.net.URL
 
 object HjelpemiddeldatabaseNgClient {
@@ -21,7 +21,7 @@ object HjelpemiddeldatabaseNgClient {
     suspend fun hentProdukter(hmsnrs: Set<String>): List<Product> {
         if (hmsnrs.isEmpty()) return emptyList()
         log.debug { "Henter produkter med hmsnrs=$hmsnrs fra hjelpemiddeldatabasen" }
-        val request = Products(variables = Products.Variables(hmsnrs = hmsnrs.toList()))
+        val request = HentProdukter(variables = HentProdukter.Variables(hmsnrs = hmsnrs.toList()))
         return try {
             val response = client.execute(request)
             when {

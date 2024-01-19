@@ -1,4 +1,4 @@
-query products($hmsnrs: [String!]!) {
+query HentProdukter($hmsnrs: [String!]!) {
   products(hmsnrs: $hmsnr) {
     hmsArtNr
     isoCategoryTextShort
