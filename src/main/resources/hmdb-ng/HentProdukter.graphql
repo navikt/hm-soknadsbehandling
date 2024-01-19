@@ -1,0 +1,6 @@
+query products($hmsnrs: [String!]!) {
+  products(hmsnrs: $hmsnr) {
+    hmsArtNr
+    isoCategoryTextShort
+  }
+}

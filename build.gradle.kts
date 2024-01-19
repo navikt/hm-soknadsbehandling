@@ -114,6 +114,11 @@ graphql {
         queryFileDirectory = "src/main/resources/hmdb"
         packageName = "no.nav.hjelpemidler.soknad.mottak.client.hmdb"
     }
+    client {
+        schemaFile = file("src/main/resources/hmdb-ng/schema.graphqls")
+        queryFileDirectory = "src/main/resources/hmdb-ng"
+        packageName = "no.nav.hjelpemidler.soknad.mottak.client.hmdb-ng"
+    }
 }
 
 val graphqlIntrospectSchema by tasks.getting(GraphQLIntrospectSchemaTask::class) {
