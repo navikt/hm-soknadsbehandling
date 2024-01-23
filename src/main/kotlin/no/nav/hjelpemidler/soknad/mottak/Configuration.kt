@@ -41,7 +41,7 @@ private val localProperties = ConfigurationMap(
         "SLACK_HOOK" to "http://dummy",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "false",
         "OPPSLAG_URL" to "http://digihot-oppslag.intern.dev.nav.no/api",
-        "GRUNNDATA_API_URL" to "https://hm-grunndata-api.dev.intern.nav.no",
+        "GRUNNDATA_API_URL" to "https://hm-grunndata-api.intern.dev.nav.no",
         "GRUNNDATA_API_NG_URL" to "https://hm-grunndata-search.dev.intern.nav.no",
         "CONSUMER_GROUP_ID" to "hm-soknadsbehandling-v1",
     ),
