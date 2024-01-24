@@ -42,7 +42,7 @@ private val localProperties = ConfigurationMap(
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "false",
         "OPPSLAG_URL" to "http://digihot-oppslag.intern.dev.nav.no/api",
         "GRUNNDATA_API_URL" to "https://hm-grunndata-api.intern.dev.nav.no",
-        "GRUNNDATA_API_NG_URL" to "https://hm-grunndata-search.dev.intern.nav.no",
+        "GRUNNDATA_API_NG_URL" to "http://localhost:8082",
         "CONSUMER_GROUP_ID" to "hm-soknadsbehandling-v1",
     ),
 )
@@ -106,7 +106,6 @@ internal object Configuration {
     val delbestillingApi: DelbestillingApi = DelbestillingApi()
     val infotrygdProxy: InfotrygdProxy = InfotrygdProxy()
     val hmdb: Hmdb = Hmdb()
-    val hmdb_ng: HmdbNg = HmdbNg()
     val slack: Slack = Slack()
     val azure: Azure = Azure()
     val application: Application = Application()
@@ -169,10 +168,7 @@ internal object Configuration {
 
     data class Hmdb(
         val grunndataApi: String = config[Key("GRUNNDATA_API_URL", stringType)],
-    )
-
-    data class HmdbNg(
-        val grunndataApi: String = config[Key("GRUNNDATA_API_NG_URL", stringType)],
+        val grunndataApiNg: String = config[Key("GRUNNDATA_API_NG_URL", stringType)],
     )
 
     data class Slack(

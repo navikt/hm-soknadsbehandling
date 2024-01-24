@@ -13,7 +13,7 @@ object HjelpemiddeldatabaseNgClient {
     private val log = KotlinLogging.logger {}
     private val client =
         GraphQLKtorClient(
-            url = URL("${Configuration.hmdb_ng.grunndataApi}/graphql"),
+            url = URL("${Configuration.hmdb.grunndataApiNg}/graphql"),
             httpClient = HttpClient(engineFactory = Apache),
             serializer = GraphQLClientJacksonSerializer()
         )
