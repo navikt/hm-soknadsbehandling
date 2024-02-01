@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - IKKE_INNHENTET_FORDI_BYTTE
+      - brukerpassbytte
 
 jobs:
   build:
