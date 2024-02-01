@@ -72,6 +72,7 @@ internal class BrukerpassbytteOpprettet(
                 it["eventId"] = ULID.random()
                 it["eventName"] = eventName
                 it["opprettet"] = LocalDateTime.now()
+                it["id"] = this.id
                 it["fnr"] = this.fnr
                 it["brukerpassbytte"] = this.brukerpassbytte
             }.toJson()
