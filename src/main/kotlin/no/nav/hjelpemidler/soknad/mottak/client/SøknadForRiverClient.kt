@@ -19,6 +19,7 @@ import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
 import no.nav.hjelpemidler.soknad.mottak.httpClient
 import no.nav.hjelpemidler.soknad.mottak.river.StatusMedÅrsak
 import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
+import no.nav.hjelpemidler.soknad.mottak.service.BrukerpassbytteData
 import no.nav.hjelpemidler.soknad.mottak.service.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
@@ -88,6 +89,7 @@ internal interface SøknadForRiverClient {
     suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean
     suspend fun savePapir(soknadData: PapirSøknadData): Int
     suspend fun hentGodkjenteSøknaderUtenOppgaveEldreEnn(dager: Int): List<String>
+    suspend fun save(bytteData: BrukerpassbytteData): Int
 }
 
 internal class SøknadForRiverClientImpl(
@@ -132,6 +134,20 @@ internal class SøknadForRiverClientImpl(
                     method = HttpMethod.Post
                     headers()
                     setBody(ordrelinje)
+                }.body<Int>()
+            }.onFailure {
+                logger.error { it.message }
+            }.getOrThrow()
+        }
+    }
+
+    override suspend fun save(bytteData: BrukerpassbytteData): Int {
+        return withContext(Dispatchers.IO) {
+            kotlin.runCatching {
+                httpClient.request("$baseUrl/brukerpassbytte") {
+                    method = HttpMethod.Post
+                    headers()
+                    setBody(bytteData)
                 }.body<Int>()
             }.onFailure {
                 logger.error { it.message }
