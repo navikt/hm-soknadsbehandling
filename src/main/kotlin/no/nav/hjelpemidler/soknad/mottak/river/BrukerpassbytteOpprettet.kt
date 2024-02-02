@@ -78,6 +78,7 @@ internal class BrukerpassbytteOpprettet(
                 it["id"] = this.id
                 it["fnr"] = this.fnr
                 it["brukerpassbytte"] = this.brukerpassbytte
+                it["soknadGjelder"] = this.soknadGjelder
             }.toJson()
         }
     }
