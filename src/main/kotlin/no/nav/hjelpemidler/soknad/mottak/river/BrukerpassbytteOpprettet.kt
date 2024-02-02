@@ -29,8 +29,7 @@ internal class BrukerpassbytteOpprettet(
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "hm-brukerpassbytte-opprettet") }
-
-            validate { it.requireKey("fnr", "brukerpassbytteId", "brukerpassbytte") }
+            validate { it.requireKey("fnr", "brukerpassbytteId", "brukerpassbytte", "eventId") }
         }.register(this)
     }
 
