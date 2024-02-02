@@ -89,7 +89,7 @@ internal interface SøknadForRiverClient {
     suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean
     suspend fun savePapir(soknadData: PapirSøknadData): Int
     suspend fun hentGodkjenteSøknaderUtenOppgaveEldreEnn(dager: Int): List<String>
-    suspend fun save(bytteData: BrukerpassbytteData): Int
+    suspend fun save(bytteData: BrukerpassbytteData)
 }
 
 internal class SøknadForRiverClientImpl(
@@ -141,14 +141,14 @@ internal class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun save(bytteData: BrukerpassbytteData): Int {
+    override suspend fun save(bytteData: BrukerpassbytteData) {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 httpClient.request("$baseUrl/brukerpassbytte") {
                     method = HttpMethod.Post
                     headers()
                     setBody(bytteData)
-                }.body<Int>()
+                }.body<String>()
             }.onFailure {
                 logger.error { it.message }
             }.getOrThrow()
