@@ -19,16 +19,18 @@ internal class OppgaveSink(rapidsConnection: RapidsConnection, private val søkn
         River(rapidsConnection).apply {
             validate { it.demandAny("eventName", listOf("hm-OppgaveOpprettet", "hm-opprettetJournalføringsoppgaveForTilbakeførtSak")) }
             validate { it.requireKey("soknadId", "oppgaveId") }
+            validate { it.interestedIn("sakstype") }
         }.register(this)
     }
 
     private val JsonMessage.soknadId get() = this["soknadId"].textValue()
     private val JsonMessage.oppgaveId get() = this["oppgaveId"].textValue()
+    private val JsonMessage.sakstype get() = if (this["sakstype"].isNull ) null else this["sakstype"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
             try {
-                val rowsUpdated = update(UUID.fromString(packet.soknadId), packet.oppgaveId)
+                val rowsUpdated = update(UUID.fromString(packet.soknadId), packet.oppgaveId, packet.sakstype)
                 if (rowsUpdated > 0) {
                     logger.info("Søknad ${packet.soknadId} oppdatert med oppgaveId ${packet.oppgaveId}")
                 } else {
@@ -46,9 +48,9 @@ internal class OppgaveSink(rapidsConnection: RapidsConnection, private val søkn
         }
     }
 
-    private suspend fun update(soknadId: UUID, oppgaveId: String) =
+    private suspend fun update(soknadId: UUID, oppgaveId: String, sakstype: String?) =
         kotlin.runCatching {
-            søknadForRiverClient.oppdaterOppgaveId(soknadId, oppgaveId)
+            søknadForRiverClient.oppdaterOppgaveId(soknadId, oppgaveId, sakstype)
         }.onFailure {
             logger.error(it) { "Kunne ikke oppdatere søknad $soknadId med oppgaveId $oppgaveId" }
         }.getOrThrow()
