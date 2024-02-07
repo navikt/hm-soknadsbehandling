@@ -16,7 +16,7 @@ internal class JournalpostSinkTest {
     private val capturedJournalpostId = slot<String>()
     private val capturedSoknadId = slot<UUID>()
     private val mock = mockk<SøknadForRiverClient>().apply {
-        coEvery { oppdaterJournalpostId(capture(capturedSoknadId), capture(capturedJournalpostId)) } returns 1
+        coEvery { oppdaterJournalpostId(capture(capturedSoknadId), capture(capturedJournalpostId), any()) } returns 1
     }
 
     private val rapid = TestRapid().apply {

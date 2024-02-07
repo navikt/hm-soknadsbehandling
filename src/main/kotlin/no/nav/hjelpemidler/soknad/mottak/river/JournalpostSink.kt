@@ -21,16 +21,18 @@ internal class JournalpostSink(
         River(rapidsConnection).apply {
             validate { it.demandAny("eventName", listOf("hm-SøknadArkivert", "hm-opprettetOgFerdigstiltJournalpost", "hm-opprettetMottattJournalpost")) }
             validate { it.requireKey("soknadId", "joarkRef") }
+            validate { it.interestedIn("sakstype") }
         }.register(this)
     }
 
     private val JsonMessage.soknadId get() = this["soknadId"].textValue()
     private val JsonMessage.journalpostId get() = this["joarkRef"].textValue()
+    private val JsonMessage.sakstype get() = if (this["sakstype"].isNull ) null else this["sakstype"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
             try {
-                val rowsUpdated = update(UUID.fromString(packet.soknadId), packet.journalpostId)
+                val rowsUpdated = update(UUID.fromString(packet.soknadId), packet.journalpostId, packet.sakstype)
                 if (rowsUpdated > 0) {
                     logger.info("Søknad ${packet.soknadId} oppdatert med journalpostId ${packet.journalpostId}")
                 } else {
@@ -48,9 +50,9 @@ internal class JournalpostSink(
         }
     }
 
-    private suspend fun update(soknadId: UUID, journalpostId: String) =
+    private suspend fun update(soknadId: UUID, journalpostId: String, sakstype: String?) =
         kotlin.runCatching {
-            søknadForRiverClient.oppdaterJournalpostId(soknadId, journalpostId)
+            søknadForRiverClient.oppdaterJournalpostId(soknadId, journalpostId, sakstype)
         }.onFailure {
             logger.error(it) { "Kunne ikke oppdatere søknad $soknadId med journlapostId $journalpostId" }
         }.getOrThrow()

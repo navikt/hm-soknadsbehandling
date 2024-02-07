@@ -51,7 +51,7 @@ internal interface SøknadForRiverClient {
     suspend fun hentSoknadOpprettetDato(soknadsId: UUID): Date
     suspend fun hentSoknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad>
     suspend fun slettUtløptSøknad(soknadsId: UUID): Int
-    suspend fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String): Int
+    suspend fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String, sakstype: String?): Int
     suspend fun oppdaterOppgaveId(soknadsId: UUID, oppgaveId: String): Int
     suspend fun lagKnytningMellomHotsakOgSøknad(soknadsId: UUID, sakId: String): Int
     suspend fun lagKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData): Int
@@ -236,13 +236,13 @@ internal class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String): Int {
+    override suspend fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String, sakstype: String?): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 httpClient.request("$baseUrl/soknad/journalpost-id/$soknadsId") {
                     method = HttpMethod.Put
                     headers()
-                    setBody(mapOf("journalpostId" to journalpostId))
+                    setBody(mapOf("journalpostId" to journalpostId, "sakstype" to sakstype))
                 }.body<Int>()
             }.onFailure {
                 logger.error { it.message }
