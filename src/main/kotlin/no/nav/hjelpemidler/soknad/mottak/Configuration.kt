@@ -41,8 +41,7 @@ private val localProperties = ConfigurationMap(
         "SLACK_HOOK" to "http://dummy",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "false",
         "OPPSLAG_URL" to "http://digihot-oppslag.intern.dev.nav.no/api",
-        "GRUNNDATA_API_URL" to "https://hm-grunndata-api.intern.dev.nav.no",
-        "GRUNNDATA_API_NG_URL" to "http://localhost:8082",
+        "GRUNNDATA_API_URL" to "https://hm-grunndata-search.intern.dev.nav.no",
         "CONSUMER_GROUP_ID" to "hm-soknadsbehandling-v1",
     ),
 )
@@ -63,8 +62,7 @@ private val devProperties = ConfigurationMap(
         "PDL_API_SCOPE" to "api://dev-fss.pdl.pdl-api/.default",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "false",
         "OPPSLAG_URL" to "http://digihot-oppslag/api",
-        "GRUNNDATA_API_URL" to "http://hm-grunndata-api",
-        "GRUNNDATA_API_NG_URL" to "http://hm-grunndata-search",
+        "GRUNNDATA_API_URL" to "http://hm-grunndata-search",
         "CONSUMER_GROUP_ID" to "hm-soknadsbehandling-v2",
     ),
 )
@@ -84,8 +82,7 @@ private val prodProperties = ConfigurationMap(
         "PDL_API_SCOPE" to "api://prod-fss.pdl.pdl-api/.default",
         "POST_DOKUMENTBESKRIVELSE_TO_SLACK" to "true",
         "OPPSLAG_URL" to "http://digihot-oppslag/api",
-        "GRUNNDATA_API_URL" to "http://hm-grunndata-api",
-        "GRUNNDATA_API_NG_URL" to "http://hm-grunndata-search",
+        "GRUNNDATA_API_URL" to "http://hm-grunndata-search",
         "CONSUMER_GROUP_ID" to "hm-soknadsbehandling-v1",
     ),
 )
@@ -168,7 +165,6 @@ internal object Configuration {
 
     data class Hmdb(
         val grunndataApi: String = config[Key("GRUNNDATA_API_URL", stringType)],
-        val grunndataApiNg: String = config[Key("GRUNNDATA_API_NG_URL", stringType)],
     )
 
     data class Slack(

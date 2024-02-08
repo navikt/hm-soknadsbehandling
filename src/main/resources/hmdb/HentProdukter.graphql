@@ -1,6 +1,6 @@
-query HentProdukter($hmsnr: [String!]!) {
-  produkter(filter: { hmsnr: $hmsnr }) {
-    hmsnr
-    isokortnavn
+query HentProdukter($hmsnrs: [String!]!) {
+  products(hmsnrs: $hmsnrs) {
+    hmsArtNr # hmsnr
+    isoCategoryTextShort # isokortnavn
   }
 }

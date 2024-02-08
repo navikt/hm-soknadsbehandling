@@ -112,29 +112,13 @@ tasks.withType<Jar> {
 
 graphql {
     client {
-        schemaFile = file("src/main/resources/hmdb/schema.graphql")
+        schemaFile = file("src/main/resources/hmdb/schema.graphqls")
         queryFileDirectory = "src/main/resources/hmdb"
         packageName = "no.nav.hjelpemidler.soknad.mottak.client.hmdb"
     }
 }
 
 val graphqlIntrospectSchema by tasks.getting(GraphQLIntrospectSchemaTask::class) {
-    endpoint.set("https://hm-grunndata-api.intern.dev.nav.no/graphql")
-    outputFile.set(file("src/main/resources/hmdb/schema.graphql"))
-}
-
-// Add secondary hmdb client
-val graphqlGenerateOtherClient by tasks.registering(GraphQLGenerateClientTask::class) {
-    packageName.set("no.nav.hjelpemidler.soknad.mottak.client.hmdb-ng")
-    schemaFile.set(file("src/main/resources/hmdb-ng/schema.graphqls"))
-    queryFileDirectory.set(file("${project.projectDir.absolutePath}/src/main/resources/hmdb-ng"))
-    outputDirectory.set(file(project.layout.buildDirectory.dir("generated/source/graphql/main")))
-}
-
-tasks {
-    // original client generation task will automatically add itself to compileKotlin dependency
-    // make sure that before we run compile task it will generate other client as well
-    compileKotlin {
-        dependsOn("graphqlGenerateOtherClient")
-    }
+    endpoint.set("https://hm-grunndata-search.intern.dev.nav.no/graphql")
+    outputFile.set(file("src/main/resources/hmdb/schema.graphqls"))
 }
