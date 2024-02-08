@@ -1,6 +1,6 @@
 query HentProdukter($hmsnrs: [String!]!) {
   products(hmsnrs: $hmsnrs) {
     hmsArtNr # hmsnr
-    isoCategoryTextShort # isokortnavn
+    isoCategoryTitleShort # isokortnavn
   }
 }
