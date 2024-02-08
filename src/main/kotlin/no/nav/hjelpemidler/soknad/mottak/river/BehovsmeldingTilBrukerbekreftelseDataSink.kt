@@ -77,7 +77,7 @@ internal class BehovsmeldingTilBrukerbekreftelseDataSink(
                     return@runBlocking
                 }
 
-                logger.info { "Søknad til godkjenning mottatt: ${packet.soknadId}" }
+                logger.info { "Søknad til godkjenning mottatt: ${packet.soknadId} (soknadGjelder: ${soknadData.soknadGjelder})" }
                 save(soknadData)
 
                 forward(soknadData, context)
