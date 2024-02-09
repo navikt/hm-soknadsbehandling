@@ -89,8 +89,6 @@ fun main() {
             // Delbestilling
             DelbestillingStatus(this, delbestillingClient)
             DelbestillingOrdrelinjeStatus(this, delbestillingClient)
-            // Brukerpass
-            BrukerpassbytteOpprettet(this, søknadForRiverClient)
         }
         .start()
 }
