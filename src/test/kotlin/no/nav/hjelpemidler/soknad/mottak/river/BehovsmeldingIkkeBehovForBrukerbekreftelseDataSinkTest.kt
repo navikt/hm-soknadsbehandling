@@ -18,7 +18,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 
-internal class SoknadMedFullmaktDataSinkTest {
+internal class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
     private val capturedSoknadData = slot<SoknadData>()
     private val mock = mockk<SøknadForRiverClient>().apply {
         coEvery { save(capture(capturedSoknadData)) } returns Unit
@@ -48,6 +48,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                 "soknad": 
                     {
                         "behovsmeldingType": "SØKNAD",
+                        "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                         "soknad":
                             {
                                 "date": "2020-06-19",
@@ -58,8 +59,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                                     },
                                 "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                             }
-                    },
-                "kommunenavn": "Oslo"
+                    }
             }
         """.trimMargin()
 
@@ -83,6 +83,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                 "soknad": 
                     {
                         "behovsmeldingType": "BESTILLING",
+                        "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                         "soknad":
                             {
                                 "date": "2020-06-19",
@@ -93,8 +94,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                                     },
                                 "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                             }
-                    },
-                "kommunenavn": "Oslo"
+                    }
             }
         """.trimMargin()
 
@@ -116,6 +116,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                 "fodselNrBruker": "fnrBruker",
                 "fodselNrInnsender": "fodselNrInnsender",
                 "soknad": {
+                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "soknad": {
                         "date": "2020-06-19",
                         "bruker": {
@@ -144,6 +145,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                 "fodselNrBruker": "fnrBruker",
                 "fodselNrInnsender": "fodselNrInnsender",
                 "soknad": {
+                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "soknad": {
                         "date": "2020-06-19",
                         "bruker": {
@@ -172,6 +174,8 @@ internal class SoknadMedFullmaktDataSinkTest {
                 "fodselNrBruker": "fnrBruker",
                 "fodselNrInnsender": "fodselNrInnsender",
                 "soknad": {
+                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "behovsmeldingType": "SØKNAD",
                     "soknad": {
                         "date": "2020-06-19",
                         "bruker": {
@@ -180,8 +184,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                         },
                         "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                     }
-                },
-                "kommunenavn": "Oslo"
+                }
             }
         """.trimMargin()
 
@@ -200,6 +203,8 @@ internal class SoknadMedFullmaktDataSinkTest {
                 "fodselNrBruker": "fnrBruker",
                 "fodselNrInnsender": "fodselNrInnsender",
                 "soknad": {
+                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "behovsmeldingType": "SØKNAD",
                     "soknad": {
                         "date": "2020-06-19",
                         "bruker": {
@@ -208,8 +213,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                             },
                         "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                     }
-                },
-                "kommunenavn": "Oslo"
+                }
             }
         """.trimMargin()
 
@@ -228,6 +232,8 @@ internal class SoknadMedFullmaktDataSinkTest {
                 "fodselNrBruker": "fnrBruker",
                 "fodselNrInnsender": "fodselNrInnsender",
                 "soknad": {
+                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "behovsmeldingType": "SØKNAD",
                     "soknad": {
                         "date": "2020-06-19",
                         "bruker": {
@@ -236,8 +242,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                             },
                         "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                     }
-                },
-                "kommunenavn": "Oslo"
+                }
             }
         """.trimMargin()
 
@@ -256,6 +261,8 @@ internal class SoknadMedFullmaktDataSinkTest {
                 "fodselNrBruker": "fnrBruker",
                 "fodselNrInnsender": "fnrInnsender",
                 "soknad": {
+                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "behovsmeldingType": "SØKNAD",
                     "soknad": {
                         "date": "2020-06-19",
                         "bruker": {
@@ -264,8 +271,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                         },
                        "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                     }
-                },
-                "kommunenavn": "Oslo"
+                }
             }
         """.trimMargin()
 
@@ -282,7 +288,7 @@ internal class SoknadMedFullmaktDataSinkTest {
 
         jsonNode["soknadId"].isNull shouldBe false
         jsonNode["fnrBruker"].textValue() shouldBe "fnrBruker"
-        jsonNode["eventName"].textValue() shouldBe "hm-søknadMedFullmaktMottatt"
+        jsonNode["eventName"].textValue() shouldBe "hm-behovsmeldingMottatt"
         jsonNode["opprettet"].textValue() shouldNotBe null
         jsonNode["navnBruker"].textValue() shouldBe "etternavn fornavn"
         jsonNode["soknadGjelder"].textValue() shouldBe "Søknad om hjelpemidler"
@@ -300,6 +306,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                 "fodselNrBruker": "fnrBruker",
                 "fodselNrInnsender": "fodselNrInnsender",
                 "soknad": {
+                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "soknad": {
                         "date": "2020-06-19",
                         "bruker": {
@@ -308,8 +315,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                             },
                         "id": "62f68547-11ae-418c-8ab7-4d2af985bcd9"
                     }
-                },
-                "kommunenavn": "Oslo"
+                }
             }
         """.trimMargin()
 
@@ -327,6 +333,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                 "eventId": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                 "fodselNrInnsender": "fodselNrInnsender",
                 "soknad": {
+                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                     "soknad": {
                         "date": "2020-06-19",
                         "bruker": {
@@ -335,8 +342,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                             },
                         "id": "62f68547-11ae-418c-8ab7-4d2af985bcd9"
                     }
-                },
-                "kommunenavn": "Oslo"
+                }
             }
         """.trimMargin()
 
@@ -346,7 +352,7 @@ internal class SoknadMedFullmaktDataSinkTest {
     }
 
     @Test
-    fun `Does not fail on message lacking behovsmeldingType parameter`() {
+    fun `Does fail on message lacking behovsmeldingType parameter`() {
         val okPacket = """
             {
                 "eventName": "nySoknad",
@@ -356,6 +362,7 @@ internal class SoknadMedFullmaktDataSinkTest {
                 "fodselNrInnsender": "fodselNrInnsender",
                 "soknad": 
                     {
+                        "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
                         "soknad":
                             {
                                 "date": "2020-06-19",
@@ -366,12 +373,10 @@ internal class SoknadMedFullmaktDataSinkTest {
                                     },
                                 "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                             }
-                    },
-                "kommunenavn": "Oslo"
+                    }
             }
         """.trimMargin()
 
-        assertDoesNotThrow { rapid.sendTestMessage(okPacket) }
-        capturedSoknadData.captured.soknadGjelder shouldBe "Søknad om hjelpemidler"
+        org.junit.jupiter.api.assertThrows<RuntimeException> { rapid.sendTestMessage(okPacket) }
     }
 }
