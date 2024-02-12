@@ -9,7 +9,7 @@ import java.util.UUID
 
 internal data class SoknadData(
     val fnrBruker: String,
-    val navnBruker: String,
+    val navnBruker: String, // Lagres til hm-soknadsbehandling-db, slik at det kan vises i hm-formidler, selv om bruker sletter søknaden (brukerbekreftelse)
     val fnrInnsender: String,
     val soknadId: UUID,
     val soknad: JsonNode,
@@ -48,7 +48,6 @@ internal data class SoknadData(
             it["opprettet"] = LocalDateTime.now()
             it["fodselNrBruker"] = this.fnrBruker // @deprecated
             it["fnrBruker"] = this.fnrBruker
-            it["navnBruker"] = this.soknad["soknad"]["bruker"]["etternavn"].textValue() + " " + this.soknad["soknad"]["bruker"]["fornavn"].textValue()
             it["soknad"] = this.soknad
             it["soknadId"] = this.soknadId
             it["fnrInnsender"] = this.fnrInnsender
