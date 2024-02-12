@@ -87,7 +87,7 @@ internal class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
 
                 metrics.digitalSoknad(packet.fnrBruker, packet.behovsmeldingId)
             } catch (e: Exception) {
-                throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
+                throw RuntimeException("Håndtering av event ${packet.eventId}, id ${packet.behovsmeldingId} feilet", e)
             }
         }
     }
