@@ -39,7 +39,8 @@ internal class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
                     listOf(
                         Signatur.FULLMAKT.name,
                         Signatur.FRITAK_FRA_FULLMAKT.name,
-                        Signatur.IKKE_INNHENTET_FORDI_BYTTE.name
+                        Signatur.IKKE_INNHENTET_FORDI_BYTTE.name,
+                        Signatur.IKKE_INNHENTET_FORDI_BRUKERPASSBYTTE.name,
                     )
                 )
             }
@@ -121,5 +122,6 @@ internal class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
 
 private fun Signatur.tilStatus() = when (this) {
     Signatur.IKKE_INNHENTET_FORDI_BYTTE -> Status.INNSENDT_FULLMAKT_IKKE_PÅKREVD
+    Signatur.IKKE_INNHENTET_FORDI_BRUKERPASSBYTTE -> Status.BRUKERPASSBYTTE_INNSENDT
     else -> Status.GODKJENT_MED_FULLMAKT
 }
