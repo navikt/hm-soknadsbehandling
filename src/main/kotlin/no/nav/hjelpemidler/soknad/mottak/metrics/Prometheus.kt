@@ -77,9 +77,4 @@ internal object Prometheus {
         .help("Mengda problem for knytning mellom søknadar og Infotrygd-sak")
         .register(collectorRegistry)
 
-    val søknaderSomManglerOppgaveGauge = Gauge
-        .build()
-        .name("hm_antall_soknader_som_mangler_oppgave")
-        .help("Antall søknader som mangler oppgave, og sannsynligvis har stoppet opp i søknadsflyten")
-        .register(collectorRegistry)
 }

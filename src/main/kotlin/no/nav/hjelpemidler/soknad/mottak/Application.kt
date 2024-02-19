@@ -29,7 +29,6 @@ import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingIkkeBehovForBrukerbe
 import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingTilBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
-import no.nav.hjelpemidler.soknad.mottak.service.MonitoreringService
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadsgodkjenningService
 import no.nav.hjelpemidler.soknad.mottak.wiremock.WiremockServer
 import java.util.Timer
@@ -61,8 +60,6 @@ fun main() {
     val pdlClient = PdlClient(azureClient, Configuration.pdl.baseUrl, Configuration.pdl.apiScope)
 
     val delbestillingClient = DelbestillingClient(Configuration.delbestillingApi.baseUrl, azureClient, Configuration.azure.delbestillingApiScope)
-
-    MonitoreringService(søknadForRiverClient)
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .build().apply {
