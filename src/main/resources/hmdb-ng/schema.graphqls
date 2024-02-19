@@ -1,4 +1,5 @@
 type Query {
+    # Get products by hmsArtNr (max 500 results)
     products(hmsnrs: [String!]!): [Product!]!
 }
 
@@ -14,6 +15,7 @@ type Product {
     supplierRef: String!
     isoCategory: String!
     isoCategoryTitle: String
+    isoCategoryTitleShort: String
     isoCategoryText: String
     isoCategoryTextShort: String
     accessory: Boolean!

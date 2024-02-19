@@ -88,8 +88,6 @@ internal interface SøknadForRiverClient {
 
     suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean
     suspend fun savePapir(soknadData: PapirSøknadData): Int
-    suspend fun hentGodkjenteSøknaderUtenOppgaveEldreEnn(dager: Int): List<String>
-    suspend fun save(bytteData: BrukerpassbytteData)
 }
 
 internal class SøknadForRiverClientImpl(
@@ -135,20 +133,6 @@ internal class SøknadForRiverClientImpl(
                     headers()
                     setBody(ordrelinje)
                 }.body<Int>()
-            }.onFailure {
-                logger.error { it.message }
-            }.getOrThrow()
-        }
-    }
-
-    override suspend fun save(bytteData: BrukerpassbytteData) {
-        return withContext(Dispatchers.IO) {
-            kotlin.runCatching {
-                httpClient.request("$baseUrl/brukerpassbytte") {
-                    method = HttpMethod.Post
-                    headers()
-                    setBody(bytteData)
-                }.body<String>()
             }.onFailure {
                 logger.error { it.message }
             }.getOrThrow()
@@ -518,19 +502,6 @@ internal class SøknadForRiverClientImpl(
                 }.body<List<UtgåttSøknad>>()
             }.onFailure {
                 logger.error { it.message }
-            }
-        }.getOrThrow()
-    }
-
-    override suspend fun hentGodkjenteSøknaderUtenOppgaveEldreEnn(dager: Int): List<String> {
-        return withContext(Dispatchers.IO) {
-            kotlin.runCatching {
-                httpClient.request("$baseUrl/soknad/godkjentUtenOppgave/$dager") {
-                    method = HttpMethod.Get
-                    headers()
-                }.body<List<String>>()
-            }.onFailure {
-                logger.error(it) { "Feil ved GET $baseUrl/soknad/godkjentUtenOppgave/$dager." }
             }
         }.getOrThrow()
     }
