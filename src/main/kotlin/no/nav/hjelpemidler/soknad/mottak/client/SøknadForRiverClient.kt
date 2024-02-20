@@ -19,7 +19,6 @@ import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
 import no.nav.hjelpemidler.soknad.mottak.httpClient
 import no.nav.hjelpemidler.soknad.mottak.river.StatusMedÅrsak
 import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
-import no.nav.hjelpemidler.soknad.mottak.service.BrukerpassbytteData
 import no.nav.hjelpemidler.soknad.mottak.service.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
@@ -51,8 +50,8 @@ internal interface SøknadForRiverClient {
     suspend fun hentSoknadOpprettetDato(soknadsId: UUID): Date
     suspend fun hentSoknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad>
     suspend fun slettUtløptSøknad(soknadsId: UUID): Int
-    suspend fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String, sakstype: String?): Int
-    suspend fun oppdaterOppgaveId(soknadsId: UUID, oppgaveId: String, sakstype: String?): Int
+    suspend fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String): Int
+    suspend fun oppdaterOppgaveId(soknadsId: UUID, oppgaveId: String): Int
     suspend fun lagKnytningMellomHotsakOgSøknad(soknadsId: UUID, sakId: String): Int
     suspend fun lagKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData): Int
     suspend fun hentSøknadIdFraVedtaksresultat(
@@ -220,13 +219,13 @@ internal class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String, sakstype: String?): Int {
+    override suspend fun oppdaterJournalpostId(soknadsId: UUID, journalpostId: String): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 httpClient.request("$baseUrl/soknad/journalpost-id/$soknadsId") {
                     method = HttpMethod.Put
                     headers()
-                    setBody(mapOf("journalpostId" to journalpostId, "sakstype" to sakstype))
+                    setBody(mapOf("journalpostId" to journalpostId))
                 }.body<Int>()
             }.onFailure {
                 logger.error { it.message }
@@ -234,13 +233,13 @@ internal class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun oppdaterOppgaveId(soknadsId: UUID, oppgaveId: String, sakstype: String?): Int {
+    override suspend fun oppdaterOppgaveId(soknadsId: UUID, oppgaveId: String): Int {
         return withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 httpClient.request("$baseUrl/soknad/oppgave-id/$soknadsId") {
                     method = HttpMethod.Put
                     headers()
-                    setBody(mapOf("oppgaveId" to oppgaveId, "sakstype" to sakstype))
+                    setBody(mapOf("oppgaveId" to oppgaveId))
                 }.body<Int>()
             }.onFailure {
                 logger.error { it.message }

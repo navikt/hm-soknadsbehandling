@@ -16,7 +16,7 @@ internal class OppgaveSinkTest {
     private val capturedOppgaveId = slot<String>()
     private val capturedSoknadId = slot<UUID>()
     private val mock = mockk<SøknadForRiverClient>().apply {
-        coEvery { oppdaterOppgaveId(capture(capturedSoknadId), capture(capturedOppgaveId), any()) } returns 1
+        coEvery { oppdaterOppgaveId(capture(capturedSoknadId), capture(capturedOppgaveId)) } returns 1
     }
 
     private val rapid = TestRapid().apply {
