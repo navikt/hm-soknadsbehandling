@@ -52,7 +52,9 @@ internal class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
     private val JsonMessage.eventId get() = this["eventId"].textValue()
     private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
     private val JsonMessage.fnrInnsender get() = this["fodselNrInnsender"].textValue()
-    private val JsonMessage.behovsmeldingId get() = this["soknad"]["id"].textValue()
+    private val JsonMessage.behovsmeldingId
+        get() = this["soknad"]["id"]?.textValue()
+            ?: this["soknad"]["soknad"]["id"].textValue() // TODO: fjern fallback ["soknad"]["soknad"]["id"] når brukerpassbytte er lansert
     private val JsonMessage.behovsmeldingType get() = this["soknad"]["behovsmeldingType"].textValue()
     private val JsonMessage.behovsmelding get() = this["soknad"]
     private val JsonMessage.signatur get() = Signatur.valueOf(this["signatur"].textValue())
