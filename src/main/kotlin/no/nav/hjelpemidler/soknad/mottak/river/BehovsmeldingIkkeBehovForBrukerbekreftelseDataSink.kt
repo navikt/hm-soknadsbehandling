@@ -45,7 +45,7 @@ internal class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
                 )
             }
             validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId") }
-            validate { it.forbid("soknadId", "kommuneNavn") }
+            validate { it.forbid("soknadId") }
         }.register(this)
     }
 
