@@ -12,6 +12,9 @@ import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingClient
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingOrdrelinjeStatus
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingStatus
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
+import no.nav.hjelpemidler.soknad.mottak.river.*
+import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink
+import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingTilBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BestillingAvvistFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.BestillingFerdigstiltFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadAutomatiskJournalført
@@ -25,8 +28,6 @@ import no.nav.hjelpemidler.soknad.mottak.river.NyInfotrygdOrdrelinje
 import no.nav.hjelpemidler.soknad.mottak.river.OppgaveSink
 import no.nav.hjelpemidler.soknad.mottak.river.PapirSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.SlettSoknad
-import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink
-import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingTilBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadsgodkjenningService

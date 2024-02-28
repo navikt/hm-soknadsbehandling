@@ -24,6 +24,12 @@ internal object Prometheus {
         .help("Antall søknader med fullmakt")
         .register(collectorRegistry)
 
+    val brukerpassbytteCounter = Counter
+        .build()
+        .name("hm_brukerpassbytte_mottak")
+        .help("Antall brukerpassbytter")
+        .register(collectorRegistry)
+
     val soknadTilGodkjenningCounter = Counter
         .build()
         .name("hm_soknad_mottak_soknad_til_godkjenning")
