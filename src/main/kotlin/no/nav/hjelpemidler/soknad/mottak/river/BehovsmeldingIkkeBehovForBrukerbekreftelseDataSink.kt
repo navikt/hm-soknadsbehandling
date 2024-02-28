@@ -20,7 +20,8 @@ private val logger = KotlinLogging.logger {}
 private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 /**
- * Plukker opp behovsmeldinger som er sendt inn av formidler og hvor det ikke er videre behov for bekreftelse fra bruker.
+ * Plukker opp behovsmeldinger som er sendt inn av formidler og hvor det ikke er videre behov for bekreftelse fra bruker,
+ * og bytter sendt inn fra brukere med brukerpassrolle.
  * For søknader og bestillinger vil dette være pga at formidler har svart at bruker har signert fullmakt på papir.
  * For bytter er det ikke behov for bekreftelse fra bruker.
  */
