@@ -4,6 +4,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClientImpl
 import no.nav.hjelpemidler.soknad.mottak.client.OebsClient
@@ -90,7 +92,7 @@ fun main() {
             DelbestillingStatus(this, delbestillingClient)
             DelbestillingOrdrelinjeStatus(this, delbestillingClient)
 
-            hentBrukerpassrollebytter(oebsClient)
+            hentBrukerpassrollebytter(oebsClient, this)
         }
         .start()
 }
@@ -109,7 +111,7 @@ private fun startSøknadUtgåttScheduling(søknadsgodkjenningService: Søknadsgo
     }
 }
 
-private fun hentBrukerpassrollebytter(oebsClient: OebsClient) {
+private fun hentBrukerpassrollebytter(oebsClient: OebsClient, rapidsConnection: RapidsConnection) {
     val timer = Timer("hent-brukerpassrollebytter-task", true)
 
     timer.schedule(10000) {
@@ -118,6 +120,12 @@ private fun hentBrukerpassrollebytter(oebsClient: OebsClient) {
                 logger.info("hentBrukerpassrollebytter henter fnr for varsel om tilgjengelig brukerpassbytte")
                 val resultat = oebsClient.hentBrukerpassrollebytter()
                 logger.info("hentBrukerpassrollebytter Antall fnr: ${resultat.size}")
+                val fnrBruker = "03847797958"
+                val message = mutableMapOf<String, String>(
+                    "eventName" to "hm-brukerpassbytte-innbygger-varsel",
+                    "fnrBruker" to fnrBruker
+                )
+                rapidsConnection.publish(fnrBruker, message)
             }
         }
     }
