@@ -115,9 +115,9 @@ private fun hentBrukerpassrollebytter(oebsClient: OebsClient) {
     timer.schedule(10000) {
         runBlocking {
             launch {
-                logger.info("henter fnr for varsel om tilgjengelig brukerpassbytte")
+                logger.info("hentBrukerpassrollebytter henter fnr for varsel om tilgjengelig brukerpassbytte")
                 val resultat = oebsClient.hentBrukerpassrollebytter()
-                logger.info("Antall fnr: ${resultat.size}")
+                logger.info("hentBrukerpassrollebytter Antall fnr: ${resultat.size}")
             }
         }
     }

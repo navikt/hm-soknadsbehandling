@@ -30,7 +30,9 @@ private fun oebsHttpClient(): HttpClient = HttpClient(Apache) {
         }
     }
     install(HttpTimeout) {
-        requestTimeoutMillis = 2*60*1000
+        requestTimeoutMillis = 5*60*1000
+        socketTimeoutMillis = 5*60*1000
+
     }
 }
 
