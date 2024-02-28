@@ -25,7 +25,7 @@ class OebsClient(
         try {
             logg.info { "hentBrukerpassrollebytter()" }
             val httpResponse: HttpResponse = httpClient.request("$baseUrl/hent-brukerpassbytte-brukere") {
-                method = HttpMethod.Post
+                method = HttpMethod.Get
                 header("Authorization", "Bearer ${azureClient.getToken(apiScope).accessToken}")
                 header("Accept", "application/json")
             }
