@@ -121,7 +121,7 @@ private fun hentBrukerpassrollebytter(oebsClient: OebsClient, rapidsConnection: 
         runBlocking {
             launch {
                 logger.info("henter alle brukerpassbrukere")
-                val brukerpassbrukere = oebsClient.hentBrukerpassbrukere()
+                val brukerpassbrukere = listOf("03847797958") //oebsClient.hentBrukerpassbrukere()
                 logger.info { "Fant ${brukerpassbrukere.size} brukerpassbrukere" }
 
                 brukerpassbrukere.forEachIndexed { i, fnrBruker ->
