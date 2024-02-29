@@ -1,11 +1,11 @@
 package no.nav.hjelpemidler.soknad.mottak
 
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClientImpl
 import no.nav.hjelpemidler.soknad.mottak.client.OebsClient
@@ -15,7 +15,6 @@ import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingClient
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingOrdrelinjeStatus
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingStatus
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
-import no.nav.hjelpemidler.soknad.mottak.river.*
 import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingTilBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BestillingAvvistFraHotsak
@@ -65,7 +64,11 @@ fun main() {
     val pdlClient = PdlClient(azureClient, Configuration.pdl.baseUrl, Configuration.pdl.apiScope)
     val oebsClient = OebsClient(azureClient, Configuration.oebs.baseUrl, Configuration.oebs.apiScope)
 
-    val delbestillingClient = DelbestillingClient(Configuration.delbestillingApi.baseUrl, azureClient, Configuration.azure.delbestillingApiScope)
+    val delbestillingClient = DelbestillingClient(
+        Configuration.delbestillingApi.baseUrl,
+        azureClient,
+        Configuration.azure.delbestillingApiScope
+    )
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .build().apply {
@@ -117,15 +120,26 @@ private fun hentBrukerpassrollebytter(oebsClient: OebsClient, rapidsConnection: 
     timer.schedule(10000) {
         runBlocking {
             launch {
-                logger.info("hentBrukerpassrollebytter henter fnr for varsel om tilgjengelig brukerpassbytte")
-                val resultat = oebsClient.hentBrukerpassrollebytter()
-                logger.info("hentBrukerpassrollebytter Antall fnr: ${resultat.size}")
-                val fnrBruker = "03847797958"
-                val message = mutableMapOf<String, String>(
-                    "eventName" to "hm-brukerpassbytte-innbygger-varsel",
-                    "fnrBruker" to fnrBruker
-                )
-                rapidsConnection.publish(fnrBruker, message)
+                logger.info("henter alle brukerpassbrukere")
+                val brukerpassbrukere = oebsClient.hentBrukerpassbrukere()
+                logger.info { "Fant ${brukerpassbrukere.size} brukerpassbrukere" }
+
+                brukerpassbrukere.forEachIndexed { i, fnrBruker ->
+                    logger.info { "Sjekker gyldig bytte for brukerpassbruker $i/${brukerpassbrukere.size - 1}" }
+                    val harGyldigUtlån = oebsClient.harGyldigBrukerpassbytteUtlån(fnrBruker).harGyldigUtlån
+                    logger.info { "Resultat for $i: $harGyldigUtlån" }
+
+                    if (harGyldigUtlån) {
+                        logger.info { "Sender hm-brukerpassbytte-innbygger-varsel event til hm-ditt-nav" }
+                        val message = mutableMapOf(
+                            "eventName" to "hm-brukerpassbytte-innbygger-varsel",
+                            "fnrBruker" to fnrBruker
+                        )
+                        rapidsConnection.publish(fnrBruker, message)
+                    }
+
+                    delay(200)
+                }
             }
         }
     }

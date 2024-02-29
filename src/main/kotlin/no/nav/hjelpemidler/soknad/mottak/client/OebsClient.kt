@@ -11,6 +11,7 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.header
 import io.ktor.client.request.request
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpMethod
 import io.ktor.serialization.jackson.jackson
@@ -42,13 +43,27 @@ class OebsClient(
     private val apiScope: String,
     private val httpClient: HttpClient = oebsHttpClient()
 ) {
-    suspend fun hentBrukerpassrollebytter(): List<Brukerpassrollebytter> {
+    suspend fun hentBrukerpassbrukere(): List<String> {
         try {
-            logg.info { "hentBrukerpassrollebytter()" }
-            val httpResponse: HttpResponse = httpClient.request("$baseUrl/hent-brukerpassbytte-brukere") {
+            val httpResponse: HttpResponse = httpClient.request("$baseUrl/brukerpassbrukere") {
                 method = HttpMethod.Get
                 header("Authorization", "Bearer ${azureClient.getToken(apiScope).accessToken}")
                 header("Accept", "application/json")
+            }
+            return httpResponse.body()
+        } catch (e: Exception) {
+            logg.error(e) { "Kunne ikke hente brukerpassbrukere" }
+            throw e
+        }
+    }
+
+    suspend fun harGyldigBrukerpassbytteUtlån(fnr: String): BrukerpassbytteDto {
+        try {
+            val httpResponse: HttpResponse = httpClient.request("$baseUrl/har-gyldig-brukerpassbytte-utlaan") {
+                method = HttpMethod.Post
+                header("Authorization", "Bearer ${azureClient.getToken(apiScope).accessToken}")
+                header("Accept", "application/json")
+                setBody(FnrDto(fnr))
             }
             return httpResponse.body()
         } catch (e: Exception) {
@@ -59,11 +74,10 @@ class OebsClient(
 }
 
 
-data class Brukerpassrollebytter(
-    val fnr: String,
-    val utlånsType: String?,
-    val innleveringsDato: String?,
-    val oppdatertInnleveringsDato: String?,
-    val kanByttes: Boolean,
-) {
-}
+private data class FnrDto(
+    val fnr: String
+)
+
+data class BrukerpassbytteDto(
+    val harGyldigUtlån: Boolean
+)
