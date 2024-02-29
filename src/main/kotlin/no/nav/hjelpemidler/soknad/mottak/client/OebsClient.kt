@@ -48,7 +48,7 @@ class OebsClient(
             val httpResponse: HttpResponse = httpClient.request("$baseUrl/brukerpassbrukere") {
                 method = HttpMethod.Get
                 header("Authorization", "Bearer ${azureClient.getToken(apiScope).accessToken}")
-                header("Accept", "application/json")
+                header("Content-Type", "application/json")
             }
             return httpResponse.body()
         } catch (e: Exception) {
@@ -62,7 +62,7 @@ class OebsClient(
             val httpResponse: HttpResponse = httpClient.request("$baseUrl/har-gyldig-brukerpassbytte-utlaan") {
                 method = HttpMethod.Post
                 header("Authorization", "Bearer ${azureClient.getToken(apiScope).accessToken}")
-                header("Accept", "application/json")
+                header("Content-Type", "application/json")
                 setBody(FnrDto(fnr))
             }
             return httpResponse.body()
