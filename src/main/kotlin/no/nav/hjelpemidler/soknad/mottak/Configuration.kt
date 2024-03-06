@@ -91,6 +91,8 @@ private val prodProperties = ConfigurationMap(
         "GRUNNDATA_API_URL" to "http://hm-grunndata-api",
         "GRUNNDATA_API_NG_URL" to "http://hm-grunndata-search",
         "CONSUMER_GROUP_ID" to "hm-soknadsbehandling-v1",
+        "OEBS_API_BASE_URL" to "https://hm-oebs-api-proxy.prod-fss-pub.nais.io",
+        "OEBS_API_SCOPE" to "api://prod-fss.teamdigihot.hm-oebs-api-proxy/.default",
     ),
 )
 

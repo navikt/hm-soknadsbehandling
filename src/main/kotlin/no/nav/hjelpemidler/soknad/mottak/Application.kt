@@ -127,10 +127,10 @@ private fun hentBrukerpassrollebytter(oebsClient: OebsClient, rapidsConnection: 
                 brukerpassbrukere.forEachIndexed { i, fnrBruker ->
                     logger.info { "Sjekker gyldig bytte for brukerpassbruker $i/${brukerpassbrukere.size - 1}" }
                     val harGyldigUtlån = oebsClient.harGyldigBrukerpassbytteUtlån(fnrBruker).harGyldigUtlån
-                    logger.info { "Resultat for $i: $harGyldigUtlån" }
+                    logger.info { "$i: harGyldigUtlån= $harGyldigUtlån" }
 
                     if (harGyldigUtlån) {
-                        logger.info { "Sender hm-brukerpassbytte-innbygger-varsel event til hm-ditt-nav" }
+                        logger.info { "$i: Sender hm-brukerpassbytte-innbygger-varsel event til hm-ditt-nav" }
                         val message = mutableMapOf(
                             "eventName" to "hm-brukerpassbytte-innbygger-varsel",
                             "fnrBruker" to fnrBruker
