@@ -44,8 +44,6 @@ private val localProperties = ConfigurationMap(
         "GRUNNDATA_API_URL" to "https://hm-grunndata-api.intern.dev.nav.no",
         "GRUNNDATA_API_NG_URL" to "http://localhost:8082",
         "CONSUMER_GROUP_ID" to "hm-soknadsbehandling-v1",
-        "OEBS_API_BASE_URL" to "http://localhost:9098/oebs",
-        "OEBS_API_SCOPE" to "api://dev-fss.teamdigihot.hm-oebs-api-proxy/.default",
     ),
 )
 
@@ -68,8 +66,6 @@ private val devProperties = ConfigurationMap(
         "GRUNNDATA_API_URL" to "http://hm-grunndata-api",
         "GRUNNDATA_API_NG_URL" to "http://hm-grunndata-search",
         "CONSUMER_GROUP_ID" to "hm-soknadsbehandling-v2",
-        "OEBS_API_BASE_URL" to "https://hm-oebs-api-proxy.dev-fss-pub.nais.io",
-        "OEBS_API_SCOPE" to "api://dev-fss.teamdigihot.hm-oebs-api-proxy/.default",
     ),
 )
 private val prodProperties = ConfigurationMap(
@@ -91,8 +87,6 @@ private val prodProperties = ConfigurationMap(
         "GRUNNDATA_API_URL" to "http://hm-grunndata-api",
         "GRUNNDATA_API_NG_URL" to "http://hm-grunndata-search",
         "CONSUMER_GROUP_ID" to "hm-soknadsbehandling-v1",
-        "OEBS_API_BASE_URL" to "https://hm-oebs-api-proxy.prod-fss-pub.nais.io",
-        "OEBS_API_SCOPE" to "api://prod-fss.teamdigihot.hm-oebs-api-proxy/.default",
     ),
 )
 
@@ -117,7 +111,6 @@ internal object Configuration {
     val application: Application = Application()
     val influxDb: InfluxDb = InfluxDb()
     val pdl: Pdl = Pdl()
-    val oebs: Oebs = Oebs()
     val oppslagUrl = config[Key("OPPSLAG_URL", stringType)]
     val rapidApplication: Map<String, String> = mapOf(
         "RAPID_KAFKA_CLUSTER" to "gcp",
@@ -159,11 +152,6 @@ internal object Configuration {
     data class Pdl(
         val baseUrl: String = config[Key("PDL_API_URL", stringType)],
         val apiScope: String = config[Key("PDL_API_SCOPE", stringType)],
-    )
-
-    data class Oebs(
-        val baseUrl: String = config[Key("OEBS_API_BASE_URL", stringType)],
-        val apiScope: String = config[Key("OEBS_API_SCOPE", stringType)],
     )
 
     data class SoknadsbehandlingDb(

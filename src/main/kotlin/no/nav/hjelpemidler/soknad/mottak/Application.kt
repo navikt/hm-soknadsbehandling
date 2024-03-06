@@ -1,20 +1,18 @@
 package no.nav.hjelpemidler.soknad.mottak
 
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClientImpl
-import no.nav.hjelpemidler.soknad.mottak.client.OebsClient
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClientImpl
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingClient
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingOrdrelinjeStatus
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingStatus
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
+import no.nav.hjelpemidler.soknad.mottak.river.*
 import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingTilBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BestillingAvvistFraHotsak
@@ -35,7 +33,6 @@ import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadsgodkjenningService
 import no.nav.hjelpemidler.soknad.mottak.wiremock.WiremockServer
 import java.util.Timer
-import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.time.ExperimentalTime
 
@@ -62,13 +59,8 @@ fun main() {
             Configuration.azure.infotrygdProxyScope
         )
     val pdlClient = PdlClient(azureClient, Configuration.pdl.baseUrl, Configuration.pdl.apiScope)
-    val oebsClient = OebsClient(azureClient, Configuration.oebs.baseUrl, Configuration.oebs.apiScope)
 
-    val delbestillingClient = DelbestillingClient(
-        Configuration.delbestillingApi.baseUrl,
-        azureClient,
-        Configuration.azure.delbestillingApiScope
-    )
+    val delbestillingClient = DelbestillingClient(Configuration.delbestillingApi.baseUrl, azureClient, Configuration.azure.delbestillingApiScope)
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .build().apply {
@@ -94,8 +86,6 @@ fun main() {
             // Delbestilling
             DelbestillingStatus(this, delbestillingClient)
             DelbestillingOrdrelinjeStatus(this, delbestillingClient)
-
-            hentBrukerpassrollebytter(oebsClient, this)
         }
         .start()
 }
@@ -109,44 +99,6 @@ private fun startSøknadUtgåttScheduling(søknadsgodkjenningService: Søknadsgo
                 logger.info("markerer utgåtte søknader...")
                 val antallUtgåtte = søknadsgodkjenningService.slettUtgåtteSøknader()
                 logger.info("Antall utgåtte søknader: $antallUtgåtte")
-            }
-        }
-    }
-}
-
-private fun hentBrukerpassrollebytter(oebsClient: OebsClient, rapidsConnection: RapidsConnection) {
-    val timer = Timer("hent-brukerpassrollebytter-task", true)
-
-    timer.schedule(10000) {
-        runBlocking {
-            launch {
-                logger.info("henter alle brukerpassbrukere")
-                val brukerpassbrukere = oebsClient.hentBrukerpassbrukere()
-                logger.info { "Fant ${brukerpassbrukere.size} brukerpassbrukere" }
-
-                val unike = brukerpassbrukere.distinct()
-                logger.info { "Fant ${unike.size} unike brukerpassbrukere" }
-
-                /*
-
-                brukerpassbrukere.forEachIndexed { i, fnrBruker ->
-                    logger.info { "Sjekker gyldig bytte for brukerpassbruker $i/${brukerpassbrukere.size - 1}" }
-                    val harGyldigUtlån = oebsClient.harGyldigBrukerpassbytteUtlån(fnrBruker).harGyldigUtlån
-                    logger.info { "$i: harGyldigUtlån= $harGyldigUtlån" }
-
-                    if (harGyldigUtlån) {
-                        logger.info { "$i: Sender hm-brukerpassbytte-innbygger-varsel event til hm-ditt-nav" }
-                        val message = mutableMapOf(
-                            "eventName" to "hm-brukerpassbytte-innbygger-varsel",
-                            "fnrBruker" to fnrBruker
-                        )
-                        rapidsConnection.publish(fnrBruker, message)
-                    }
-
-                    delay(200)
-                }
-                
-                 */
             }
         }
     }
