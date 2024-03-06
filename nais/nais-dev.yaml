@@ -30,6 +30,7 @@ spec:
       external:
         - host: hm-infotrygd-proxy.dev-fss-pub.nais.io
         - host: pdl-api.dev-fss-pub.nais.io
+        - host: hm-oebs-api-proxy.dev-fss-pub.nais.io
         - host: hooks.slack.com
   azure:
     application:
