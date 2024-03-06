@@ -124,7 +124,7 @@ private fun hentBrukerpassrollebytter(oebsClient: OebsClient, rapidsConnection: 
                 val brukerpassbrukere = oebsClient.hentBrukerpassbrukere()
                 logger.info { "Fant ${brukerpassbrukere.size} brukerpassbrukere" }
 
-                var antallMedByttbartUtlån = 0
+                /*
 
                 brukerpassbrukere.forEachIndexed { i, fnrBruker ->
                     logger.info { "Sjekker gyldig bytte for brukerpassbruker $i/${brukerpassbrukere.size - 1}" }
@@ -138,13 +138,12 @@ private fun hentBrukerpassrollebytter(oebsClient: OebsClient, rapidsConnection: 
                             "fnrBruker" to fnrBruker
                         )
                         rapidsConnection.publish(fnrBruker, message)
-                        antallMedByttbartUtlån++
                     }
 
                     delay(200)
                 }
-
-                logger.info { "Antall brukerpassbrukere med byttbart utlån: $antallMedByttbartUtlån" }
+                
+                 */
             }
         }
     }
