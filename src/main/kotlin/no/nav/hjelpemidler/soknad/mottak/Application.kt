@@ -124,6 +124,8 @@ private fun hentBrukerpassrollebytter(oebsClient: OebsClient, rapidsConnection: 
                 val brukerpassbrukere = oebsClient.hentBrukerpassbrukere()
                 logger.info { "Fant ${brukerpassbrukere.size} brukerpassbrukere" }
 
+                /*
+
                 brukerpassbrukere.forEachIndexed { i, fnrBruker ->
                     logger.info { "Sjekker gyldig bytte for brukerpassbruker $i/${brukerpassbrukere.size - 1}" }
                     val harGyldigUtlån = oebsClient.harGyldigBrukerpassbytteUtlån(fnrBruker).harGyldigUtlån
@@ -140,6 +142,8 @@ private fun hentBrukerpassrollebytter(oebsClient: OebsClient, rapidsConnection: 
 
                     delay(200)
                 }
+                
+                 */
             }
         }
     }
