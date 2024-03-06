@@ -17,8 +17,8 @@ spec:
     enabled: true
     path: /metrics
   replicas:
-    min: 1
-    max: 1
+    min: 2
+    max: 4
   accessPolicy:
     outbound:
       rules:
@@ -30,7 +30,6 @@ spec:
       external:
         - host: hm-infotrygd-proxy.prod-fss-pub.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
-        - host: hm-oebs-api-proxy.prod-fss-pub.nais.io
         - host: hooks.slack.com
   azure:
     application:
