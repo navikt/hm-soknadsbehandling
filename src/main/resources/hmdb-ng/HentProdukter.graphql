@@ -1,6 +1,0 @@
-query HentProdukter($hmsnrs: [String!]!) {
-  products(hmsnrs: $hmsnrs) {
-    hmsArtNr
-    isoCategoryTitleShort
-  }
-}
