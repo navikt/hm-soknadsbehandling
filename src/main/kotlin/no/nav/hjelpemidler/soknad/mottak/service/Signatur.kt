@@ -5,4 +5,5 @@ enum class Signatur {
     FULLMAKT,
     FRITAK_FRA_FULLMAKT,        // Brukt under covid-19
     IKKE_INNHENTET_FORDI_BYTTE,
+    IKKE_INNHENTET_FORDI_BRUKERPASSBYTTE,
 }

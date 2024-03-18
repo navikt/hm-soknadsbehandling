@@ -12,6 +12,9 @@ import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingClient
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingOrdrelinjeStatus
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingStatus
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
+import no.nav.hjelpemidler.soknad.mottak.river.*
+import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink
+import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingTilBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BestillingAvvistFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.BestillingFerdigstiltFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadAutomatiskJournalført
@@ -25,11 +28,8 @@ import no.nav.hjelpemidler.soknad.mottak.river.NyInfotrygdOrdrelinje
 import no.nav.hjelpemidler.soknad.mottak.river.OppgaveSink
 import no.nav.hjelpemidler.soknad.mottak.river.PapirSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.SlettSoknad
-import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink
-import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingTilBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
-import no.nav.hjelpemidler.soknad.mottak.service.MonitoreringService
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadsgodkjenningService
 import no.nav.hjelpemidler.soknad.mottak.wiremock.WiremockServer
 import java.util.Timer
@@ -61,8 +61,6 @@ fun main() {
     val pdlClient = PdlClient(azureClient, Configuration.pdl.baseUrl, Configuration.pdl.apiScope)
 
     val delbestillingClient = DelbestillingClient(Configuration.delbestillingApi.baseUrl, azureClient, Configuration.azure.delbestillingApiScope)
-
-    MonitoreringService(søknadForRiverClient)
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .build().apply {

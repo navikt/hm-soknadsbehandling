@@ -24,6 +24,12 @@ internal object Prometheus {
         .help("Antall søknader med fullmakt")
         .register(collectorRegistry)
 
+    val brukerpassbytteCounter = Counter
+        .build()
+        .name("hm_brukerpassbytte_mottak")
+        .help("Antall brukerpassbytter")
+        .register(collectorRegistry)
+
     val soknadTilGodkjenningCounter = Counter
         .build()
         .name("hm_soknad_mottak_soknad_til_godkjenning")
@@ -77,9 +83,4 @@ internal object Prometheus {
         .help("Mengda problem for knytning mellom søknadar og Infotrygd-sak")
         .register(collectorRegistry)
 
-    val søknaderSomManglerOppgaveGauge = Gauge
-        .build()
-        .name("hm_antall_soknader_som_mangler_oppgave")
-        .help("Antall søknader som mangler oppgave, og sannsynligvis har stoppet opp i søknadsflyten")
-        .register(collectorRegistry)
 }

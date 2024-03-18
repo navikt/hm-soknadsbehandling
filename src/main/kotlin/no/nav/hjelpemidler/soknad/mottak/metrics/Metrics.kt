@@ -87,7 +87,7 @@ internal class Metrics(
         }
     }
 
-    private fun kommunenrTilSted(kommunenr: String?): KommuneDto {
+    private suspend fun kommunenrTilSted(kommunenr: String?): KommuneDto {
         val sted = kommuneService.kommunenrTilSted(kommunenr)
         return if (sted == null) {
             logg.warn { "Ingen resultat for kommunenr oppslag på kommunenr <$kommunenr>" }

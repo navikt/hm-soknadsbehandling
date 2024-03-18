@@ -1,12 +1,10 @@
 package no.nav.hjelpemidler.soknad.mottak.metrics.kommune
 
-import kotlinx.coroutines.runBlocking
 
-class KommuneService(oppslagClient: OppslagClient = OppslagClient()) {
+class KommuneService(private val oppslagClient: OppslagClient = CachedOppslagClient()) {
 
-    private val kommunenrTilSted: Map<String, KommuneDto> = runBlocking { oppslagClient.hentAlleKommuner() }
-
-    fun kommunenrTilSted(kommunenr: String?): KommuneDto? {
-        return kommunenrTilSted[kommunenr]
+    suspend fun kommunenrTilSted(kommunenr: String?): KommuneDto? {
+        val kommuner = oppslagClient.hentAlleKommuner()
+        return kommuner[kommunenr]
     }
 }
