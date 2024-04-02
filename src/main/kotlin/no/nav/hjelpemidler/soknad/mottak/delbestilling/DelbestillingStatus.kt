@@ -48,8 +48,8 @@ internal class DelbestillingStatus(
             val status = kvittering.status
             val ordrenummer = kvittering.ordrenummer
 
-            if (isDev() && saksnummer == "218") {
-                logger.info { "Skipper oppdatering av status for delbestilling 218 i dev." }
+            if (isDev() && saksnummer == "217") {
+                logger.info { "Skipper oppdatering av status for delbestilling $saksnummer i dev." }
                 return@runBlocking
             }
 
