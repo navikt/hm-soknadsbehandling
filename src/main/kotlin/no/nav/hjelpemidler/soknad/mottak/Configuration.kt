@@ -177,3 +177,7 @@ internal object Configuration {
 enum class Profile {
     LOCAL, DEV, PROD
 }
+
+fun isDev() = Configuration.application.profile == Profile.DEV
+
+fun isProd() = Configuration.application.profile == Profile.PROD

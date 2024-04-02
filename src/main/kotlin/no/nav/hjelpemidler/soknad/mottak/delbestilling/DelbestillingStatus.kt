@@ -8,6 +8,8 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDateTime
+import no.nav.hjelpemidler.soknad.mottak.Configuration
+import no.nav.hjelpemidler.soknad.mottak.isDev
 import no.nav.hjelpemidler.soknad.mottak.river.PacketListenerWithOnError
 import java.util.UUID
 
@@ -45,6 +47,11 @@ internal class DelbestillingStatus(
             val saksnummer = kvittering.saksnummer
             val status = kvittering.status
             val ordrenummer = kvittering.ordrenummer
+
+            if (isDev() && saksnummer == "218") {
+                logger.info { "Skipper oppdatering av status for delbestilling 218 i dev." }
+                return@runBlocking
+            }
 
             logger.info { "Oppdaterer status for delbestilling $saksnummer (aka hmdel_$saksnummer, OeBS ordrenummer $ordrenummer) til status $status" }
             delbestillingClient.oppdaterStatus(saksnummer, status, ordrenummer)
