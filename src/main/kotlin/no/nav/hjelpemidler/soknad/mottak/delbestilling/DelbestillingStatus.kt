@@ -48,14 +48,16 @@ internal class DelbestillingStatus(
             val status = kvittering.status
             val ordrenummer = kvittering.ordrenummer
 
-            if (isDev() && saksnummer == "217") {
-                logger.info { "Skipper oppdatering av status for delbestilling $saksnummer i dev." }
-                return@runBlocking
+            try {
+                logger.info { "Oppdaterer status for delbestilling $saksnummer (aka hmdel_$saksnummer, OeBS ordrenummer $ordrenummer) til status $status" }
+                delbestillingClient.oppdaterStatus(saksnummer, status, ordrenummer)
+                logger.info { "Status  for delbestilling $saksnummer (hmdel_$saksnummer, OeBS ordrenummer $ordrenummer) oppdatert OK" }
+            } catch (e: Throwable) {
+                if (isDev()) {
+                    logger.info { "Skipper oppdatering av status for delbestilling $saksnummer i dev." }
+                } else throw e
             }
 
-            logger.info { "Oppdaterer status for delbestilling $saksnummer (aka hmdel_$saksnummer, OeBS ordrenummer $ordrenummer) til status $status" }
-            delbestillingClient.oppdaterStatus(saksnummer, status, ordrenummer)
-            logger.info { "Status  for delbestilling $saksnummer (hmdel_$saksnummer, OeBS ordrenummer $ordrenummer) oppdatert OK" }
         }
     }
 }
