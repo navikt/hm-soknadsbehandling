@@ -38,6 +38,7 @@ internal class PdlClient(
                         contentType(ContentType.Application.Json)
                         accept(ContentType.Application.Json)
                         header("Tema", "HJE")
+                        header("behandlingsnummer", "B735")
                         header("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
                         header("X-Correlation-ID", UUID.randomUUID().toString())
                     }
