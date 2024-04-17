@@ -35,7 +35,7 @@ fun graphqlKotlin(name: String) = "com.expediagroup:graphql-kotlin-$name:$graphQ
 
 dependencies {
     // R&R and Logging fixes
-    implementation("com.github.navikt:rapids-and-rivers:2023101613431697456627.0cdd93eb696f") {
+    implementation("com.github.navikt:rapids-and-rivers:2024020419561707073004.70bfb92c077c") {
         exclude(group = "ch.qos.logback", module = "logback-classic")
         exclude(group = "net.logstash.logback", module = "logstash-logback-encoder")
     }
