@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - deps
 
 jobs:
   build:

@@ -12,7 +12,6 @@ import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingClient
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingOrdrelinjeStatus
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingStatus
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
-import no.nav.hjelpemidler.soknad.mottak.river.*
 import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingTilBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BestillingAvvistFraHotsak
@@ -31,7 +30,6 @@ import no.nav.hjelpemidler.soknad.mottak.river.SlettSoknad
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadsgodkjenningService
-import no.nav.hjelpemidler.soknad.mottak.wiremock.WiremockServer
 import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.time.ExperimentalTime
@@ -40,9 +38,6 @@ private val logger = KotlinLogging.logger {}
 
 @ExperimentalTime
 fun main() {
-    if (Configuration.application.profile == Profile.LOCAL) {
-        WiremockServer(Configuration).startServer()
-    }
 
     val azureClient = AzureClient(
         tenantUrl = "${Configuration.azure.tenantBaseUrl}/${Configuration.azure.tenantId}",
