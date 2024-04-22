@@ -28,11 +28,8 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v1
 
-      - uses: gradle/gradle-build-action@v2.7.0
-        env:
-          TESTCONTAINERS_RYUK_DISABLED: true
-        with:
-          arguments: build
+      - uses: gradle/actions/setup-gradle@v3
+      - run: ./gradlew buildFatJar --no-daemon
 
       - name: Pre-deploy
         uses: navikt/digihot-deploy/actions/pre-deploy@v2

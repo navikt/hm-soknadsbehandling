@@ -1,12 +1,15 @@
 
 import com.expediagroup.graphql.plugin.gradle.tasks.GraphQLIntrospectSchemaTask
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 val graphQLClientVersion = "6.5.6"
 
 plugins {
-    application
     kotlin("jvm") version "1.9.23"
     id("com.expediagroup.graphql") version "6.5.6"
+    id("io.ktor.plugin") version "2.3.10"
+    id("com.diffplug.spotless") version "6.25.0"
 }
 
 group = "no.nav.hjelpemidler.soknad.mottak"
@@ -22,25 +25,20 @@ application {
     mainClass.set("no.nav.hjelpemidler.soknad.mottak.ApplicationKt")
 }
 
-val ktorVersion = "2.3.10"
-fun ktor(name: String) = "io.ktor:ktor-$name:$ktorVersion"
+fun ktor(name: String) = "io.ktor:ktor-$name"
 fun graphqlKotlin(name: String) = "com.expediagroup:graphql-kotlin-$name:$graphQLClientVersion"
 
 dependencies {
-    // R&R and Logging fixes
-    implementation("com.github.navikt:rapids-and-rivers:2024020419561707073004.70bfb92c077c") {
-        exclude(group = "ch.qos.logback", module = "logback-classic")
-        exclude(group = "net.logstash.logback", module = "logstash-logback-encoder")
-    }
-    api("ch.qos.logback:logback-classic:1.5.5")
-    api("net.logstash.logback:logstash-logback-encoder:7.4") {
-        exclude("com.fasterxml.jackson.core")
-    }
+    implementation("com.github.navikt:rapids-and-rivers:2024020419561707073004.70bfb92c077c")
 
+    // Logging
+    runtimeOnly("ch.qos.logback:logback-classic:1.5.5")
+    implementation("net.logstash.logback:logstash-logback-encoder:7.4")
     implementation("io.github.microutils:kotlin-logging:3.0.5")
 
+
     // Kotlin
-    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.7.3") // følger ikke kotlin-versjon
 
@@ -84,20 +82,21 @@ dependencies {
 
 kotlin { jvmToolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
-
-tasks.withType<Jar> {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    manifest {
-        attributes["Main-Class"] = application.mainClass
-    }
-    from(
-        configurations.runtimeClasspath.get().map {
-            if (it.isDirectory) it else zipTree(it)
+tasks {
+    test {
+        useJUnitPlatform()
+        testLogging {
+            exceptionFormat = TestExceptionFormat.FULL
+            events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
         }
-    )
+    }
+    compileKotlin {
+        dependsOn("spotlessApply")
+        dependsOn("spotlessCheck")
+    }
+    named("buildFatJar") {
+        dependsOn("test")
+    }
 }
 
 graphql {
