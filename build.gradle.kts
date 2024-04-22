@@ -1,13 +1,11 @@
 
-import com.expediagroup.graphql.plugin.gradle.tasks.GraphQLGenerateClientTask
 import com.expediagroup.graphql.plugin.gradle.tasks.GraphQLIntrospectSchemaTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val graphQLClientVersion = "6.5.6"
 
 plugins {
     application
-    kotlin("jvm") version "1.8.20"
+    kotlin("jvm") version "1.9.23"
     id("com.expediagroup.graphql") version "6.5.6"
 }
 
@@ -22,11 +20,6 @@ repositories {
 application {
     applicationName = "hm-soknadsbehandling"
     mainClass.set("no.nav.hjelpemidler.soknad.mottak.ApplicationKt")
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
 }
 
 val ktorVersion = "2.3.10"
@@ -89,9 +82,7 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
-}
+kotlin { jvmToolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
 
 tasks.withType<Test> {
     useJUnitPlatform()
