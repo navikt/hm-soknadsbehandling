@@ -33,12 +33,12 @@ class OppslagClientImpl(
 
     override suspend fun hentAlleKommuner(): Map<String, KommuneDto> {
         val kommunenrUrl = "$oppslagUrl/geografi/kommunenr"
-        logger.info("Henter alle kommuner fra $kommunenrUrl")
+        logger.info("Henter alle kommuner med url: $kommunenrUrl")
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.get(kommunenrUrl).body<Map<String, KommuneDto>>()
             }.onFailure {
-                logger.error(it) { "Henting av kommune feilet: ${it.message}" }
+                logger.error(it) { "Henting av kommuner feilet" }
             }
         }.getOrThrow()
     }
