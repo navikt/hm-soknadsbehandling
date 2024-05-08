@@ -10,13 +10,11 @@ import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
-private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class HotsakOpprettet(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient
+    private val søknadForRiverClient: SøknadForRiverClient,
 ) : PacketListenerWithOnError {
-
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "hm-sakOpprettet") }
@@ -25,11 +23,9 @@ internal class HotsakOpprettet(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        logger.info(
-            """
-                Received sak-opprettet event with søknadId: ${packet["soknadId"].asText()} and sakId: ${packet["sakId"].asText()}
-            """.trimMargin()
-        )
+        logger.info {
+            "Received sak-opprettet event with søknadId: ${packet["soknadId"].asText()} and sakId: ${packet["sakId"].asText()}"
+        }
 
         val søknadId = packet["soknadId"].asText()
         val sakId = packet["sakId"].asText()
@@ -44,11 +40,11 @@ internal class HotsakOpprettet(
             søknadForRiverClient.lagKnytningMellomHotsakOgSøknad(søknadId, sakId)
         }.onSuccess {
             if (it > 0) {
-                logger.info("Knytta sak: $sakId til søknad: $søknadId")
+                logger.info("Knyttet sak til søknad, sakId: $sakId, søknadId: $søknadId")
             } else {
-                logger.warn("Sak: $sakId er allerede knytta til søknad: $søknadId")
+                logger.warn("Sak med sakId: $sakId er allerede knyttet til søknadId: $søknadId")
             }
         }.onFailure {
-            logger.error("Failed to knytte sammen sak: $sakId med søknad: $søknadId")
+            logger.error("Kunne ikke knytte sammen sakId: $sakId med søknadId: $søknadId", it)
         }.getOrThrow()
 }
