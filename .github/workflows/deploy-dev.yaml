@@ -1,32 +1,31 @@
-name: deploy-dev
+name: Build and deploy to dev
 
 on:
   push:
     branches:
       - main
-      - deps
 
 jobs:
   build:
-    name: Build app, docker image and  push docker image
+    runs-on: ubuntu-latest
+    name: Build app, Docker image and deploy app
+
     permissions:
       contents: write
       id-token: write
-    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
-          cache: gradle
 
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v1
+        uses: gradle/actions/wrapper-validation@v3
 
       - uses: gradle/actions/setup-gradle@v3
       - run: ./gradlew buildFatJar --no-daemon
@@ -36,7 +35,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push docker image
+      - name: Build and push Docker image
         uses: nais/docker-build-push@v0
         id: docker-build-push
         with:
@@ -53,13 +52,13 @@ jobs:
           RESOURCE: nais/nais-dev.yaml,nais/alerts.yaml
           IMAGE: ${{steps.docker-build-push.outputs.image}}
 
-      - name: post-deploy
+      - name: Post-deploy
         if: github.ref == 'refs/heads/main'
         uses: navikt/digihot-deploy/actions/post-deploy@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: draft release
+      - name: Create release
         if: github.ref == 'refs/heads/main'
         uses: actions/create-release@latest
         env:
