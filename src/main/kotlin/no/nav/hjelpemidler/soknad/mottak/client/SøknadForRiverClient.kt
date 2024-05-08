@@ -37,63 +37,10 @@ import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
-interface SøknadForRiverClient {
-    suspend fun lagreSøknad(søknadData: SøknadData)
-    suspend fun søknadFinnes(søknadId: UUID): Boolean
-    suspend fun ordreSisteDøgn(søknadId: UUID): HarOrdre
-    suspend fun harOrdreForSøknad(søknadId: UUID): HarOrdre
-    suspend fun hentFnrForSøknad(søknadId: UUID): String
-    suspend fun slettSøknad(søknadId: UUID): Int
-    suspend fun hentSøknadstypeForSøknad(søknadId: UUID): String?
-    suspend fun oppdaterStatus(søknadId: UUID, status: Status): Int
-    suspend fun oppdaterStatus(statusMedÅrsak: StatusMedÅrsak): Int
-    suspend fun hentSøknadData(søknadId: UUID): SøknadData?
-    suspend fun hentSøknadOpprettetDato(søknadId: UUID): Date
-    suspend fun hentSøknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad>
-    suspend fun slettUtløptSøknad(søknadId: UUID): Int
-    suspend fun oppdaterJournalpostId(søknadId: UUID, journalpostId: String): Int
-    suspend fun oppdaterOppgaveId(søknadId: UUID, oppgaveId: String): Int
-    suspend fun lagKnytningMellomHotsakOgSøknad(søknadId: UUID, sakId: String): Int
-    suspend fun lagKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData): Int
-    suspend fun hentSøknadIdFraVedtaksresultat(
-        fnrBruker: String,
-        saksblokkOgSaksnr: String,
-        vedtaksdato: LocalDate,
-    ): UUID?
-
-    suspend fun behovsmeldingTypeFor(søknadId: UUID): BehovsmeldingType?
-
-    suspend fun hentSøknadIdFraVedtaksresultatV2(
-        fnrBruker: String,
-        saksblokkOgSaksnr: String,
-    ): List<SøknadIdFraVedtaksresultat>
-
-    suspend fun hentSøknadIdFraHotsakSaksnummer(
-        saksnummer: String,
-    ): UUID?
-
-    suspend fun lagreSøknad(ordrelinje: OrdrelinjeData): Int
-    suspend fun lagreVedtaksresultat(
-        søknadId: UUID,
-        vedtaksresultat: String,
-        vedtaksdato: LocalDate,
-        soknadsType: String,
-    ): Int
-
-    suspend fun lagreVedtaksresultatFraHotsak(
-        søknadId: UUID,
-        vedtaksresultat: String,
-        vedtaksdato: LocalDate,
-    ): Int
-
-    suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean
-    suspend fun savePapir(soknadData: PapirSøknadData): Int
-}
-
-class SøknadForRiverClientImpl(
+class SøknadForRiverClient(
     private val baseUrl: String,
     private val tokenSetProvider: TokenSetProvider,
-) : SøknadForRiverClient {
+) {
     private val httpClient: HttpClient = httpClient {
         openID(tokenSetProvider)
         defaultRequest {
@@ -103,17 +50,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun lagreSøknad(søknadData: SøknadData) {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.post("$baseUrl/soknad/bruker") {
-                    setBody(søknadData)
-                }.body<String>()
-            }.getOrLogAndThrow()
-        }
-    }
-
-    override suspend fun savePapir(søknadData: PapirSøknadData): Int {
+    suspend fun lagrePapirsøknad(søknadData: PapirSøknadData): Int {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.post("$baseUrl/soknad/papir") {
@@ -123,7 +60,17 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun lagreSøknad(ordrelinje: OrdrelinjeData): Int {
+    suspend fun lagreSøknad(søknadData: SøknadData) {
+        return withContext(Dispatchers.IO) {
+            runCatching {
+                httpClient.post("$baseUrl/soknad/bruker") {
+                    setBody(søknadData)
+                }.body<String>()
+            }.getOrLogAndThrow()
+        }
+    }
+
+    suspend fun lagreSøknad(ordrelinje: OrdrelinjeData): Int {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.post("$baseUrl/ordre") {
@@ -133,7 +80,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun søknadFinnes(søknadId: UUID): Boolean {
+    suspend fun søknadFinnes(søknadId: UUID): Boolean {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.get("$baseUrl/soknad/bruker/finnes/$søknadId").body<JsonNode>().get("second").booleanValue()
@@ -141,7 +88,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun ordreSisteDøgn(søknadId: UUID): HarOrdre {
+    suspend fun ordreSisteDøgn(søknadId: UUID): HarOrdre {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.get("$baseUrl/soknad/ordre/ordrelinje-siste-doegn/$søknadId").body<HarOrdre>()
@@ -149,7 +96,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun harOrdreForSøknad(søknadId: UUID): HarOrdre {
+    suspend fun harOrdreForSøknad(søknadId: UUID): HarOrdre {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.get("$baseUrl/soknad/ordre/har-ordre/$søknadId").body<HarOrdre>()
@@ -157,7 +104,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun hentFnrForSøknad(søknadId: UUID): String {
+    suspend fun hentFnrForSøknad(søknadId: UUID): String {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.get("$baseUrl/soknad/fnr/$søknadId").body<String>()
@@ -165,7 +112,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun slettSøknad(søknadId: UUID): Int {
+    suspend fun slettSøknad(søknadId: UUID): Int {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.delete("$baseUrl/soknad/bruker") {
@@ -175,7 +122,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun slettUtløptSøknad(søknadId: UUID): Int {
+    suspend fun slettUtløptSøknad(søknadId: UUID): Int {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.delete("$baseUrl/soknad/utlopt/bruker") {
@@ -185,7 +132,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun oppdaterJournalpostId(søknadId: UUID, journalpostId: String): Int {
+    suspend fun oppdaterJournalpostId(søknadId: UUID, journalpostId: String): Int {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.put("$baseUrl/soknad/journalpost-id/$søknadId") {
@@ -195,7 +142,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun oppdaterOppgaveId(søknadId: UUID, oppgaveId: String): Int {
+    suspend fun oppdaterOppgaveId(søknadId: UUID, oppgaveId: String): Int {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.put("$baseUrl/soknad/oppgave-id/$søknadId") {
@@ -205,7 +152,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun lagKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData): Int {
+    suspend fun lagKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData): Int {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.post("$baseUrl/infotrygd/fagsak") {
@@ -215,7 +162,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun lagKnytningMellomHotsakOgSøknad(søknadId: UUID, sakId: String): Int {
+    suspend fun lagKnytningMellomHotsakOgSøknad(søknadId: UUID, sakId: String): Int {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.post("$baseUrl/hotsak/sak") {
@@ -230,46 +177,26 @@ class SøknadForRiverClientImpl(
         val saksnr: String,
     )
 
-    override suspend fun hentSøknadIdFraVedtaksresultat(
-        fnrBruker: String,
-        saksblokkOgSaksnr: String,
-        vedtaksdato: LocalDate,
-    ): UUID? {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.post("$baseUrl/soknad/fra-vedtaksresultat") {
-                    setBody(SoknadFraVedtaksresultatDto(fnrBruker, saksblokkOgSaksnr, vedtaksdato))
-                }.body<JsonNode>().let {
-                    if (it.get("soknadId").textValue() != null) {
-                        UUID.fromString(it.get("soknadId").textValue())
-                    } else {
-                        null
-                    }
-                }
-            }.getOrLogAndThrow()
-        }
-    }
-
-    override suspend fun hentSøknadIdFraVedtaksresultatV2(
+    suspend fun hentSøknadIdFraVedtaksresultat(
         fnrBruker: String,
         saksblokkOgSaksnr: String,
     ): List<SøknadIdFraVedtaksresultat> {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.post("$baseUrl/soknad/fra-vedtaksresultat-v2") {
-                    setBody(SoknadFraVedtaksresultatV2Dto(fnrBruker, saksblokkOgSaksnr))
+                    setBody(SøknadFraVedtaksresultatDto(fnrBruker, saksblokkOgSaksnr))
                 }.body<Array<SøknadIdFraVedtaksresultat>>().toList()
             }.getOrLogAndThrow()
         }
     }
 
-    override suspend fun hentSøknadIdFraHotsakSaksnummer(
+    suspend fun hentSøknadIdFraHotsakSaksnummer(
         saksnummer: String,
     ): UUID? {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.post("$baseUrl/soknad/hotsak/fra-saknummer") {
-                    setBody(SoknadFraHotsakNummerDto(saksnummer))
+                    setBody(SøknadFraHotsakNummerDto(saksnummer))
                 }.body<JsonNode>().let {
                     if (it.get("soknadId")?.textValue() != null) {
                         UUID.fromString(it.get("soknadId").textValue())
@@ -281,20 +208,14 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    data class SoknadFraVedtaksresultatDto(
-        val fnrBruker: String,
-        val saksblokkOgSaksnr: String,
-        val vedtaksdato: LocalDate,
-    )
-
-    data class SoknadFraVedtaksresultatV2Dto(
+    data class SøknadFraVedtaksresultatDto(
         val fnrBruker: String,
         val saksblokkOgSaksnr: String,
     )
 
-    data class SoknadFraHotsakNummerDto(val saksnummer: String)
+    data class SøknadFraHotsakNummerDto(val saksnummer: String)
 
-    override suspend fun lagreVedtaksresultat(
+    suspend fun lagreVedtaksresultat(
         søknadId: UUID,
         vedtaksresultat: String,
         vedtaksdato: LocalDate,
@@ -309,7 +230,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun lagreVedtaksresultatFraHotsak(
+    suspend fun lagreVedtaksresultatFraHotsak(
         søknadId: UUID,
         vedtaksresultat: String,
         vedtaksdato: LocalDate,
@@ -330,7 +251,7 @@ class SøknadForRiverClientImpl(
         val soknadsType: String,
     )
 
-    override suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean {
+    suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.post("$baseUrl/infotrygd/fnr-jounralpost") {
@@ -345,17 +266,7 @@ class SøknadForRiverClientImpl(
         val journalpostId: Int,
     )
 
-    override suspend fun hentSøknadstypeForSøknad(søknadId: UUID): String? {
-        data class Response(val søknadsType: String?)
-
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.get("$baseUrl/infotrygd/søknadsType/$søknadId").body<Response>().søknadsType
-            }.getOrLogAndThrow()
-        }
-    }
-
-    override suspend fun oppdaterStatus(søknadId: UUID, status: Status): Int {
+    suspend fun oppdaterStatus(søknadId: UUID, status: Status): Int {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.put("$baseUrl/soknad/status/$søknadId") { setBody(status) }.body<Int>()
@@ -363,7 +274,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun oppdaterStatus(
+    suspend fun oppdaterStatus(
         statusMedÅrsak: StatusMedÅrsak,
     ): Int {
         return withContext(Dispatchers.IO) {
@@ -373,7 +284,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun hentSøknadData(søknadId: UUID): SøknadData {
+    suspend fun hentSøknadData(søknadId: UUID): SøknadData {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.get("$baseUrl/soknadsdata/bruker/$søknadId")
@@ -383,7 +294,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun hentSøknadOpprettetDato(søknadId: UUID): Date {
+    suspend fun hentSøknadOpprettetDato(søknadId: UUID): Date {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.get("$baseUrl/soknad/opprettet-dato/$søknadId").body<Date>()
@@ -391,7 +302,7 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun hentSøknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad> {
+    suspend fun hentSøknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad> {
         return withContext(Dispatchers.IO) {
             SoknadMedStatus(UUID.randomUUID(), Date(), Date(), Status.UTLØPT, true, "")
 
@@ -401,16 +312,17 @@ class SøknadForRiverClientImpl(
         }
     }
 
-    override suspend fun behovsmeldingTypeFor(søknadId: UUID): BehovsmeldingType? {
+    suspend fun behovsmeldingTypeFor(søknadId: UUID): BehovsmeldingType? {
         data class Response(val behovsmeldingType: BehovsmeldingType?)
 
+        val url = "$baseUrl/soknad/behovsmeldingType/$søknadId"
         val response = withContext(Dispatchers.IO) {
             runCatching {
-                httpClient.get("$baseUrl/soknad/behovsmeldingType/$søknadId").body<Response>()
+                httpClient.get(url).body<Response>()
             }.onSuccess {
                 logger.info("DEBUG DEBUG: Response: $it")
             }.onFailure {
-                logger.error(it) { "Feil ved GET $baseUrl/soknad/behovsmeldingType/$søknadId." }
+                logger.error(it) { "Feil ved GET $url" }
             }
         }.getOrNull()
 

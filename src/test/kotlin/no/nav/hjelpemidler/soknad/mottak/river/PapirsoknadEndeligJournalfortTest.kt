@@ -17,7 +17,7 @@ internal class PapirsoknadEndeligJournalfortTest {
     private val capturedInfotrygdMock = slot<VedtaksresultatData>()
     private val capturedSoknadData = slot<PapirSøknadData>()
     private val mock = mockk<SøknadForRiverClient>().apply {
-        coEvery { savePapir(capture(capturedSoknadData)) } returns 1
+        coEvery { lagrePapirsøknad(capture(capturedSoknadData)) } returns 1
         coEvery { søknadFinnes(any()) } returns false
         coEvery { fnrOgJournalpostIdFinnes(any(), any()) } returns false
         coEvery { lagKnytningMellomFagsakOgSøknad(capture(capturedInfotrygdMock)) } returns 1

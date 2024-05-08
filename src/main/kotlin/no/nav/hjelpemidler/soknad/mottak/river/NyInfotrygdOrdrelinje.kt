@@ -67,7 +67,7 @@ internal class NyInfotrygdOrdrelinje(
                 logger.info { "Inftrygd ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
 
                 // Match ordrelinje to Infotrygd-table
-                val søknadIder = søknadForRiverClient.hentSøknadIdFraVedtaksresultatV2(
+                val søknadIder = søknadForRiverClient.hentSøknadIdFraVedtaksresultat(
                     packet.fnrBruker,
                     packet.saksblokkOgSaksnr,
                 )

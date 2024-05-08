@@ -19,14 +19,10 @@ import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
-interface InfotrygdProxyClient {
-    suspend fun harVedtakFor(fnr: String, saksblokk: String, saksnr: String, vedtaksDato: LocalDate): Boolean
-}
-
-class InfotrygdProxyClientImpl(
+class InfotrygdProxyClient(
     private val baseUrl: String,
     private val tokenSetProvider: TokenSetProvider,
-) : InfotrygdProxyClient {
+) {
     private val httpClient: HttpClient = httpClient {
         openID(tokenSetProvider)
         defaultRequest {
@@ -36,7 +32,7 @@ class InfotrygdProxyClientImpl(
         }
     }
 
-    override suspend fun harVedtakFor(fnr: String, saksblokk: String, saksnr: String, vedtaksDato: LocalDate): Boolean {
+    suspend fun harVedtakFor(fnr: String, saksblokk: String, saksnr: String, vedtaksDato: LocalDate): Boolean {
         data class Request(
             val fnr: String,
             val saksblokk: String,

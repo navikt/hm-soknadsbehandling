@@ -114,7 +114,7 @@ internal class PapirSøknadEndeligJournalført(
 
     private suspend fun save(soknadData: PapirSøknadData) =
         runCatching {
-            søknadForRiverClient.savePapir(soknadData)
+            søknadForRiverClient.lagrePapirsøknad(soknadData)
         }.onSuccess {
             if (it > 0) {
                 logger.info("Endelig journalført papirsøknad lagret: ${soknadData.soknadId}, it: $it")

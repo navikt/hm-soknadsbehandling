@@ -7,10 +7,8 @@ import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.hjelpemidler.http.openid.azureADClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
-import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClientImpl
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClientImpl
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingClient
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingOrdrelinjeStatus
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingStatus
@@ -44,11 +42,11 @@ fun main() {
         cache(leeway = 10.seconds)
     }
 
-    val søknadForRiverClient: SøknadForRiverClient = SøknadForRiverClientImpl(
+    val søknadForRiverClient = SøknadForRiverClient(
         Configuration.soknadsbehandlingDb.baseUrl,
         azureADClient.withScope(Configuration.azure.dbApiScope),
     )
-    val infotrygdProxyClient: InfotrygdProxyClient = InfotrygdProxyClientImpl(
+    val infotrygdProxyClient = InfotrygdProxyClient(
         Configuration.infotrygdProxy.baseUrl,
         azureADClient.withScope(Configuration.azure.infotrygdProxyScope),
     )
