@@ -41,7 +41,7 @@ internal class JournalpostSink(
             try {
                 val rowsUpdated = update(UUID.fromString(packet.søknadId), packet.journalpostId)
                 if (rowsUpdated > 0) {
-                    logger.info("Søknad ${packet.søknadId} oppdatert med journalpostId: ${packet.journalpostId}")
+                    logger.info("Søknad med søknadId: ${packet.søknadId} oppdatert med journalpostId: ${packet.journalpostId}")
                 } else {
                     logger.error {
                         "Kunne ikke oppdatere søknadId: ${packet.søknadId} med journalpostId: ${packet.journalpostId}. Kontroller at søknadId eksisterer og ikke allerede har registrert en journalpostId."
