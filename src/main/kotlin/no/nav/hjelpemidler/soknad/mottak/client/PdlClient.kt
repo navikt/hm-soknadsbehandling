@@ -41,10 +41,10 @@ class PdlClient(
                 httpClient.post(baseUrl) { setBody(body) }.body<JsonNode>()
             }.onSuccess {
                 if (it.has("errors")) {
-                    error("Feil ved henting av personinformasjon fra PDL ${it.get("errors")}")
+                    error("Feil ved henting av personinformasjon fra PDL, errors: '${it.get("errors")}'")
                 }
             }.onFailure {
-                logger.error("Feil ved kall til PDL ${it.message}", it)
+                logger.error("Feil ved kall til PDL", it)
                 throw it
             }.getOrThrow()
         }
