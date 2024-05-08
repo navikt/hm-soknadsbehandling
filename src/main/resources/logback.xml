@@ -19,6 +19,7 @@
 
     <logger name="no.nav.helse.rapids_rivers" level="DEBUG" />
     <logger name="no.nav.hjelpemidler.soknad.mottak" level="DEBUG" />
+    <logger name="no.nav.hjelpemidler.soknad.mottak.metrics" level="INFO" />
     <logger name="io.ktor.auth" level="TRACE" />
 
     <logger name="tjenestekall" level="DEBUG" additivity="false">

@@ -18,7 +18,7 @@ internal class Metrics(
     messageContext: MessageContext,
     private val pdlClient: PdlClient,
     private val kommuneService: KommuneService = KommuneService(),
-    config: Configuration.InfluxDb = Configuration.influxDb
+    config: Configuration.InfluxDb = Configuration.influxDb,
 ) {
 
     private val client = InfluxDBClientFactory.createV1(
@@ -66,7 +66,7 @@ internal class Metrics(
     suspend fun resultatFraInfotrygd(
         brukersFnr: String,
         vedtaksresultat: String,
-        soknadsType: String
+        soknadsType: String,
     ) {
         withContext(Dispatchers.IO) {
             try {
@@ -105,11 +105,13 @@ internal class Metrics(
                 .addFields(fields)
                 .time(Instant.now().toEpochMilli(), WritePrecision.MS)
 
-            logg.info("Skriv point-objekt til Aiven: ${point.toLineProtocol()}")
+            logg.debug {
+                "Sender metrikk: ${point.toLineProtocol()}"
+            }
             writeApi.writePoint(point)
             metricsProducer.hendelseOpprettet(measurement, fields, tags)
         } catch (e: Exception) {
-            logg.warn(e) { "Skriving av event til influx feilet" }
+            logg.warn(e) { "Sending av metrikk feilet" }
         }
     }
 }
