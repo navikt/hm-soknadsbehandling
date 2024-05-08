@@ -4,7 +4,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.accept
-import io.ktor.client.request.post
+import io.ktor.client.request.get
 import io.ktor.http.ContentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -21,7 +21,7 @@ interface OppslagClient {
     suspend fun hentAlleKommuner(): Map<String, KommuneDto>
 }
 
-class HttpOppslagClient(
+class OppslagClientImpl(
     private val oppslagUrl: String = Configuration.oppslagUrl,
 ) : OppslagClient {
     private val httpClient: HttpClient = httpClient {
@@ -36,7 +36,7 @@ class HttpOppslagClient(
         logger.info("Henter alle kommuner fra $kommunenrUrl")
         return withContext(Dispatchers.IO) {
             runCatching {
-                httpClient.post(kommunenrUrl).body<Map<String, KommuneDto>>()
+                httpClient.get(kommunenrUrl).body<Map<String, KommuneDto>>()
             }.onFailure {
                 logger.error(it) { "Henting av kommune feilet: ${it.message}" }
             }
@@ -44,15 +44,15 @@ class HttpOppslagClient(
     }
 }
 
-class CachedOppslagClient(val httpOppslagClient: HttpOppslagClient = HttpOppslagClient()) : OppslagClient {
+class CachedOppslagClient(val oppslagClient: OppslagClient = OppslagClientImpl()) : OppslagClient {
     private var kommunerCache: Map<String, KommuneDto> = runBlocking(Dispatchers.IO) {
-        httpOppslagClient.hentAlleKommuner()
+        oppslagClient.hentAlleKommuner()
     }
     private var cacheExpiry: LocalDateTime = LocalDateTime.now().plusHours(1)
 
     override suspend fun hentAlleKommuner(): Map<String, KommuneDto> {
         if (cacheExpiry.isBefore(LocalDateTime.now())) {
-            kommunerCache = httpOppslagClient.hentAlleKommuner()
+            kommunerCache = oppslagClient.hentAlleKommuner()
             cacheExpiry = LocalDateTime.now().plusHours(1)
         }
         return kommunerCache
