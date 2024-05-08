@@ -66,7 +66,7 @@ internal class DigitalSøknadEndeligJournalførtEtterTilbakeføring(
             søknadForRiverClient.oppdaterStatus(søknadId, Status.ENDELIG_JOURNALFØRT)
         }.onSuccess {
             if (it > 0) {
-                logger.info { "Status på søknad sett til endelig journalført, søknadId: $søknadId, it: $it" }
+                logger.info { "Status på søknad satt til endelig journalført, søknadId: $søknadId, it: $it" }
             } else {
                 logger.warn { "Status er allerede satt til endelig journalført, søknadId: $søknadId" }
             }

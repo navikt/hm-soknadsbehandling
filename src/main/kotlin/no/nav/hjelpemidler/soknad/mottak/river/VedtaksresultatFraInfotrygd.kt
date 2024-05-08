@@ -136,7 +136,7 @@ internal class VedtaksresultatFraInfotrygd(
             søknadForRiverClient.oppdaterStatus(søknadId, status)
         }.onSuccess {
             if (it > 0) {
-                logger.info("Status på søknad sett til: $status for søknadId: $søknadId, it: $it")
+                logger.info("Status på søknad satt til: $status for søknadId: $søknadId, it: $it")
             } else {
                 logger.warn("Status er allerede satt til: $status for søknadId: $søknadId")
             }

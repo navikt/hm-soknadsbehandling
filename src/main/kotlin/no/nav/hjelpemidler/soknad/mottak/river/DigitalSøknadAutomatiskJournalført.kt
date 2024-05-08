@@ -46,7 +46,7 @@ internal class DigitalSøknadAutomatiskJournalført(
                 logger.info(
                     "Status på ${
                         behovsmeldingType.toString().lowercase()
-                    } sett til endelig journalført: $søknadId"
+                    } satt til endelig journalført: $søknadId"
                 )
 
                 // Melding til Ditt NAV
