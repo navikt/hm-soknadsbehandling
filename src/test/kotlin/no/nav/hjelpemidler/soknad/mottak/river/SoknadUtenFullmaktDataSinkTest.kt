@@ -11,17 +11,17 @@ import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
-import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
+import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class SoknadUtenFullmaktDataSinkTest {
-    private val capturedSoknadData = slot<SoknadData>()
+    private val capturedSøknadData = slot<SøknadData>()
     private val mock = mockk<SøknadForRiverClient>().apply {
-        coEvery { save(capture(capturedSoknadData)) } returns Unit
-        coEvery { soknadFinnes(any()) } returns false
+        coEvery { lagreSøknad(capture(capturedSøknadData)) } returns Unit
+        coEvery { søknadFinnes(any()) } returns false
     }
     private val influxMock = mockk<Metrics>(relaxed = true)
 
@@ -32,7 +32,7 @@ internal class SoknadUtenFullmaktDataSinkTest {
     @BeforeEach
     fun reset() {
         rapid.reset()
-        capturedSoknadData.clear()
+        capturedSøknadData.clear()
     }
 
     @Test
@@ -61,9 +61,9 @@ internal class SoknadUtenFullmaktDataSinkTest {
 
         rapid.sendTestMessage(okPacket)
 
-        capturedSoknadData.captured.fnrBruker shouldBe "fnrBruker"
-        capturedSoknadData.captured.fnrInnsender shouldBe "fodselNrInnsender"
-        capturedSoknadData.captured.status shouldBe Status.VENTER_GODKJENNING
+        capturedSøknadData.captured.fnrBruker shouldBe "fnrBruker"
+        capturedSøknadData.captured.fnrInnsender shouldBe "fodselNrInnsender"
+        capturedSøknadData.captured.status shouldBe Status.VENTER_GODKJENNING
     }
 
     @Test

@@ -35,7 +35,7 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søkn
                 logger.info { "Bruker har slettet søknad: ${packet.soknadId}" }
                 val rowsUpdated = update(UUID.fromString(packet.soknadId), Status.SLETTET)
                 if (rowsUpdated > 0) {
-                    val fnrBruker = søknadForRiverClient.hentFnrForSoknad(UUID.fromString(packet.soknadId))
+                    val fnrBruker = søknadForRiverClient.hentFnrForSøknad(UUID.fromString(packet.soknadId))
                     forward(UUID.fromString(packet.soknadId), fnrBruker, context)
                 } else {
                     logger.info { "Søknad som slettes er allerede slettet eller stod ikke til godkjenning, søknadId: ${packet.soknadId}" }
@@ -47,7 +47,7 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søkn
     }
 
     private suspend fun update(soknadId: UUID, status: Status) =
-        kotlin.runCatching {
+        runCatching {
             søknadForRiverClient.slettSøknad(soknadId)
         }.onSuccess {
             logger.info("Søknad $soknadId oppdatert med status $status")
@@ -55,22 +55,21 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søkn
             logger.error(it) { "Failed to update søknad $soknadId med status $status" }
         }.getOrThrow()
 
-    private fun forward(soknadId: UUID, fnrBruker: String, context: MessageContext) {
+    private fun forward(søknadId: UUID, fnrBruker: String, context: MessageContext) {
         try {
-
             val soknadGodkjentMessage = JsonMessage("{}", MessageProblems("")).also {
                 it["@id"] = ULID.random()
                 it["@event_name"] = "SøknadSlettetAvBruker"
                 it["@opprettet"] = LocalDateTime.now()
                 it["fodselNrBruker"] = fnrBruker
-                it["soknadId"] = soknadId.toString()
+                it["soknadId"] = søknadId.toString()
             }.toJson()
             context.publish(fnrBruker, soknadGodkjentMessage)
             Prometheus.soknadSlettetAvBrukerCounter.inc()
-            logger.info("Søknad er slettet av bruker: $soknadId")
-            sikkerlogg.info("Søknad er slettet med søknadsId: $soknadId, fnr: $fnrBruker)")
+            logger.info("Søknad er slettet av bruker: $søknadId")
+            sikkerlogg.info("Søknad er slettet med søknadId: $søknadId, fnr: $fnrBruker)")
         } catch (e: Exception) {
-            logger.error(e) { "Failed: ${e.message}. Soknad: $soknadId" }
+            logger.error(e) { "Failed: ${e.message}, søknadId: $søknadId" }
         }
     }
 }

@@ -7,7 +7,7 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import java.time.LocalDateTime
 import java.util.UUID
 
-internal data class SoknadData(
+data class SøknadData(
     val fnrBruker: String,
     val navnBruker: String, // Lagres til hm-soknadsbehandling-db, slik at det kan vises i hm-formidler, selv om bruker sletter søknaden (brukerbekreftelse)
     val fnrInnsender: String,
@@ -19,14 +19,14 @@ internal data class SoknadData(
 ) {
 
     companion object {
-        fun mapFraDto(soknadDataDto: SoknadDataDto): SoknadData {
+        fun mapFraDto(soknadDataDto: SoknadDataDto): SøknadData {
             requireNotNull(soknadDataDto.fnrBruker)
             requireNotNull(soknadDataDto.navnBruker)
             requireNotNull(soknadDataDto.fnrInnsender)
             requireNotNull(soknadDataDto.soknadId)
             requireNotNull(soknadDataDto.soknad)
             requireNotNull(soknadDataDto.status)
-            return SoknadData(
+            return SøknadData(
                 soknadDataDto.fnrBruker,
                 soknadDataDto.navnBruker,
                 soknadDataDto.fnrInnsender,
@@ -38,7 +38,8 @@ internal data class SoknadData(
             )
         }
     }
-    internal fun toJson(eventName: String): String {
+
+    fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
             val id = ULID.random()
             it["@id"] = id // @deprecated
@@ -55,7 +56,7 @@ internal data class SoknadData(
         }.toJson()
     }
 
-    internal fun toVenterPaaGodkjenningJson(): String {
+    fun toVenterPaaGodkjenningJson(): String {
         return JsonMessage("{}", MessageProblems("")).also {
             val id = ULID.random()
             it["@id"] = id // @deprecated

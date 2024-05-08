@@ -40,7 +40,7 @@ internal class HotsakOpprettet(
     }
 
     private suspend fun opprettKnytningMellomHotsakOgSøknad(søknadId: UUID, sakId: String) =
-        kotlin.runCatching {
+        runCatching {
             søknadForRiverClient.lagKnytningMellomHotsakOgSøknad(søknadId, sakId)
         }.onSuccess {
             if (it > 0) {

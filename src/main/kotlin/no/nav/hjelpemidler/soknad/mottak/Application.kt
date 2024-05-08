@@ -1,12 +1,15 @@
 package no.nav.hjelpemidler.soknad.mottak
 
+import io.ktor.client.engine.apache.Apache
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.hjelpemidler.soknad.mottak.aad.AzureClient
+import no.nav.hjelpemidler.http.openid.azureADClient
+import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClientImpl
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClientImpl
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingClient
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingOrdrelinjeStatus
@@ -32,30 +35,31 @@ import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadsgodkjenningService
 import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
-import kotlin.time.ExperimentalTime
+import kotlin.time.Duration.Companion.seconds
 
 private val logger = KotlinLogging.logger {}
 
-@ExperimentalTime
 fun main() {
+    val azureADClient = azureADClient(Apache.create()) {
+        cache(leeway = 10.seconds)
+    }
 
-    val azureClient = AzureClient(
-        tenantUrl = "${Configuration.azure.tenantBaseUrl}/${Configuration.azure.tenantId}",
-        clientId = Configuration.azure.clientId,
-        clientSecret = Configuration.azure.clientSecret
+    val søknadForRiverClient: SøknadForRiverClient = SøknadForRiverClientImpl(
+        Configuration.soknadsbehandlingDb.baseUrl,
+        azureADClient.withScope(Configuration.azure.dbApiScope),
     )
-
-    val søknadForRiverClient =
-        SøknadForRiverClientImpl(Configuration.soknadsbehandlingDb.baseUrl, azureClient, Configuration.azure.dbApiScope)
-    val infotrygdProxyClient =
-        InfotrygdProxyClientImpl(
-            Configuration.infotrygdProxy.baseUrl,
-            azureClient,
-            Configuration.azure.infotrygdProxyScope
-        )
-    val pdlClient = PdlClient(azureClient, Configuration.pdl.baseUrl, Configuration.pdl.apiScope)
-
-    val delbestillingClient = DelbestillingClient(Configuration.delbestillingApi.baseUrl, azureClient, Configuration.azure.delbestillingApiScope)
+    val infotrygdProxyClient: InfotrygdProxyClient = InfotrygdProxyClientImpl(
+        Configuration.infotrygdProxy.baseUrl,
+        azureADClient.withScope(Configuration.azure.infotrygdProxyScope),
+    )
+    val pdlClient = PdlClient(
+        Configuration.pdl.baseUrl,
+        azureADClient.withScope(Configuration.pdl.apiScope),
+    )
+    val delbestillingClient = DelbestillingClient(
+        Configuration.delbestillingApi.baseUrl,
+        azureADClient.withScope(Configuration.azure.delbestillingApiScope),
+    )
 
     RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
         .build().apply {

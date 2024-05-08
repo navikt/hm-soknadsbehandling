@@ -20,7 +20,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class DigitalSøknadEndeligJournalførtEtterTilbakeføring(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient
+    private val søknadForRiverClient: SøknadForRiverClient,
 ) : PacketListenerWithOnError {
 
     init {
@@ -62,40 +62,42 @@ internal class DigitalSøknadEndeligJournalførtEtterTilbakeføring(
     }
 
     private suspend fun oppdaterStatus(søknadId: UUID) =
-        kotlin.runCatching {
+        runCatching {
             søknadForRiverClient.oppdaterStatus(søknadId, Status.ENDELIG_JOURNALFØRT)
         }.onSuccess {
             if (it > 0) {
-                logger.info { "Status på søknad sett til endelig journalført: $søknadId, it=$it" }
+                logger.info { "Status på søknad sett til endelig journalført, søknadId: $søknadId, it: $it" }
             } else {
-                logger.warn { "Status er allereie sett til endelig journalført: $søknadId" }
+                logger.warn { "Status er allerede satt til endelig journalført, søknadId: $søknadId" }
             }
         }.onFailure {
-            logger.error(it) { "Failed to update søknad to endelig journalført: $søknadId" }
+            logger.error(it) { "Failed to update søknad to endelig journalført, søknadId: $søknadId" }
         }.getOrThrow()
 
     private suspend fun opprettKnytningMellomFagsakOgSøknad(
         vedtaksresultatData: VedtaksresultatData,
-        fagsakId: String
+        fagsakId: String,
     ) =
-        kotlin.runCatching {
+        runCatching {
             søknadForRiverClient.lagKnytningMellomFagsakOgSøknad(vedtaksresultatData)
         }.onSuccess {
             when (it) {
                 0 -> {
-                    logger.warn { "Inga knytning laga mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId" }
+                    logger.warn { "Inga knytning laga mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId" }
                     Prometheus.knytningMellomSøknadOgInfotrygdProblemCounter.inc()
                 }
+
                 1 -> {
-                    logger.info { "Knytning lagra mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId" }
+                    logger.info { "Knytning lagra mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId" }
                     Prometheus.knytningMellomSøknadOgInfotrygdOpprettaCounter.inc()
                 }
+
                 else -> {
-                    logger.error { "Fleire knytningar laga mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId" }
+                    logger.error { "Fleire knytningar laga mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId" }
                     Prometheus.knytningMellomSøknadOgInfotrygdProblemCounter.inc()
                 }
             }
         }.onFailure {
-            logger.error(it) { "Feila med å lage knytning mellom søknadId ${vedtaksresultatData.søknadId} og fagsakId $fagsakId" }
+            logger.error(it) { "Feila med å lage knytning mellom søknadId: ${vedtaksresultatData.søknadId} og fagsakId: $fagsakId" }
         }.getOrThrow()
 }

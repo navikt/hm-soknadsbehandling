@@ -17,7 +17,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class DigitalSøknadAutomatiskJournalført(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient
+    private val søknadForRiverClient: SøknadForRiverClient,
 ) : PacketListenerWithOnError {
 
     init {
@@ -43,7 +43,11 @@ internal class DigitalSøknadAutomatiskJournalført(
             val rowsUpdated = oppdaterStatus(søknadIdUid)
 
             if (rowsUpdated > 0) {
-                logger.info("Status på ${behovsmeldingType.toString().lowercase()} sett til endelig journalført: $søknadId")
+                logger.info(
+                    "Status på ${
+                        behovsmeldingType.toString().lowercase()
+                    } sett til endelig journalført: $søknadId"
+                )
 
                 // Melding til Ditt NAV
                 context.publish(
@@ -55,15 +59,15 @@ internal class DigitalSøknadAutomatiskJournalført(
                     ).toJson("hm-SøknadUnderBehandling")
                 )
             } else {
-                logger.warn("Status er allereie sett til endelig journalført: $søknadId")
+                logger.warn("Status er allerede satt til endelig journalført, søknadId: $søknadId")
             }
         }
     }
 
     private suspend fun oppdaterStatus(søknadId: UUID) =
-        kotlin.runCatching {
+        runCatching {
             søknadForRiverClient.oppdaterStatus(søknadId, Status.ENDELIG_JOURNALFØRT)
         }.onFailure {
-            logger.error(it) { "Failed to update søknad to endelig journalført: $søknadId" }
+            logger.error(it) { "Failed to update søknad to endelig journalført, søknadId: $søknadId" }
         }.getOrThrow()
 }

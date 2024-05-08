@@ -29,19 +29,19 @@ internal class VedtaksresultatFraHotsak(
         }.register(this)
     }
 
-    private val JsonMessage.søknadID get() = this["søknadId"].textValue()
+    private val JsonMessage.søknadId get() = this["søknadId"].textValue()
     private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
     private val JsonMessage.vedtaksResultat get() = this["vedtaksresultat"].textValue()
     private val JsonMessage.vedtaksDato get() = this["opprettet"].asLocalDateTime()
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
-            val søknadsId = UUID.fromString(packet.søknadID)
+            val søknadId = UUID.fromString(packet.søknadId)
             val fnrBruker = packet.fnrBruker
             val vedtaksresultat = packet.vedtaksResultat
             val vedtaksDato = packet.vedtaksDato
 
-            lagreVedtaksresultat(søknadsId, vedtaksresultat, vedtaksDato.toLocalDate())
+            lagreVedtaksresultat(søknadId, vedtaksresultat, vedtaksDato.toLocalDate())
 
             val status = when (vedtaksresultat) {
                 "I" -> Status.VEDTAKSRESULTAT_INNVILGET
@@ -51,10 +51,10 @@ internal class VedtaksresultatFraHotsak(
                 "HB" -> Status.VEDTAKSRESULTAT_HENLAGTBORTFALT
                 else -> Status.VEDTAKSRESULTAT_ANNET
             }
-            oppdaterStatus(søknadsId, status)
+            oppdaterStatus(søknadId, status)
 
             val vedtaksresultatLagretData = VedtaksresultatLagretData(
-                søknadsId,
+                søknadId,
                 fnrBruker,
                 vedtaksDato,
                 vedtaksresultat
@@ -63,31 +63,31 @@ internal class VedtaksresultatFraHotsak(
         }
     }
 
-    private suspend fun lagreVedtaksresultat(søknadsId: UUID, vedtaksresultat: String, vedtaksdato: LocalDate) {
-        kotlin.runCatching {
-            søknadForRiverClient.lagreVedtaksresultatFraHotsak(søknadsId, vedtaksresultat, vedtaksdato)
+    private suspend fun lagreVedtaksresultat(søknadId: UUID, vedtaksresultat: String, vedtaksdato: LocalDate) {
+        runCatching {
+            søknadForRiverClient.lagreVedtaksresultatFraHotsak(søknadId, vedtaksresultat, vedtaksdato)
         }.onSuccess {
             if (it == 0) {
-                logger.warn("Ingenting ble endret når vi forsøkte å lagre vedtaksresultat fra HOTSAK for søknadsId=$søknadsId")
+                logger.warn("Ingenting ble endret når vi forsøkte å lagre vedtaksresultat fra Hotsak for søknadId: $søknadId")
             } else {
-                logger.info("Vedtaksresultat fra HOTSAK er nå lagra for søknadsId=$søknadsId vedtaksResultat=$vedtaksresultat vedtaksDato=$vedtaksdato")
+                logger.info("Vedtaksresultat fra Hotsak er nå lagra for søknadId: $søknadId, vedtaksresultat: $vedtaksresultat vedtaksdato: $vedtaksdato")
                 Prometheus.vedtaksresultatLagretCounter.inc()
             }
         }.onFailure {
-            logger.error(it) { "Feil under lagring av vedtaksresultat for søknadsId=$søknadsId" }
+            logger.error(it) { "Feil under lagring av vedtaksresultat for søknadId: $søknadId" }
         }.getOrThrow()
     }
 
-    private suspend fun oppdaterStatus(søknadsId: UUID, status: Status) =
-        kotlin.runCatching {
-            søknadForRiverClient.oppdaterStatus(søknadsId, status)
+    private suspend fun oppdaterStatus(søknadId: UUID, status: Status) =
+        runCatching {
+            søknadForRiverClient.oppdaterStatus(søknadId, status)
         }.onSuccess {
             if (it > 0) {
-                logger.info("Status på søknad sett til $status for søknadId $søknadsId, it=$it")
+                logger.info("Status på søknad satt til: $status for søknadId: $søknadId, it: $it")
             } else {
-                logger.warn("Status er allereie sett til $status for søknadId $søknadsId")
+                logger.warn("Status er allerede satt til: $status for søknadId: $søknadId")
             }
         }.onFailure {
-            logger.error("Failed to update status to $status for søknadId $søknadsId")
+            logger.error("Failed to update status to: $status for søknadId: $søknadId")
         }.getOrThrow()
 }

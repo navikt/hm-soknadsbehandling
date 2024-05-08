@@ -151,7 +151,7 @@ internal class NyInfotrygdOrdrelinje(
                     data = packet.data,
                 )
 
-                val ordreSisteDøgn = søknadForRiverClient.ordreSisteDøgn(soknadsId = søknadId)
+                val ordreSisteDøgn = søknadForRiverClient.ordreSisteDøgn(søknadId = søknadId)
                 val result = save(ordrelinjeData)
 
                 if (result == 0) {
@@ -199,16 +199,16 @@ internal class NyInfotrygdOrdrelinje(
     }
 
     private suspend fun save(ordrelinje: OrdrelinjeData): Int =
-        kotlin.runCatching {
-            søknadForRiverClient.save(ordrelinje)
+        runCatching {
+            søknadForRiverClient.lagreSøknad(ordrelinje)
         }.onSuccess {
             if (it == 0) {
-                logger.warn("Duplikat av ordrelinje for SF ${ordrelinje.serviceforespørsel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra")
+                logger.warn("Duplikat av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra")
             } else {
-                logger.info("Lagra ordrelinje for SF ${ordrelinje.serviceforespørsel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}")
+                logger.info("Lagra ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}")
                 Prometheus.ordrelinjeLagretCounter.inc()
             }
         }.onFailure {
-            logger.error(it) { "Feil under lagring av ordrelinje for SF ${ordrelinje.serviceforespørsel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
+            logger.error(it) { "Feil under lagring av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
         }.getOrThrow()
 }

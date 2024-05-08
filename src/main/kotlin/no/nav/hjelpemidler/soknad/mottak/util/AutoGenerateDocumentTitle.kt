@@ -7,7 +7,7 @@ import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.Profile
 import no.nav.hjelpemidler.soknad.mottak.asObject
-import no.nav.hjelpemidler.soknad.mottak.client.hmdb.HjelpemiddeldatabaseClient
+import no.nav.hjelpemidler.soknad.mottak.client.HjelpemiddeldatabaseClient
 import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.util.slack.PostToSlack
 

@@ -5,7 +5,7 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import java.time.LocalDate
 import java.util.UUID
 
-internal data class VedtaksresultatData(
+data class VedtaksresultatData(
     val søknadId: UUID,
     val fnrBruker: String,
     val trygdekontorNr: String?,
@@ -14,7 +14,7 @@ internal data class VedtaksresultatData(
     val vedtaksresultat: String? = null,
     val vedtaksdato: LocalDate? = null,
 ) {
-    internal fun toJson(eventName: String): String {
+    fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
             it["eventName"] = eventName
             it["søknadId"] = this.søknadId

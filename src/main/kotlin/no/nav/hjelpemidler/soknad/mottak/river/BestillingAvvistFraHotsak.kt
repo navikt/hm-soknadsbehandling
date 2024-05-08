@@ -15,11 +15,10 @@ import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
-internal class BestillingAvvistFraHotsak(
+class BestillingAvvistFraHotsak(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient
+    private val søknadForRiverClient: SøknadForRiverClient,
 ) : PacketListenerWithOnError {
-
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "hm-BestillingAvvist") }
@@ -63,24 +62,24 @@ internal class BestillingAvvistFraHotsak(
         søknadId: UUID,
         status: Status,
         valgteÅrsaker: Set<String>,
-        begrunnelse: String
+        begrunnelse: String,
     ) =
-        kotlin.runCatching {
+        runCatching {
             søknadForRiverClient.oppdaterStatus(StatusMedÅrsak(søknadId, status, valgteÅrsaker, begrunnelse))
         }.onSuccess {
             if (it > 0) {
-                logger.info("Status på bestilling sett til $status for søknadId $søknadId, it=$it")
+                logger.info("Status på bestilling satt til: $status for søknadId: $søknadId, it: $it")
             } else {
-                logger.warn("Status er allereie sett til $status for søknadId $søknadId")
+                logger.warn("Status er allerede satt til: $status for søknadId: $søknadId")
             }
         }.onFailure {
-            logger.error("Failed to update status to $status for søknadId $søknadId")
+            logger.error("Failed to update status to: $status for søknadId: $søknadId")
         }.getOrThrow()
 }
 
-internal data class StatusMedÅrsak(
+data class StatusMedÅrsak(
     val søknadId: UUID,
     val status: Status,
     val valgteÅrsaker: Set<String>?,
-    val begrunnelse: String?
+    val begrunnelse: String?,
 )

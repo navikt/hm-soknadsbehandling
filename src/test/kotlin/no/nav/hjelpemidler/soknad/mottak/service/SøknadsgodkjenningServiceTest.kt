@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import java.util.UUID
 
 internal class SøknadsgodkjenningServiceTest {
-    private val capturedSoknadsId = slot<UUID>()
+    private val capturedSøknadId = slot<UUID>()
 
     val soknadId = UUID.fromString("62f68547-11ae-418c-8ab7-4d2af985bcd8")
 
@@ -34,7 +34,7 @@ internal class SøknadsgodkjenningServiceTest {
 
     private val mock = mockk<SøknadForRiverClient>().apply {
         coEvery { oppdaterStatus(soknadId, Status.GODKJENT) } returns 1
-        coEvery { hentSoknadData(capture(capturedSoknadsId)) } returns SoknadData(
+        coEvery { hentSøknadData(capture(capturedSøknadId)) } returns SøknadData(
             "123",
             "navn",
             "234",
@@ -64,7 +64,7 @@ internal class SøknadsgodkjenningServiceTest {
 
         coVerify {
             mock.oppdaterStatus(soknadId, Status.GODKJENT)
-            mock.hentSoknadData(soknadId)
+            mock.hentSøknadData(soknadId)
         }
     }
 }

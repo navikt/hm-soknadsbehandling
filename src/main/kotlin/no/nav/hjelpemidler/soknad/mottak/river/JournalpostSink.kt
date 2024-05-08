@@ -14,44 +14,52 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class JournalpostSink(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient
+    private val søknadForRiverClient: SøknadForRiverClient,
 ) : PacketListenerWithOnError {
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandAny("eventName", listOf("hm-SøknadArkivert", "hm-opprettetOgFerdigstiltJournalpost", "hm-opprettetMottattJournalpost")) }
+            validate {
+                it.demandAny(
+                    "eventName",
+                    listOf(
+                        "hm-SøknadArkivert",
+                        "hm-opprettetOgFerdigstiltJournalpost",
+                        "hm-opprettetMottattJournalpost"
+                    )
+                )
+            }
             validate { it.requireKey("soknadId", "joarkRef") }
         }.register(this)
     }
 
-    private val JsonMessage.soknadId get() = this["soknadId"].textValue()
+    private val JsonMessage.søknadId get() = this["soknadId"].textValue()
     private val JsonMessage.journalpostId get() = this["joarkRef"].textValue()
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
             try {
-                val rowsUpdated = update(UUID.fromString(packet.soknadId), packet.journalpostId)
+                val rowsUpdated = update(UUID.fromString(packet.søknadId), packet.journalpostId)
                 if (rowsUpdated > 0) {
-                    logger.info("Søknad ${packet.soknadId} oppdatert med journalpostId ${packet.journalpostId}")
+                    logger.info("Søknad ${packet.søknadId} oppdatert med journalpostId: ${packet.journalpostId}")
                 } else {
                     logger.error {
-                        "Kunne ikke oppdatere søknad ${packet.soknadId} med journlapostId ${packet.journalpostId}. " +
-                            "Kontroller at soknadId eksisterer og ikke allerede har registrert en journalpostId."
+                        "Kunne ikke oppdatere søknadId: ${packet.søknadId} med journalpostId: ${packet.journalpostId}. Kontroller at søknadId eksisterer og ikke allerede har registrert en journalpostId."
                     }
                 }
             } catch (e: Exception) {
                 throw RuntimeException(
-                    "Håndtering av ny journalpostId (${packet.journalpostId}) for søknad ${packet.soknadId} feilet",
+                    "Håndtering av ny journalpostId: ${packet.journalpostId} for søknadId: ${packet.søknadId} feilet",
                     e
                 )
             }
         }
     }
 
-    private suspend fun update(soknadId: UUID, journalpostId: String) =
-        kotlin.runCatching {
-            søknadForRiverClient.oppdaterJournalpostId(soknadId, journalpostId)
+    private suspend fun update(søknadId: UUID, journalpostId: String) =
+        runCatching {
+            søknadForRiverClient.oppdaterJournalpostId(søknadId, journalpostId)
         }.onFailure {
-            logger.error(it) { "Kunne ikke oppdatere søknad $soknadId med journlapostId $journalpostId" }
+            logger.error(it) { "Kunne ikke oppdatere søknadId: $søknadId med journalpostId: $journalpostId" }
         }.getOrThrow()
 }

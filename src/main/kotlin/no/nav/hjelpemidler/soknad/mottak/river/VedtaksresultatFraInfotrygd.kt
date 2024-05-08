@@ -33,7 +33,7 @@ internal class VedtaksresultatFraInfotrygd(
         }.register(this)
     }
 
-    private val JsonMessage.søknadID get() = this["søknadID"].textValue()
+    private val JsonMessage.søknadId get() = this["søknadID"].textValue()
     private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
     private val JsonMessage.vedtaksResultat get() = this["vedtaksResultat"].textValue()
     private val JsonMessage.vedtaksDato get() = this["vedtaksDato"].asLocalDate()
@@ -41,13 +41,13 @@ internal class VedtaksresultatFraInfotrygd(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
-            val søknadsId = UUID.fromString(packet.søknadID)
+            val søknadId = UUID.fromString(packet.søknadId)
             val fnrBruker = packet.fnrBruker
             val vedtaksresultat = packet.vedtaksResultat
             val vedtaksdato = packet.vedtaksDato
             val soknadsType = packet.soknadsType
 
-            lagreVedtaksresultat(søknadsId, vedtaksresultat, vedtaksdato, soknadsType)
+            lagreVedtaksresultat(søknadId, vedtaksresultat, vedtaksdato, soknadsType)
 
             metrics.resultatFraInfotrygd(fnrBruker, vedtaksresultat, soknadsType)
 
@@ -59,16 +59,16 @@ internal class VedtaksresultatFraInfotrygd(
                 "HB" -> Status.VEDTAKSRESULTAT_HENLAGTBORTFALT
                 else -> Status.VEDTAKSRESULTAT_ANNET
             }
-            oppdaterStatus(søknadsId, status)
+            oppdaterStatus(søknadId, status)
 
             // Sjekk om ordrelinjer kom inn før vedtaket, noe som kan skje for Infotrygd fordi vi venter med å
             // hente resultatet til neste morgen. Hvis dette er tilfelle deaktiverer vi ekstern varsling for vedtaket
             // og gir ekstern varsling for utsending startet i stede...
-            val mottokOrdrelinjeFørVedtak = søknadForRiverClient.harOrdreForSøknad(søknadsId)
+            val mottokOrdrelinjeFørVedtak = søknadForRiverClient.harOrdreForSøknad(søknadId)
 
             // Lagre vedtaksstatus og send beskjed til ditt nav
             val vedtaksresultatLagretData = VedtaksresultatLagretData(
-                søknadsId,
+                søknadId,
                 fnrBruker,
                 vedtaksdato.atStartOfDay(),
                 vedtaksresultat,
@@ -78,7 +78,7 @@ internal class VedtaksresultatFraInfotrygd(
 
             // Hvis vi allerede har ordrelinjer i databasen for denne søknaden: send utsending startet.
             if (mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler || mottokOrdrelinjeFørVedtak.harOrdreAvTypeDel) {
-                oppdaterStatus(søknadsId, Status.UTSENDING_STARTET)
+                oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
 
                 if (!mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler) {
                     // Hvis bare ordrelinje for deler så skipper vi varsel
@@ -86,8 +86,9 @@ internal class VedtaksresultatFraInfotrygd(
                 }
 
                 val ordrelinjeData = OrdrelinjeData(
-                    søknadId = søknadsId,
-                    behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadsId) ?: BehovsmeldingType.SØKNAD,
+                    søknadId = søknadId,
+                    behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadId)
+                        ?: BehovsmeldingType.SØKNAD,
                     fnrBruker = fnrBruker,
                     // Resten av feltene brukes ikke i json:
                     oebsId = 0,
@@ -111,35 +112,35 @@ internal class VedtaksresultatFraInfotrygd(
     }
 
     private suspend fun lagreVedtaksresultat(
-        søknadsId: UUID,
+        søknadId: UUID,
         vedtaksresultat: String,
         vedtaksdato: LocalDate,
-        soknadsType: String,
+        søknadstype: String,
     ) {
-        kotlin.runCatching {
-            søknadForRiverClient.lagreVedtaksresultat(søknadsId, vedtaksresultat, vedtaksdato, soknadsType)
+        runCatching {
+            søknadForRiverClient.lagreVedtaksresultat(søknadId, vedtaksresultat, vedtaksdato, søknadstype)
         }.onSuccess {
             if (it == 0) {
-                logger.warn("Ingenting ble endret når vi forsøkte å lagre vedtaksresultat for søknadsId=$søknadsId")
+                logger.warn("Ingenting ble endret når vi forsøkte å lagre vedtaksresultat for søknadId: $søknadId")
             } else {
-                logger.info("Vedtaksresultat er nå lagra for søknadsId=$søknadsId vedtaksResultat=$vedtaksresultat vedtaksDato=$vedtaksdato")
+                logger.info("Vedtaksresultat er nå lagret for søknadId: $søknadId vedtaksresultat: $vedtaksresultat vedtaksdato: $vedtaksdato")
                 Prometheus.vedtaksresultatLagretCounter.inc()
             }
         }.onFailure {
-            logger.error(it) { "Feil under lagring av vedtaksresultat for søknadsId=$søknadsId" }
+            logger.error(it) { "Feil under lagring av vedtaksresultat for søknadId: $søknadId" }
         }.getOrThrow()
     }
 
-    private suspend fun oppdaterStatus(søknadsId: UUID, status: Status) =
-        kotlin.runCatching {
-            søknadForRiverClient.oppdaterStatus(søknadsId, status)
+    private suspend fun oppdaterStatus(søknadId: UUID, status: Status) =
+        runCatching {
+            søknadForRiverClient.oppdaterStatus(søknadId, status)
         }.onSuccess {
             if (it > 0) {
-                logger.info("Status på søknad sett til $status for søknadId $søknadsId, it=$it")
+                logger.info("Status på søknad sett til: $status for søknadId: $søknadId, it: $it")
             } else {
-                logger.warn("Status er allereie sett til $status for søknadId $søknadsId")
+                logger.warn("Status er allerede satt til: $status for søknadId: $søknadId")
             }
         }.onFailure {
-            logger.error("Failed to update status to $status for søknadId $søknadsId")
+            logger.error("Failed to update status to: $status for søknadId: $søknadId", it)
         }.getOrThrow()
 }

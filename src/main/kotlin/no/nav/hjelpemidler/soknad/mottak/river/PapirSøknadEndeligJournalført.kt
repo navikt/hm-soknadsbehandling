@@ -22,7 +22,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 internal class PapirSøknadEndeligJournalført(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient,
-    private val metrics: Metrics
+    private val metrics: Metrics,
 ) : PacketListenerWithOnError {
     init {
         River(rapidsConnection).apply {
@@ -92,7 +92,11 @@ internal class PapirSøknadEndeligJournalført(
                 // Send melding til Ditt NAV
                 context.publish(
                     fnrBruker,
-                    SøknadUnderBehandlingData(soknadId, fnrBruker, BehovsmeldingType.SØKNAD).toJson("hm-SøknadUnderBehandling")
+                    SøknadUnderBehandlingData(
+                        soknadId,
+                        fnrBruker,
+                        BehovsmeldingType.SØKNAD
+                    ).toJson("hm-SøknadUnderBehandling")
                 )
                 logger.info { "Endelig journalført: Papirsøknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $soknadId" }
 
@@ -109,40 +113,42 @@ internal class PapirSøknadEndeligJournalført(
     }
 
     private suspend fun save(soknadData: PapirSøknadData) =
-        kotlin.runCatching {
+        runCatching {
             søknadForRiverClient.savePapir(soknadData)
         }.onSuccess {
             if (it > 0) {
-                logger.info("Endelig journalført papirsøknad saved: ${soknadData.soknadId} it=$it")
+                logger.info("Endelig journalført papirsøknad lagret: ${soknadData.soknadId}, it: $it")
             } else {
                 logger.error("Lagring av papirsøknad feilet. Ingen rader påvirket under lagring.")
             }
         }.onFailure {
-            logger.error(it) { "Failed to save papirsøknad klar til godkjenning: ${soknadData.soknadId}" }
+            logger.error(it) { "Failed to save papirsøknad klar til godkjenning, søknadId: ${soknadData.soknadId}" }
         }.getOrThrow()
 
     private suspend fun opprettKnytningMellomFagsakOgSøknad(
         vedtaksresultatData: VedtaksresultatData,
-        fagsakId: String
+        fagsakId: String,
     ) =
-        kotlin.runCatching {
+        runCatching {
             søknadForRiverClient.lagKnytningMellomFagsakOgSøknad(vedtaksresultatData)
         }.onSuccess {
             when (it) {
                 0 -> {
-                    logger.warn("Inga knytning laga mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId")
+                    logger.warn("Inga knytning laga mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId")
                     Prometheus.knytningMellomSøknadOgInfotrygdProblemCounter.inc()
                 }
+
                 1 -> {
-                    logger.info("Knytning lagra mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId")
+                    logger.info("Knytning lagra mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId")
                     Prometheus.knytningMellomSøknadOgInfotrygdOpprettaCounter.inc()
                 }
+
                 else -> {
-                    logger.error("Fleire knytningar laga mellom søknadId ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId $fagsakId")
+                    logger.error("Fleire knytningar laga mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId")
                     Prometheus.knytningMellomSøknadOgInfotrygdProblemCounter.inc()
                 }
             }
         }.onFailure {
-            logger.error(it) { "Feila med å lage knytning mellom søknadId ${vedtaksresultatData.søknadId} og fagsakId $fagsakId" }
+            logger.error(it) { "Feila med å lage knytning mellom søknadId: ${vedtaksresultatData.søknadId} og fagsakId: $fagsakId" }
         }.getOrThrow()
 }

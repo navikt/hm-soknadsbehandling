@@ -38,7 +38,7 @@ internal class NyHotsakOrdrelinjeTest {
         } returns HarOrdre(harOrdreAvTypeHjelpemidler = false, harOrdreAvTypeDel = false)
 
         coEvery {
-            client.save(any<OrdrelinjeData>())
+            client.lagreSøknad(any<OrdrelinjeData>())
         } returns 1
 
         coEvery {

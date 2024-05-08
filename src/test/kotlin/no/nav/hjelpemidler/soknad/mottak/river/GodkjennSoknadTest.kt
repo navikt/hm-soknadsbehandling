@@ -11,7 +11,7 @@ import io.mockk.slot
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
+import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -25,7 +25,7 @@ internal class GodkjennSoknadTest {
     private val capturedSoknadId = slot<UUID>()
     private val mock = mockk<SøknadForRiverClient>().apply {
         coEvery { oppdaterStatus(capture(capturedSoknadId), capture(capturedStatus)) } returns 1
-        coEvery { hentSoknadData(UUID.fromString(soknadId)) } returns SoknadData(
+        coEvery { hentSøknadData(UUID.fromString(soknadId)) } returns SøknadData(
             "fnrBruker",
             "fornavn etternavn",
             "fnrInnsender",
@@ -59,7 +59,7 @@ internal class GodkjennSoknadTest {
             kommunenavn = null,
             soknadGjelder = "Søknad om Hjelpemidler",
         )
-        coEvery { hentSoknadData(UUID.fromString(soknadIdDuplikat)) } returns SoknadData(
+        coEvery { hentSøknadData(UUID.fromString(soknadIdDuplikat)) } returns SøknadData(
             "fnrBruker",
             "fornavn etternavn",
             "fnrInnsender",

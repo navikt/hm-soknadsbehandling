@@ -72,7 +72,7 @@ internal class NyHotsakOrdrelinje(
                     return@runBlocking
                 }
 
-                logger.info("Fant søknadsid $søknadId fra HOTSAK saksnummer ${packet.saksnummer}")
+                logger.info("Fant søknadId: $søknadId fra Hotsak saksnummer: ${packet.saksnummer}")
 
                 val ordrelinjeData = OrdrelinjeData(
                     søknadId = søknadId,
@@ -92,7 +92,7 @@ internal class NyHotsakOrdrelinje(
                     data = packet.data,
                 )
 
-                val ordreSisteDøgn = søknadForRiverClient.ordreSisteDøgn(soknadsId = søknadId)
+                val ordreSisteDøgn = søknadForRiverClient.ordreSisteDøgn(søknadId = søknadId)
                 val result = save(ordrelinjeData)
 
                 if (result == 0) {
@@ -138,16 +138,16 @@ internal class NyHotsakOrdrelinje(
     }
 
     private suspend fun save(ordrelinje: OrdrelinjeData): Int =
-        kotlin.runCatching {
-            søknadForRiverClient.save(ordrelinje)
+        runCatching {
+            søknadForRiverClient.lagreSøknad(ordrelinje)
         }.onSuccess {
             if (it == 0) {
-                logger.warn("Duplikat av ordrelinje for SF ${ordrelinje.serviceforespørsel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra")
+                logger.warn("Duplikat av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra")
             } else {
-                logger.info("Lagra ordrelinje for SF ${ordrelinje.serviceforespørsel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}")
+                logger.info("Lagra ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}")
                 Prometheus.ordrelinjeLagretCounter.inc()
             }
         }.onFailure {
-            logger.error(it) { "Feil under lagring av ordrelinje for SF ${ordrelinje.serviceforespørsel}, ordrenr ${ordrelinje.ordrenr} og ordrelinje/delordrelinje ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
+            logger.error(it) { "Feil under lagring av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
         }.getOrThrow()
 }

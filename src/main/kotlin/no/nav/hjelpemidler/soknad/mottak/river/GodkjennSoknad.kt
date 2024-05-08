@@ -8,8 +8,8 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
-import no.nav.hjelpemidler.soknad.mottak.service.SoknadData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
+import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
 import no.nav.hjelpemidler.soknad.mottak.service.periodeMellomDatoer
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -20,7 +20,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 internal class GodkjennSoknad(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient
+    private val søknadForRiverClient: SøknadForRiverClient,
 ) : PacketListenerWithOnError {
 
     init {
@@ -53,7 +53,7 @@ internal class GodkjennSoknad(
     }
 
     private suspend fun update(soknadId: UUID, status: Status) =
-        kotlin.runCatching {
+        runCatching {
             søknadForRiverClient.oppdaterStatus(soknadId, status)
         }.onSuccess {
             logger.info("Søknad $soknadId oppdatert med status $status")
@@ -61,38 +61,38 @@ internal class GodkjennSoknad(
             logger.error(it) { "Failed to update søknad $soknadId med status $status" }
         }.getOrThrow()
 
-    private suspend fun hentSoknadData(soknadId: UUID): SoknadData =
-        kotlin.runCatching {
-            søknadForRiverClient.hentSoknadData(soknadId)!!
+    private suspend fun hentSoknadData(soknadId: UUID): SøknadData =
+        runCatching {
+            søknadForRiverClient.hentSøknadData(soknadId)!!
         }.onFailure {
             logger.error(it) { "Failed to retrieve søknad $soknadId" }
         }.getOrThrow()
 
-    private suspend fun loggTidBruktForGodkjenning(soknadData: SoknadData) {
+    private suspend fun loggTidBruktForGodkjenning(søknadData: SøknadData) {
         try {
-            val opprettetDato = søknadForRiverClient.hentSoknadOpprettetDato(soknadData.soknadId)
+            val opprettetDato = søknadForRiverClient.hentSøknadOpprettetDato(søknadData.soknadId)
             val tid = periodeMellomDatoer(
                 LocalDateTime.ofInstant(opprettetDato.toInstant(), ZoneId.systemDefault()),
                 LocalDateTime.now()
             )
-            logger.info("Tid brukt fra opprettelse til godkjenning av søknad med ID ${soknadData.soknadId} var: $tid")
+            logger.info("Tid brukt fra opprettelse til godkjenning av søknad med søknadId: ${søknadData.soknadId} var: $tid")
         } catch (e: Exception) {
-            logger.info(e) { "Klarte ikke å måle tidbruk mellom opprettelse og godkjenning" }
+            logger.info(e) { "Klarte ikke å måle tidsbruk mellom opprettelse og godkjenning" }
         }
     }
 
-    private fun forward(soknadData: SoknadData, context: MessageContext) {
-        val fnrBruker = soknadData.fnrBruker
-        val soknadId = soknadData.soknadId.toString()
+    private fun forward(søknadData: SøknadData, context: MessageContext) {
+        val fnrBruker = søknadData.fnrBruker
+        val søknadId = søknadData.soknadId.toString()
 
         try {
-            val soknadGodkjentMessage = soknadData.toJson("hm-søknadGodkjentAvBrukerMottatt")
+            val soknadGodkjentMessage = søknadData.toJson("hm-søknadGodkjentAvBrukerMottatt")
             context.publish(fnrBruker, soknadGodkjentMessage)
             Prometheus.soknadGodkjentAvBrukerCounter.inc()
-            logger.info("Søknad er godkjent av bruker: $soknadId - Det tok ")
-            sikkerlogg.info("Søknad er godkjent med søknadsId: $soknadId, fnr: $fnrBruker)")
+            logger.info("Søknad er godkjent av bruker: $søknadId")
+            sikkerlogg.info("Søknad er godkjent med søknadId: $søknadId, fnr: $fnrBruker")
         } catch (e: Exception) {
-            logger.error(e) { "Failed: ${e.message}. Soknad: $soknadId" }
+            logger.error(e) { "Failed: ${e.message}, søknadId: $søknadId" }
         }
     }
 }

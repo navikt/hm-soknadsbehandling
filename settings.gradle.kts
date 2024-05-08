@@ -1,8 +1,8 @@
 dependencyResolutionManagement {
     @Suppress("UnstableApiUsage")
     repositories {
-        maven("https://jitpack.io")
         mavenCentral()
+        maven("https://jitpack.io")
         maven {
             url = uri("https://maven.pkg.github.com/navikt/*")
             credentials {
@@ -16,7 +16,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
-            from("no.nav.hjelpemidler:hm-katalog:0.1.43")
+            from("no.nav.hjelpemidler:hm-katalog:0.1.45")
         }
     }
 }

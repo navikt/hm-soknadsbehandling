@@ -39,11 +39,11 @@ dependencies {
     implementation(libs.jackson.module.kotlin)
     implementation(libs.jackson.datatype.jsr310)
 
-    // Ktor
-    implementation(libs.ktor.serialization.jackson)
-    implementation(libs.ktor.client.core)
+    // DigiHoT
+    implementation(libs.hm.http) {
+        exclude("io.ktor", "ktor-client-cio")
+    }
     implementation(libs.ktor.client.apache)
-    implementation(libs.ktor.client.content.negotiation)
 
     // InfluxDB
     implementation(libs.influxdb.client.kotlin)

@@ -15,12 +15,6 @@ val jsonMapper: JsonMapper = jacksonMapperBuilder()
     .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
     .build()
 
-class JacksonMapper {
-    companion object {
-        val objectMapper: JsonMapper = jsonMapper
-    }
-}
-
 inline fun <reified T> JsonNode.asObject(): T =
     jsonMapper.treeToValue(this)
 

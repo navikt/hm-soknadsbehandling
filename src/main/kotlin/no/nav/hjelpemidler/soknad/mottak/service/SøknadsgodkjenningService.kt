@@ -19,7 +19,7 @@ internal class SøknadsgodkjenningService(
     }
 
     suspend fun slettUtgåtteSøknader(): Int {
-        val utgåtteSøknader = søknadForRiverClient.hentSoknaderTilGodkjenningEldreEnn(FEMTEN_DAGER)
+        val utgåtteSøknader = søknadForRiverClient.hentSøknaderTilGodkjenningEldreEnn(FEMTEN_DAGER)
         utgåtteSøknader.forEach { søknad ->
             val antallOppdatert = søknadForRiverClient.slettUtløptSøknad(søknad.søknadId!!)
 

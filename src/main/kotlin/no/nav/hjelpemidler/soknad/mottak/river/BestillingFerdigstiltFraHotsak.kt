@@ -52,15 +52,15 @@ internal class BestillingFerdigstiltFraHotsak(
     }
 
     private suspend fun oppdaterStatus(søknadId: UUID, status: Status) =
-        kotlin.runCatching {
+        runCatching {
             søknadForRiverClient.oppdaterStatus(søknadId, status)
         }.onSuccess {
             if (it > 0) {
-                logger.info("Status på bestilling satt til $status for søknadId $søknadId, it=$it")
+                logger.info("Status på bestilling satt til: $status for søknadId: $søknadId, it: $it")
             } else {
-                logger.warn("Status er allereie sett til $status for søknadId $søknadId")
+                logger.warn("Status er allerede satt til: $status for søknadId: $søknadId")
             }
         }.onFailure {
-            logger.error("Failed to update status to $status for søknadId $søknadId")
+            logger.error("Failed to update status to: $status for søknadId: $søknadId", it)
         }.getOrThrow()
 }

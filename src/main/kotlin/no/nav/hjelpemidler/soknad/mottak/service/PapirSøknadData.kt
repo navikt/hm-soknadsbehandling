@@ -6,14 +6,14 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import java.time.LocalDateTime
 import java.util.UUID
 
-internal data class PapirSøknadData(
+data class PapirSøknadData(
     val fnrBruker: String,
     val soknadId: UUID,
     val status: Status,
     val journalpostid: Int,
     val navnBruker: String,
 ) {
-    internal fun toJson(eventName: String): String {
+    fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
             val id = ULID.random()
             it["eventId"] = id

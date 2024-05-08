@@ -5,7 +5,7 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import java.util.UUID
 
-internal data class OrdrelinjeData(
+data class OrdrelinjeData(
     val søknadId: UUID,
     val behovsmeldingType: BehovsmeldingType,
     val oebsId: Int,
@@ -22,7 +22,7 @@ internal data class OrdrelinjeData(
     val hjelpemiddeltype: String,
     val data: JsonNode?,
 ) {
-    internal fun toJson(eventName: String): String {
+    fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
             it["eventName"] = eventName
             it["eventId"] = UUID.randomUUID().toString()
