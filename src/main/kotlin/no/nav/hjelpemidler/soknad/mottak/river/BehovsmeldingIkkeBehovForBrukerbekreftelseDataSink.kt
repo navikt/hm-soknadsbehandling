@@ -121,7 +121,7 @@ internal class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
             logger.info { "Behovsmelding sent, søknadId: ${søknadData.soknadId}" }
             sikkerlogg.info("Behovsmelding sendt med id: ${søknadData.soknadId}, fnr: ${søknadData.fnrBruker})")
         } catch (e: Exception) {
-            logger.error(e) { "forward() failed: ${e.message}, søknadId: ${søknadData.soknadId}" }
+            logger.error(e) { "forward() feilet, søknadId: ${søknadData.soknadId}" }
         }
     }
 }

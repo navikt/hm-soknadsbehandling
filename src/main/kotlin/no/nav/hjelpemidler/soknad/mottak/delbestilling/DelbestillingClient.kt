@@ -38,7 +38,7 @@ class DelbestillingClient(
                     setBody(StatusOppdateringDto(status, ordrenummer))
                 }
             } catch (e: Exception) {
-                logger.error(e) { "Request for å oppdatere status for $delbestillingId feilet" }
+                logger.error(e) { "Request for å oppdatere status for delbestillingId: $delbestillingId feilet" }
                 throw e
             }
         }
@@ -51,7 +51,7 @@ class DelbestillingClient(
                     setBody(DellinjeStatusOppdateringDto(status, hmsnr, datoOppdatert))
                 }
             } catch (e: Exception) {
-                logger.error(e) { "Request for å skipningsbekrefte dellinje feilet. Ordrenr: $ordrenummer, hmsnr: $hmsnr." }
+                logger.error(e) { "Request for å skipningsbekrefte dellinje feilet, ordrenr: $ordrenummer, hmsnr: $hmsnr." }
                 throw e
             }
         }

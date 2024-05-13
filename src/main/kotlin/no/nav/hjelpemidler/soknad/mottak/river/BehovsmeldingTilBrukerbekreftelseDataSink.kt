@@ -105,7 +105,7 @@ internal class BehovsmeldingTilBrukerbekreftelseDataSink(
             logger.info { "Søknad klar til godkjenning, søknadId: ${søknadData.soknadId}" }
             sikkerlogg.info { "Søknad klar til godkjenning med søknadId: ${søknadData.soknadId}, fnr: ${søknadData.fnrBruker})" }
         } catch (e: Exception) {
-            logger.error(e) { "Failed: ${e.message}, søknadId: ${søknadData.soknadId}" }
+            logger.error(e) { "forward() feilet, søknadId: ${søknadData.soknadId}" }
         }
     }
 }

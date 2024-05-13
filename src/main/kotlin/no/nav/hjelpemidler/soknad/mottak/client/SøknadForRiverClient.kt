@@ -320,7 +320,7 @@ class SøknadForRiverClient(
             runCatching {
                 httpClient.get(url).body<Response>()
             }.onSuccess {
-                logger.info("DEBUG DEBUG: Response: $it")
+                logger.debug { "Response: $it" }
             }.onFailure {
                 logger.error(it) { "Feil ved GET $url" }
             }

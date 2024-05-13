@@ -69,7 +69,7 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søkn
             logger.info("Søknad er slettet av bruker: $søknadId")
             sikkerlogg.info("Søknad er slettet med søknadId: $søknadId, fnr: $fnrBruker)")
         } catch (e: Exception) {
-            logger.error(e) { "Failed: ${e.message}, søknadId: $søknadId" }
+            logger.error(e) { "forward() failed, søknadId: $søknadId" }
         }
     }
 }

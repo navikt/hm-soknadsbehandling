@@ -46,7 +46,7 @@ internal class GodkjennSoknad(
                     forward(oppdatertSoknad, context)
                 }
             } catch (e: Exception) {
-                logger.error(e) { "Håndtering av brukergodkjenning for søknad ${packet.soknadId} feilet" }
+                logger.error(e) { "Håndtering av brukergodkjenning for søknadId: ${packet.soknadId} feilet" }
                 throw e
             }
         }
@@ -56,16 +56,16 @@ internal class GodkjennSoknad(
         runCatching {
             søknadForRiverClient.oppdaterStatus(soknadId, status)
         }.onSuccess {
-            logger.info("Søknad $soknadId oppdatert med status $status")
+            logger.info("Søknad med søknadId: $soknadId oppdatert med status: $status")
         }.onFailure {
-            logger.error(it) { "Failed to update søknad $soknadId med status $status" }
+            logger.error(it) { "Failed to update søknad with søknadId: $soknadId, status: $status" }
         }.getOrThrow()
 
     private suspend fun hentSoknadData(soknadId: UUID): SøknadData =
         runCatching {
             søknadForRiverClient.hentSøknadData(soknadId)!!
         }.onFailure {
-            logger.error(it) { "Failed to retrieve søknad $soknadId" }
+            logger.error(it) { "Failed to retrieve søknad with søknadId: $soknadId" }
         }.getOrThrow()
 
     private suspend fun loggTidBruktForGodkjenning(søknadData: SøknadData) {
@@ -92,7 +92,7 @@ internal class GodkjennSoknad(
             logger.info("Søknad er godkjent av bruker: $søknadId")
             sikkerlogg.info("Søknad er godkjent med søknadId: $søknadId, fnr: $fnrBruker")
         } catch (e: Exception) {
-            logger.error(e) { "Failed: ${e.message}, søknadId: $søknadId" }
+            logger.error(e) { "forward() failed, søknadId: $søknadId" }
         }
     }
 }
