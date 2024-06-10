@@ -1,11 +1,10 @@
 import com.expediagroup.graphql.plugin.gradle.tasks.GraphQLIntrospectSchemaTask
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.graphql)
     alias(libs.plugins.ktor)
+    alias(libs.plugins.graphql)
     alias(libs.plugins.spotless)
 }
 
@@ -24,7 +23,7 @@ dependencies {
     implementation(libs.rapidsAndRivers)
 
     // Logging
-    implementation(libs.kotlin.logging.deprecated)
+    implementation(libs.kotlin.logging)
     runtimeOnly(libs.logback.classic)
     runtimeOnly(libs.logstash.logback.encoder)
 
@@ -69,8 +68,7 @@ tasks {
     test {
         useJUnitPlatform()
         testLogging {
-            exceptionFormat = TestExceptionFormat.FULL
-            events = setOf(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+            events = setOf(TestLogEvent.SKIPPED, TestLogEvent.FAILED)
         }
     }
     compileKotlin {

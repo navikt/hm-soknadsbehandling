@@ -1,7 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -51,13 +51,13 @@ internal class NyHotsakOrdrelinje(
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
             if (packet.saksnummer.isEmpty()) {
-                logger.info("Skipping illegal event HOTSAK saksnummer='': ${packet.eventId}")
-                sikkerlogg.error("Skippet event med tomt  HOTSAK saksnumer: ${packet.toJson()}")
+                logger.info { "Skipping illegal event HOTSAK saksnummer='': ${packet.eventId}" }
+                sikkerlogg.error { "Skippet event med tomt  HOTSAK saksnumer: ${packet.toJson()}" }
                 return@runBlocking
             }
             if (skipEvent(UUID.fromString(packet.eventId))) {
-                logger.info("Hopper over event i skip-list: ${packet.eventId}")
-                sikkerlogg.error("Skippet event: ${packet.toJson()}")
+                logger.info { "Hopper over event i skip-list: ${packet.eventId}" }
+                sikkerlogg.error { "Skippet event: ${packet.toJson()}" }
                 return@runBlocking
             }
             try {
@@ -72,7 +72,7 @@ internal class NyHotsakOrdrelinje(
                     return@runBlocking
                 }
 
-                logger.info("Fant søknadId: $søknadId fra Hotsak saksnummer: ${packet.saksnummer}")
+                logger.info { "Fant søknadId: $søknadId fra Hotsak saksnummer: ${packet.saksnummer}" }
 
                 val ordrelinjeData = OrdrelinjeData(
                     søknadId = søknadId,
@@ -113,7 +113,7 @@ internal class NyHotsakOrdrelinje(
                 )
 
                 if (ordrelinjeData.hjelpemiddeltype == "Del") {
-                    logger.info("Ordrelinje for 'Del' lagret: ${ordrelinjeData.søknadId}")
+                    logger.info { "Ordrelinje for 'Del' lagret: ${ordrelinjeData.søknadId}" }
                     // Vi skal ikke agere ytterligere på disse
                     return@runBlocking
                 }
@@ -121,10 +121,10 @@ internal class NyHotsakOrdrelinje(
                 if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
                     context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
                     Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
-                    logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
-                    sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
+                    logger.info { "Ordrelinje sendt: ${ordrelinjeData.søknadId}" }
+                    sikkerlogg.info { "Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})" }
                 } else {
-                    logger.info("Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId")
+                    logger.info { "Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId" }
                 }
             } catch (e: Exception) {
                 throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
@@ -142,9 +142,9 @@ internal class NyHotsakOrdrelinje(
             søknadForRiverClient.lagreSøknad(ordrelinje)
         }.onSuccess {
             if (it == 0) {
-                logger.warn("Duplikat av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra")
+                logger.warn { "Duplikat av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra" }
             } else {
-                logger.info("Lagra ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}")
+                logger.info { "Lagra ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
                 Prometheus.ordrelinjeLagretCounter.inc()
             }
         }.onFailure {

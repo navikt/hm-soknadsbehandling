@@ -1,7 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
 import com.github.guepardoapps.kulid.ULID
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import java.time.LocalDateTime
@@ -26,7 +26,7 @@ internal data class VedtaksresultatLagretData(
             it["vedtaksresultat"] = this.vedtaksresultat
             it["eksternVarslingDeaktivert"] = this.eksternVarslingDeaktivert
             søknadsType?.let { st ->
-                logg.info("DEBUG: sender vedtak til ditt-nav med søknadsType=$st")
+                logg.info { "DEBUG: sender vedtak til ditt-nav med søknadsType=$st" }
                 it["søknadsType"] = st
             }
         }.toJson()

@@ -1,5 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.util
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.accept
 import io.ktor.client.request.post
@@ -8,7 +9,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.httpClient
 
@@ -39,7 +39,7 @@ object SlackClient {
             )
             runBlocking(Dispatchers.IO) { client.post(hookUrl) { setBody(values) } }
         } catch (e: Exception) {
-            log.warn("Posting av dokumentbeskrivelse feilet.", e)
+            log.warn(e) { "Posting av dokumentbeskrivelse feilet." }
         }
     }
 

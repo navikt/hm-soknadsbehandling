@@ -1,7 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -56,14 +56,14 @@ internal class GodkjennSoknad(
         runCatching {
             søknadForRiverClient.oppdaterStatus(soknadId, status)
         }.onSuccess {
-            logger.info("Søknad med søknadId: $soknadId oppdatert med status: $status")
+            logger.info { "Søknad med søknadId: $soknadId oppdatert med status: $status" }
         }.onFailure {
             logger.error(it) { "Failed to update søknad with søknadId: $soknadId, status: $status" }
         }.getOrThrow()
 
     private suspend fun hentSoknadData(soknadId: UUID): SøknadData =
         runCatching {
-            søknadForRiverClient.hentSøknadData(soknadId)!!
+            søknadForRiverClient.hentSøknadData(soknadId)
         }.onFailure {
             logger.error(it) { "Failed to retrieve søknad with søknadId: $soknadId" }
         }.getOrThrow()
@@ -75,7 +75,7 @@ internal class GodkjennSoknad(
                 LocalDateTime.ofInstant(opprettetDato.toInstant(), ZoneId.systemDefault()),
                 LocalDateTime.now()
             )
-            logger.info("Tid brukt fra opprettelse til godkjenning av søknad med søknadId: ${søknadData.soknadId} var: $tid")
+            logger.info { "Tid brukt fra opprettelse til godkjenning av søknad med søknadId: ${søknadData.soknadId} var: $tid" }
         } catch (e: Exception) {
             logger.info(e) { "Klarte ikke å måle tidsbruk mellom opprettelse og godkjenning" }
         }
@@ -89,8 +89,8 @@ internal class GodkjennSoknad(
             val soknadGodkjentMessage = søknadData.toJson("hm-søknadGodkjentAvBrukerMottatt")
             context.publish(fnrBruker, soknadGodkjentMessage)
             Prometheus.soknadGodkjentAvBrukerCounter.inc()
-            logger.info("Søknad er godkjent av bruker: $søknadId")
-            sikkerlogg.info("Søknad er godkjent med søknadId: $søknadId, fnr: $fnrBruker")
+            logger.info { "Søknad er godkjent av bruker: $søknadId" }
+            sikkerlogg.info { "Søknad er godkjent med søknadId: $søknadId, fnr: $fnrBruker" }
         } catch (e: Exception) {
             logger.error(e) { "forward() failed, søknadId: $søknadId" }
         }

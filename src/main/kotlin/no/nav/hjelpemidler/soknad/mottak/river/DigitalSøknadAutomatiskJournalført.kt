@@ -1,7 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -41,11 +41,11 @@ internal class DigitalSøknadAutomatiskJournalført(
             val rowsUpdated = oppdaterStatus(søknadIdUid)
 
             if (rowsUpdated > 0) {
-                logger.info(
+                logger.info {
                     "Status på ${
                         behovsmeldingType.toString().lowercase()
                     } satt til endelig journalført: $søknadId"
-                )
+                }
 
                 // Melding til Ditt NAV
                 context.publish(
@@ -57,7 +57,7 @@ internal class DigitalSøknadAutomatiskJournalført(
                     ).toJson("hm-SøknadUnderBehandling")
                 )
             } else {
-                logger.warn("Status er allerede satt til endelig journalført, søknadId: $søknadId")
+                logger.warn { "Status er allerede satt til endelig journalført, søknadId: $søknadId" }
             }
         }
     }

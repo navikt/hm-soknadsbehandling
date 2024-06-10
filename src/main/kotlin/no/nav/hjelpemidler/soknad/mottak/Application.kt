@@ -1,9 +1,9 @@
 package no.nav.hjelpemidler.soknad.mottak
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.engine.apache.Apache
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.hjelpemidler.http.openid.azureADClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
@@ -93,9 +93,9 @@ private fun startSøknadUtgåttScheduling(søknadsgodkjenningService: Søknadsgo
     timer.scheduleAtFixedRate(60000, 1000 * 60 * 60) {
         runBlocking {
             launch {
-                logger.info("Markerer utgåtte søknader...")
+                logger.info { "Markerer utgåtte søknader..." }
                 val antallUtgåtte = søknadsgodkjenningService.slettUtgåtteSøknader()
-                logger.info("Antall utgåtte søknader: $antallUtgåtte")
+                logger.info { "Antall utgåtte søknader: $antallUtgåtte" }
             }
         }
     }

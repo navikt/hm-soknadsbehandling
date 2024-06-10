@@ -1,7 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -117,9 +117,9 @@ internal class PapirSøknadEndeligJournalført(
             søknadForRiverClient.lagrePapirsøknad(soknadData)
         }.onSuccess {
             if (it > 0) {
-                logger.info("Endelig journalført papirsøknad lagret: ${soknadData.soknadId}, it: $it")
+                logger.info { "Endelig journalført papirsøknad lagret: ${soknadData.soknadId}, it: $it" }
             } else {
-                logger.error("Lagring av papirsøknad feilet. Ingen rader påvirket under lagring.")
+                logger.error { "Lagring av papirsøknad feilet. Ingen rader påvirket under lagring." }
             }
         }.onFailure {
             logger.error(it) { "Failed to save papirsøknad klar til godkjenning, søknadId: ${soknadData.soknadId}" }
@@ -134,17 +134,17 @@ internal class PapirSøknadEndeligJournalført(
         }.onSuccess {
             when (it) {
                 0 -> {
-                    logger.warn("Inga knytning laga mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId")
+                    logger.warn { "Inga knytning laga mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId" }
                     Prometheus.knytningMellomSøknadOgInfotrygdProblemCounter.inc()
                 }
 
                 1 -> {
-                    logger.info("Knytning lagra mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId")
+                    logger.info { "Knytning lagra mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId" }
                     Prometheus.knytningMellomSøknadOgInfotrygdOpprettaCounter.inc()
                 }
 
                 else -> {
-                    logger.error("Fleire knytningar laga mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId")
+                    logger.error { "Fleire knytningar laga mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId" }
                     Prometheus.knytningMellomSøknadOgInfotrygdProblemCounter.inc()
                 }
             }

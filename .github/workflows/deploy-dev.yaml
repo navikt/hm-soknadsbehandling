@@ -1,71 +1,23 @@
-name: Build and deploy to dev
+name: Bygg, deploy til dev-gcp og lag release
 
 on:
   push:
+    paths-ignore:
+      - "**.md"
+      - ".gitignore"
+      - "LICENCE"
+      - "CODEOWNERS"
     branches:
       - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    name: Build app, Docker image and deploy app
-
+    name: Bygg, deploy til dev-gcp og lag release
     permissions:
+      packages: write
       contents: write
       id-token: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-
-      - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v3
-
-      - uses: gradle/actions/setup-gradle@v3
-      - run: ./gradlew buildFatJar --no-daemon
-
-      - name: Pre-deploy
-        uses: navikt/digihot-deploy/actions/pre-deploy@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push Docker image
-        uses: nais/docker-build-push@v0
-        id: docker-build-push
-        with:
-          team: teamdigihot
-          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
-          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
-          tag: ${{ env.VERSION_TAG }}
-
-      - name: Deploy to dev-gcp
-        uses: nais/deploy/actions/deploy@v1
-        env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          CLUSTER: dev-gcp
-          RESOURCE: nais/nais-dev.yaml,nais/alerts.yaml
-          IMAGE: ${{steps.docker-build-push.outputs.image}}
-
-      - name: Post-deploy
-        if: github.ref == 'refs/heads/main'
-        uses: navikt/digihot-deploy/actions/post-deploy@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create release
-        if: github.ref == 'refs/heads/main'
-        uses: actions/create-release@latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.VERSION_TAG }}
-          release_name: ${{ env.APPLICATION }} ${{ env.VERSION_TAG }}
-          body: ${{ env.CHANGE_LOG }}
-          draft: true
-          prerelease: false
+    uses: navikt/hm-workflows/.github/workflows/deploy-dev.yaml@main
+    with:
+      manifest: .nais/nais-dev.yaml
+    secrets: inherit

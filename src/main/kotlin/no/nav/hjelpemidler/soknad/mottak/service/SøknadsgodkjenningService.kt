@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 
 internal class SøknadsgodkjenningService(
     private val søknadForRiverClient: SøknadForRiverClient,
-    private val rapidsConnection: RapidsConnection
+    private val rapidsConnection: RapidsConnection,
 ) {
 
     companion object {

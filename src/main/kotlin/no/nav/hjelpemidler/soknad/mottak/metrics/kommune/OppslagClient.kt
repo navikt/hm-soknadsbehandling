@@ -1,5 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.metrics.kommune
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.defaultRequest
@@ -9,7 +10,6 @@ import io.ktor.http.ContentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import mu.KotlinLogging
 import no.nav.hjelpemidler.http.correlationId
 import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.httpClient
@@ -33,7 +33,7 @@ class OppslagClientImpl(
 
     override suspend fun hentAlleKommuner(): Map<String, KommuneDto> {
         val kommunenrUrl = "$oppslagUrl/geografi/kommunenr"
-        logger.info("Henter alle kommuner med url: $kommunenrUrl")
+        logger.info { "Henter alle kommuner med url: $kommunenrUrl" }
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.get(kommunenrUrl).body<Map<String, KommuneDto>>()

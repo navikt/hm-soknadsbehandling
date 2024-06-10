@@ -3,7 +3,7 @@ package no.nav.hjelpemidler.soknad.mottak.metrics
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.helse.rapids_rivers.MessageContext
 import java.time.LocalDateTime
 import java.util.UUID
@@ -11,7 +11,7 @@ import java.util.UUID
 private val log = KotlinLogging.logger {}
 
 class MetricsProducer(
-    private val messageContext: MessageContext
+    private val messageContext: MessageContext,
 ) {
     private val mapper = jacksonMapperBuilder()
         .addModule(JavaTimeModule())
@@ -21,7 +21,7 @@ class MetricsProducer(
     fun hendelseOpprettet(
         measurement: String,
         fields: Map<String, Any>,
-        tags: Map<String, String>
+        tags: Map<String, String>,
     ) {
         messageContext.publish(
             measurement,

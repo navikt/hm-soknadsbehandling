@@ -1,7 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
@@ -93,7 +93,7 @@ internal class BehovsmeldingTilBrukerbekreftelseDataSink(
         runCatching {
             søknadForRiverClient.lagreSøknad(søknadData)
         }.onSuccess {
-            logger.info("Søknad klar til godkjenning lagret, søknadId: ${søknadData.soknadId}")
+            logger.info { "Søknad klar til godkjenning lagret, søknadId: ${søknadData.soknadId}" }
         }.onFailure {
             logger.error(it) { "Failed to save søknad klar til godkjenning, søknadId: ${søknadData.soknadId}" }
         }.getOrThrow()

@@ -1,8 +1,8 @@
 package no.nav.hjelpemidler.soknad.mottak.delbestilling
 
 import com.fasterxml.jackson.module.kotlin.convertValue
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection

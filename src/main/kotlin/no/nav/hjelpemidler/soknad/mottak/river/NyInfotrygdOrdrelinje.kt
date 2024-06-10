@@ -1,7 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -54,13 +54,13 @@ internal class NyInfotrygdOrdrelinje(
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
             if (packet.saksblokkOgSaksnr.isEmpty()) {
-                logger.info("Skipping illegal event saksblokkOgSaksnr='': ${packet.eventId}")
-                sikkerlogg.error("Skippet event med tom saksblokkOgSaksnr: ${packet.toJson()}")
+                logger.info { "Skipping illegal event saksblokkOgSaksnr='': ${packet.eventId}" }
+                sikkerlogg.error { "Skippet event med tom saksblokkOgSaksnr: ${packet.toJson()}" }
                 return@runBlocking
             }
             if (skipEvent(UUID.fromString(packet.eventId))) {
-                logger.info("Hopper over event i skip-list: ${packet.eventId}")
-                sikkerlogg.error("Skippet event: ${packet.toJson()}")
+                logger.info { "Hopper over event i skip-list: ${packet.eventId}" }
+                sikkerlogg.error { "Skippet event: ${packet.toJson()}" }
                 return@runBlocking
             }
             try {
@@ -77,7 +77,7 @@ internal class NyInfotrygdOrdrelinje(
                         it.first()
                     } else {
                         if (it.count() > 1) {
-                            sikkerlogg.warn("Fant flere søknader med matchende fnr+saksblokkOgSaksnr+vedtaksdato (saksblokkOgSaksnr=${packet.saksblokkOgSaksnr}, vedtaksdato=${packet.vedtaksdato}, antallTreff=${it.count()}, ider: [$it])")
+                            sikkerlogg.warn { "Fant flere søknader med matchende fnr+saksblokkOgSaksnr+vedtaksdato (saksblokkOgSaksnr=${packet.saksblokkOgSaksnr}, vedtaksdato=${packet.vedtaksdato}, antallTreff=${it.count()}, ider: [$it])" }
                         }
                         null
                     }
@@ -103,7 +103,7 @@ internal class NyInfotrygdOrdrelinje(
                             it.first()
                         } else {
                             if (it.count() > 1) {
-                                logger.info("Fant flere søknader på bruker som ikke har fått vedtaksdato enda, kan derfor ikke matche til korrekt av dem uten mer informasjon (antall=${it.count()})")
+                                logger.info { "Fant flere søknader på bruker som ikke har fått vedtaksdato enda, kan derfor ikke matche til korrekt av dem uten mer informasjon (antall=${it.count()})" }
                             }
                             null
                         }
@@ -119,16 +119,16 @@ internal class NyInfotrygdOrdrelinje(
                         )
 
                         if (harVedtakInfotrygd) {
-                            logger.info("Ordrelinje med eventId ${packet.eventId} matchet mot søknad indirekte med sjekk av infotrygd-databasen (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})")
+                            logger.info { "Ordrelinje med eventId ${packet.eventId} matchet mot søknad indirekte med sjekk av infotrygd-databasen (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})" }
                         } else {
-                            logger.warn("Fant en søknadId uten vedtaksdato i databasen enda for Ordrelinje med eventId ${packet.eventId}, men fant ikke avgjørelsen i Infotrygd-databasen!")
+                            logger.warn { "Fant en søknadId uten vedtaksdato i databasen enda for Ordrelinje med eventId ${packet.eventId}, men fant ikke avgjørelsen i Infotrygd-databasen!" }
                             // Do not use it if we do not find a match
                             søknadId = null
                         }
                     }
 
                     if (søknadId == null) {
-                        logger.warn("Ordrelinje med eventId ${packet.eventId} kan ikkje matchast mot ein søknadId (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})")
+                        logger.warn { "Ordrelinje med eventId ${packet.eventId} kan ikkje matchast mot ein søknadId (vedtaksdato=${packet.vedtaksdato}, saksblokkOgSaksnr=${packet.saksblokkOgSaksnr})" }
                         return@runBlocking
                     }
                 }
@@ -162,7 +162,7 @@ internal class NyInfotrygdOrdrelinje(
                     søknadForRiverClient.oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
 
                     if (ordrelinjeData.hjelpemiddeltype == "Del") {
-                        logger.info("Ordrelinje for 'Del' lagret: ${ordrelinjeData.søknadId}")
+                        logger.info { "Ordrelinje for 'Del' lagret: ${ordrelinjeData.søknadId}" }
                         // Vi skal ikke agere ytterligere på disse
                         return@runBlocking
                     }
@@ -170,13 +170,13 @@ internal class NyInfotrygdOrdrelinje(
                     if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
                         context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
                         Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
-                        logger.info("Ordrelinje sendt: ${ordrelinjeData.søknadId}")
-                        sikkerlogg.info("Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})")
+                        logger.info { "Ordrelinje sendt: ${ordrelinjeData.søknadId}" }
+                        sikkerlogg.info { "Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})" }
                     } else {
-                        logger.info("Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId")
+                        logger.info { "Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId" }
                     }
                 } else if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
-                    logger.info("Skippet utsending av sms-varsel for innkommende ordrelinje siden vi mottok ordrelinjen før vedtaket!")
+                    logger.info { "Skippet utsending av sms-varsel for innkommende ordrelinje siden vi mottok ordrelinjen før vedtaket!" }
                 }
             } catch (e: Exception) {
                 throw RuntimeException("Håndtering av event ${packet.eventId} feilet", e)
@@ -203,9 +203,9 @@ internal class NyInfotrygdOrdrelinje(
             søknadForRiverClient.lagreSøknad(ordrelinje)
         }.onSuccess {
             if (it == 0) {
-                logger.warn("Duplikat av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra")
+                logger.warn { "Duplikat av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra" }
             } else {
-                logger.info("Lagra ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}")
+                logger.info { "Lagra ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
                 Prometheus.ordrelinjeLagretCounter.inc()
             }
         }.onFailure {

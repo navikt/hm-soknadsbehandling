@@ -2,9 +2,9 @@ package no.nav.hjelpemidler.soknad.mottak.client
 
 import com.expediagroup.graphql.client.jackson.GraphQLClientJacksonSerializer
 import com.expediagroup.graphql.client.ktor.GraphQLKtorClient
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
-import mu.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.client.hmdb.HentProdukter
 import no.nav.hjelpemidler.soknad.mottak.client.hmdb.hentprodukter.Product

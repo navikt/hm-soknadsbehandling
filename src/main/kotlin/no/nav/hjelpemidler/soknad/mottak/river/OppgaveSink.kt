@@ -1,7 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -35,7 +35,7 @@ internal class OppgaveSink(rapidsConnection: RapidsConnection, private val søkn
             try {
                 val rowsUpdated = update(UUID.fromString(packet.søknadId), packet.oppgaveId)
                 if (rowsUpdated > 0) {
-                    logger.info("Søknad med søknadId: ${packet.søknadId} oppdatert med oppgaveId: ${packet.oppgaveId}")
+                    logger.info { "Søknad med søknadId: ${packet.søknadId} oppdatert med oppgaveId: ${packet.oppgaveId}" }
                 } else {
                     logger.error {
                         "Kunne ikke oppdatere søknadId: ${packet.søknadId} med oppgaveId: ${packet.oppgaveId}. Kontroller at søknadId eksisterer og ikke allerede har registrert en oppgaveId."

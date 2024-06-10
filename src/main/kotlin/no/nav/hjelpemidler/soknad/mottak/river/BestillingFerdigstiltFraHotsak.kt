@@ -1,7 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -56,11 +56,11 @@ internal class BestillingFerdigstiltFraHotsak(
             søknadForRiverClient.oppdaterStatus(søknadId, status)
         }.onSuccess {
             if (it > 0) {
-                logger.info("Status på bestilling satt til: $status for søknadId: $søknadId, it: $it")
+                logger.info { "Status på bestilling satt til: $status for søknadId: $søknadId, it: $it" }
             } else {
-                logger.warn("Status er allerede satt til: $status for søknadId: $søknadId")
+                logger.warn { "Status er allerede satt til: $status for søknadId: $søknadId" }
             }
         }.onFailure {
-            logger.error("Failed to update status to: $status for søknadId: $søknadId", it)
+            logger.error(it) { "Failed to update status to: $status for søknadId: $søknadId" }
         }.getOrThrow()
 }

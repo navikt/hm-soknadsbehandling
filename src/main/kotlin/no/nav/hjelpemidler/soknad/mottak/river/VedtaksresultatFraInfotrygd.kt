@@ -1,7 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -106,7 +106,7 @@ internal class VedtaksresultatFraInfotrygd(
                 )
                 context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
                 Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
-                logger.info("Ordrelinje sendt ved vedtak: ${ordrelinjeData.søknadId}")
+                logger.info { "Ordrelinje sendt ved vedtak: ${ordrelinjeData.søknadId}" }
             }
         }
     }
@@ -121,9 +121,9 @@ internal class VedtaksresultatFraInfotrygd(
             søknadForRiverClient.lagreVedtaksresultat(søknadId, vedtaksresultat, vedtaksdato, søknadstype)
         }.onSuccess {
             if (it == 0) {
-                logger.warn("Ingenting ble endret når vi forsøkte å lagre vedtaksresultat for søknadId: $søknadId")
+                logger.warn { "Ingenting ble endret når vi forsøkte å lagre vedtaksresultat for søknadId: $søknadId" }
             } else {
-                logger.info("Vedtaksresultat er nå lagret for søknadId: $søknadId vedtaksresultat: $vedtaksresultat vedtaksdato: $vedtaksdato")
+                logger.info { "Vedtaksresultat er nå lagret for søknadId: $søknadId vedtaksresultat: $vedtaksresultat vedtaksdato: $vedtaksdato" }
                 Prometheus.vedtaksresultatLagretCounter.inc()
             }
         }.onFailure {
@@ -136,11 +136,11 @@ internal class VedtaksresultatFraInfotrygd(
             søknadForRiverClient.oppdaterStatus(søknadId, status)
         }.onSuccess {
             if (it > 0) {
-                logger.info("Status på søknad satt til: $status for søknadId: $søknadId, it: $it")
+                logger.info { "Status på søknad satt til: $status for søknadId: $søknadId, it: $it" }
             } else {
-                logger.warn("Status er allerede satt til: $status for søknadId: $søknadId")
+                logger.warn { "Status er allerede satt til: $status for søknadId: $søknadId" }
             }
         }.onFailure {
-            logger.error("Failed to update status to: $status for søknadId: $søknadId", it)
+            logger.error(it) { "Failed to update status to: $status for søknadId: $søknadId" }
         }.getOrThrow()
 }

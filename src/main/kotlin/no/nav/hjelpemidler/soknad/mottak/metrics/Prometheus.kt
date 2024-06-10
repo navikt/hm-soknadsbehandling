@@ -2,10 +2,9 @@ package no.nav.hjelpemidler.soknad.mottak.metrics
 
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.Counter
-import io.prometheus.client.Gauge
 import io.prometheus.client.Histogram
 
-internal object Prometheus {
+object Prometheus {
     val collectorRegistry = CollectorRegistry.defaultRegistry
 
     val dbTimer = Histogram.build("hm_soknad_mottak_db_query_latency_histogram", "Distribution of db execution times")
@@ -82,5 +81,4 @@ internal object Prometheus {
         .name("hm_knytning_mellom_infotrygd_og_soeknad_oppretta_problem")
         .help("Mengda problem for knytning mellom søknadar og Infotrygd-sak")
         .register(collectorRegistry)
-
 }

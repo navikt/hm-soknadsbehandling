@@ -1,7 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -46,9 +46,9 @@ internal class DigitalSøknadEndeligJournalført(
         val fagsakId = packet.fagsakId
 
         if (packet.søknadId == "1a404d1a-4cd9-4eb9-89f9-fa964230b8fe") {
-            logger.info("Tar ${packet.søknadId} ut av køen og logger til sikkerlogg her")
+            logger.info { "Tar ${packet.søknadId} ut av køen og logger til sikkerlogg her" }
             val rawJson = packet.toJson()
-            sikkerlogg.info("DEBUG DEBUG: rawJson for skipped soknad: søknadId=${packet.søknadId}: $rawJson")
+            sikkerlogg.info { "DEBUG DEBUG: rawJson for skipped soknad: søknadId=${packet.søknadId}: $rawJson" }
             return
         }
 

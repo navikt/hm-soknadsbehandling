@@ -1,7 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -40,11 +40,11 @@ internal class HotsakOpprettet(
             søknadForRiverClient.lagKnytningMellomHotsakOgSøknad(søknadId, sakId)
         }.onSuccess {
             if (it > 0) {
-                logger.info("Knyttet sak til søknad, sakId: $sakId, søknadId: $søknadId")
+                logger.info { "Knyttet sak til søknad, sakId: $sakId, søknadId: $søknadId" }
             } else {
-                logger.warn("Sak med sakId: $sakId er allerede knyttet til søknadId: $søknadId")
+                logger.warn { "Sak med sakId: $sakId er allerede knyttet til søknadId: $søknadId" }
             }
         }.onFailure {
-            logger.error("Kunne ikke knytte sammen sakId: $sakId med søknadId: $søknadId", it)
+            logger.error(it) { "Kunne ikke knytte sammen sakId: $sakId med søknadId: $søknadId" }
         }.getOrThrow()
 }

@@ -1,8 +1,8 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
 import com.github.guepardoapps.kulid.ULID
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
@@ -50,7 +50,7 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søkn
         runCatching {
             søknadForRiverClient.slettSøknad(soknadId)
         }.onSuccess {
-            logger.info("Søknad $soknadId oppdatert med status $status")
+            logger.info { "Søknad $soknadId oppdatert med status $status" }
         }.onFailure {
             logger.error(it) { "Failed to update søknad $soknadId med status $status" }
         }.getOrThrow()
@@ -66,8 +66,8 @@ internal class SlettSoknad(rapidsConnection: RapidsConnection, private val søkn
             }.toJson()
             context.publish(fnrBruker, soknadGodkjentMessage)
             Prometheus.soknadSlettetAvBrukerCounter.inc()
-            logger.info("Søknad er slettet av bruker: $søknadId")
-            sikkerlogg.info("Søknad er slettet med søknadId: $søknadId, fnr: $fnrBruker)")
+            logger.info { "Søknad er slettet av bruker: $søknadId" }
+            sikkerlogg.info { "Søknad er slettet med søknadId: $søknadId, fnr: $fnrBruker)" }
         } catch (e: Exception) {
             logger.error(e) { "forward() failed, søknadId: $søknadId" }
         }
