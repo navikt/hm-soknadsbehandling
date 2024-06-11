@@ -4,12 +4,10 @@ import com.natpryce.konfig.ConfigurationMap
 import com.natpryce.konfig.ConfigurationProperties.Companion.systemProperties
 import com.natpryce.konfig.EnvironmentVariables
 import com.natpryce.konfig.Key
-import com.natpryce.konfig.intType
 import com.natpryce.konfig.overriding
 import com.natpryce.konfig.stringType
 
 private val localProperties = ConfigurationMap(
-
     mapOf(
         "application.httpPort" to "8082",
         "application.profile" to "LOCAL",
@@ -87,7 +85,7 @@ private val prodProperties = ConfigurationMap(
     ),
 )
 
-internal object Configuration {
+object Configuration {
     val appName = System.getenv("NAIS_APP_NAME") ?: "hm-soknadsbehandling"
     val cluster = System.getenv("NAIS_CLUSTER_NAME") ?: System.getProperty("NAIS_CLUSTER_NAME") ?: "LOCAL"
 
@@ -105,7 +103,6 @@ internal object Configuration {
     val hmdb: Hmdb = Hmdb()
     val slack: Slack = Slack()
     val azure: Azure = Azure()
-    val application: Application = Application()
     val influxDb: InfluxDb = InfluxDb()
     val pdl: Pdl = Pdl()
     val oppslagUrl = config[Key("OPPSLAG_URL", stringType)]
@@ -121,12 +118,6 @@ internal object Configuration {
         "KAFKA_KEYSTORE_PATH" to config[Key("KAFKA_KEYSTORE_PATH", stringType)],
         "HTTP_PORT" to config[Key("application.httpPort", stringType)],
     ) + System.getenv().filter { it.key.startsWith("NAIS_") }
-
-    data class Application(
-        val id: String = config.getOrElse(Key("", stringType), "hm-soknadsbehandling-v1"),
-        val profile: Profile = config[Key("application.profile", stringType)].let { Profile.valueOf(it) },
-        val httpPort: Int = config[Key("application.httpPort", intType)],
-    )
 
     data class Azure(
         val tenantBaseUrl: String = config[Key("AZURE_TENANT_BASEURL", stringType)],
@@ -172,8 +163,4 @@ internal object Configuration {
         val postDokumentbeskrivelseToSlack: String = config[Key("POST_DOKUMENTBESKRIVELSE_TO_SLACK", stringType)],
         val environment: String = config[Key("application.profile", stringType)],
     )
-}
-
-enum class Profile {
-    LOCAL, DEV, PROD
 }
