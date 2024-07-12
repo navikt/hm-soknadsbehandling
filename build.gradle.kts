@@ -62,7 +62,11 @@ dependencies {
     testImplementation(libs.kotest.assertions.core)
 }
 
-kotlin { jvmToolchain(21) }
+java {
+    toolchain {
+        languageVersion.set(libs.versions.java.map(JavaLanguageVersion::of))
+    }
+}
 
 tasks {
     test {
