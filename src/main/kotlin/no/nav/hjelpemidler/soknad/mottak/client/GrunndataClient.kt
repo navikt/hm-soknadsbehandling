@@ -10,7 +10,7 @@ import no.nav.hjelpemidler.soknad.mottak.client.hmdb.HentProdukter
 import no.nav.hjelpemidler.soknad.mottak.client.hmdb.hentprodukter.Product
 import java.net.URI
 
-object HjelpemiddeldatabaseClient {
+object GrunndataClient {
     private val log = KotlinLogging.logger {}
     private val client = GraphQLKtorClient(
         url = URI("${Configuration.hmdb.grunndataApi}/graphql").toURL(),

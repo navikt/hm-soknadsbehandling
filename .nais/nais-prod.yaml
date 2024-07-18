@@ -52,4 +52,3 @@ spec:
       value: http://hm-soknadsbehandling-db.teamdigihot.svc.cluster.local/api
     - name: DELBESTILLING_API_BASEURL
       value: http://hm-delbestilling-api.teamdigihot.svc.cluster.local/api
-
