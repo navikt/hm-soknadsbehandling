@@ -50,6 +50,16 @@ class SøknadForRiverClient(
         }
     }
 
+    private val client = httpClient.config {
+        expectSuccess = true
+    }
+
+    suspend fun hentSøknad(søknadId: UUID): Søknad {
+        return client
+            .get("$baseUrl/soknad/$søknadId")
+            .body<Søknad>()
+    }
+
     suspend fun lagrePapirsøknad(søknadData: PapirSøknadData): Int {
         return withContext(Dispatchers.IO) {
             runCatching {
@@ -104,14 +114,6 @@ class SøknadForRiverClient(
         }
     }
 
-    suspend fun hentFnrForSøknad(søknadId: UUID): String {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.get("$baseUrl/soknad/fnr/$søknadId").body<String>()
-            }.getOrLogAndThrow()
-        }
-    }
-
     suspend fun slettSøknad(søknadId: UUID): Int {
         return withContext(Dispatchers.IO) {
             runCatching {
@@ -133,23 +135,19 @@ class SøknadForRiverClient(
     }
 
     suspend fun oppdaterJournalpostId(søknadId: UUID, journalpostId: String): Int {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.put("$baseUrl/soknad/journalpost-id/$søknadId") {
-                    setBody(mapOf("journalpostId" to journalpostId))
-                }.body<Int>()
-            }.getOrLogAndThrow()
-        }
+        return client
+            .put("$baseUrl/soknad/$søknadId/journalpost") {
+                setBody(mapOf("journalpostId" to journalpostId))
+            }
+            .body<Int>()
     }
 
     suspend fun oppdaterOppgaveId(søknadId: UUID, oppgaveId: String): Int {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.put("$baseUrl/soknad/oppgave-id/$søknadId") {
-                    setBody(mapOf("oppgaveId" to oppgaveId))
-                }.body<Int>()
-            }.getOrLogAndThrow()
-        }
+        return client
+            .put("$baseUrl/soknad/$søknadId/oppgave") {
+                setBody(mapOf("oppgaveId" to oppgaveId))
+            }
+            .body<Int>()
     }
 
     suspend fun lagKnytningMellomFagsakOgSøknad(vedtaksresultatData: VedtaksresultatData): Int {
@@ -294,14 +292,6 @@ class SøknadForRiverClient(
         }
     }
 
-    suspend fun hentSøknadOpprettetDato(søknadId: UUID): Date {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.get("$baseUrl/soknad/opprettet-dato/$søknadId").body<Date>()
-            }.getOrLogAndThrow()
-        }
-    }
-
     suspend fun hentSøknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad> {
         return withContext(Dispatchers.IO) {
             SoknadMedStatus(UUID.randomUUID(), Date(), Date(), Status.UTLØPT, true, "")
@@ -313,20 +303,12 @@ class SøknadForRiverClient(
     }
 
     suspend fun behovsmeldingTypeFor(søknadId: UUID): BehovsmeldingType? {
-        data class Response(val behovsmeldingType: BehovsmeldingType?)
-
-        val url = "$baseUrl/soknad/behovsmeldingType/$søknadId"
-        val response = withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.get(url).body<Response>()
-            }.onSuccess {
-                logger.debug { "Response: $it" }
-            }.onFailure {
-                logger.error(it) { "Feil ved GET $url" }
-            }
-        }.getOrNull()
-
-        return response?.behovsmeldingType
+        return try {
+            hentSøknad(søknadId).behovsmeldingstype
+        } catch (e: Exception) {
+            logger.error(e) { "Feil ved henting av behovsmeldingstype for søknadId: $søknadId" }
+            null
+        }
     }
 }
 

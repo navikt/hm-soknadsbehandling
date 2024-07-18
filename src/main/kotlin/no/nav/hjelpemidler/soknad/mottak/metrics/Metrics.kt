@@ -14,7 +14,7 @@ import no.nav.hjelpemidler.soknad.mottak.metrics.kommune.KommuneDto
 import no.nav.hjelpemidler.soknad.mottak.metrics.kommune.KommuneService
 import java.time.Instant
 
-internal class Metrics(
+class Metrics(
     messageContext: MessageContext,
     private val pdlClient: PdlClient,
     private val kommuneService: KommuneService = KommuneService(),
