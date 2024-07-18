@@ -65,7 +65,7 @@ spec:
       value: hm-soknadsbehandling-v2
     - name: KAFKA_RESET_POLICY
       value: latest
-    - name: KAFKA_TOPIC
+    - name: KAFKA_RAPID_TOPIC
       value: teamdigihot.hm-soknadsbehandling-v1
     - name: OPPSLAG_API_BASEURL
       value: http://digihot-oppslag/api
