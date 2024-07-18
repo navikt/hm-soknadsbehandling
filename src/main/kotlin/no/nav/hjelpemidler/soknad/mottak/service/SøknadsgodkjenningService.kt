@@ -1,12 +1,12 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import com.github.guepardoapps.kulid.ULID
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.time.LocalDateTime
+import java.util.UUID
 
 internal class SøknadsgodkjenningService(
     private val søknadForRiverClient: SøknadForRiverClient,
@@ -25,7 +25,7 @@ internal class SøknadsgodkjenningService(
 
             if (antallOppdatert > 0) {
                 val søknadErUtgåttMessage = JsonMessage("{}", MessageProblems("")).also {
-                    it["eventId"] = ULID.random()
+                    it["eventId"] = UUID.randomUUID()
                     it["eventName"] = "hm-GodkjenningsfristErUtløpt"
                     it["opprettet"] = LocalDateTime.now()
                     it["fnrBruker"] = søknad.fnrBruker!!

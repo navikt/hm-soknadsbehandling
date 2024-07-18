@@ -1,6 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import com.github.guepardoapps.kulid.ULID
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import java.time.LocalDateTime
@@ -15,8 +14,7 @@ data class PapirSøknadData(
 ) {
     fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
-            val id = ULID.random()
-            it["eventId"] = id
+            it["eventId"] = UUID.randomUUID()
             it["eventName"] = eventName
             it["opprettet"] = LocalDateTime.now()
             it["fnrBruker"] = this.fnrBruker

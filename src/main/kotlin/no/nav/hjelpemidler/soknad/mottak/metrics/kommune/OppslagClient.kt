@@ -22,7 +22,7 @@ interface OppslagClient {
 }
 
 class OppslagClientImpl(
-    private val oppslagUrl: String = Configuration.oppslagUrl,
+    private val oppslagUrl: String = Configuration.OPPSLAG_API_BASEURL,
 ) : OppslagClient {
     private val httpClient: HttpClient = httpClient {
         defaultRequest {

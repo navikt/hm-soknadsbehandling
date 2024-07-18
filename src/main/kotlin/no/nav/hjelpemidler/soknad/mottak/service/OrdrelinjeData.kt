@@ -25,7 +25,7 @@ data class OrdrelinjeData(
     fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
             it["eventName"] = eventName
-            it["eventId"] = UUID.randomUUID().toString()
+            it["eventId"] = UUID.randomUUID()
             it["søknadId"] = this.søknadId
             it["fnrBruker"] = this.fnrBruker
             it["behovsmeldingType"] = this.behovsmeldingType

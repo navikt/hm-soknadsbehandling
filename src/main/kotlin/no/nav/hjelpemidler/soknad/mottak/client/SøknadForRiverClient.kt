@@ -50,12 +50,8 @@ class SøknadForRiverClient(
         }
     }
 
-    private val client = httpClient.config {
-        expectSuccess = true
-    }
-
     suspend fun hentSøknad(søknadId: UUID): Søknad {
-        return client
+        return httpClient
             .get("$baseUrl/soknad/$søknadId")
             .body<Søknad>()
     }
@@ -135,7 +131,7 @@ class SøknadForRiverClient(
     }
 
     suspend fun oppdaterJournalpostId(søknadId: UUID, journalpostId: String): Int {
-        return client
+        return httpClient
             .put("$baseUrl/soknad/$søknadId/journalpost") {
                 setBody(mapOf("journalpostId" to journalpostId))
             }
@@ -143,7 +139,7 @@ class SøknadForRiverClient(
     }
 
     suspend fun oppdaterOppgaveId(søknadId: UUID, oppgaveId: String): Int {
-        return client
+        return httpClient
             .put("$baseUrl/soknad/$søknadId/oppgave") {
                 setBody(mapOf("oppgaveId" to oppgaveId))
             }

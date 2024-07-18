@@ -13,7 +13,7 @@ import java.net.URI
 object GrunndataClient {
     private val log = KotlinLogging.logger {}
     private val client = GraphQLKtorClient(
-        url = URI("${Configuration.hmdb.grunndataApi}/graphql").toURL(),
+        url = URI(Configuration.GRUNNDATA_GRAPHQL_URL).toURL(),
         httpClient = HttpClient(engineFactory = Apache),
         serializer = GraphQLClientJacksonSerializer()
     )

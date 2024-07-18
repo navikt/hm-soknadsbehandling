@@ -43,24 +43,24 @@ fun main() {
     }
 
     val søknadForRiverClient = SøknadForRiverClient(
-        Configuration.soknadsbehandlingDb.baseUrl,
-        azureADClient.withScope(Configuration.azure.dbApiScope),
+        Configuration.SOKNADSBEHANDLING_API_BASEURL,
+        azureADClient.withScope(Configuration.SOKNADSBEHANDLING_API_SCOPE),
     )
     val infotrygdProxyClient = InfotrygdProxyClient(
-        Configuration.infotrygdProxy.baseUrl,
-        azureADClient.withScope(Configuration.azure.infotrygdProxyScope),
+        Configuration.INFOTRYGD_PROXY_API_BASEURL,
+        azureADClient.withScope(Configuration.INFOTRYGD_PROXY_API_SCOPE),
     )
     val pdlClient = PdlClient(
-        Configuration.pdl.baseUrl,
-        azureADClient.withScope(Configuration.pdl.apiScope),
+        Configuration.PDL_GRAPHQL_URL,
+        azureADClient.withScope(Configuration.PDL_GRAPHQL_SCOPE),
     )
     val delbestillingClient = DelbestillingClient(
-        Configuration.delbestillingApi.baseUrl,
-        azureADClient.withScope(Configuration.azure.delbestillingApiScope),
+        Configuration.DELBESTILLING_API_BASEURL,
+        azureADClient.withScope(Configuration.DELBESTILLING_API_SCOPE),
     )
 
-    RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
-        .build().apply {
+    RapidApplication.create(no.nav.hjelpemidler.configuration.Configuration.current)
+        .apply {
             val metrics = Metrics(this, pdlClient)
             BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(this, søknadForRiverClient, metrics)
             BehovsmeldingTilBrukerbekreftelseDataSink(this, søknadForRiverClient, metrics)

@@ -8,7 +8,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.hjelpemidler.soknad.mottak.Configuration
+import no.nav.hjelpemidler.configuration.InfluxDBEnvironmentVariable
+import no.nav.hjelpemidler.configuration.NaisEnvironmentVariable
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.kommune.KommuneDto
 import no.nav.hjelpemidler.soknad.mottak.metrics.kommune.KommuneService
@@ -18,14 +19,13 @@ class Metrics(
     messageContext: MessageContext,
     private val pdlClient: PdlClient,
     private val kommuneService: KommuneService = KommuneService(),
-    config: Configuration.InfluxDb = Configuration.influxDb,
 ) {
 
     private val client = InfluxDBClientFactory.createV1(
-        "${config.host}:${config.port}",
-        config.user,
-        config.password.toCharArray(),
-        config.name,
+        "${InfluxDBEnvironmentVariable.INFLUX_HOST}:${InfluxDBEnvironmentVariable.INFLUX_PORT}",
+        InfluxDBEnvironmentVariable.INFLUX_USER,
+        InfluxDBEnvironmentVariable.INFLUX_PASSWORD.toCharArray(),
+        InfluxDBEnvironmentVariable.INFLUX_DATABASE_NAME,
         null
     )
     private val writeApi = client.makeWriteApi()
@@ -121,8 +121,8 @@ private val ukjentSted = KommuneDto("UKJENT", "UKJENT", "UKJENT")
 private val logg = KotlinLogging.logger {}
 
 private val DEFAULT_TAGS: Map<String, String> = mapOf(
-    "application" to Configuration.appName,
-    "cluster" to Configuration.cluster
+    "application" to NaisEnvironmentVariable.NAIS_APP_NAME,
+    "cluster" to NaisEnvironmentVariable.NAIS_CLUSTER_NAME,
 )
 
 private const val PREFIX = "hm-soknadsbehandling"

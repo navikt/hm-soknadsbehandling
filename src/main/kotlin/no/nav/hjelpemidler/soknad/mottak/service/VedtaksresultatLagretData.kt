@@ -1,6 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import com.github.guepardoapps.kulid.ULID
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
@@ -19,7 +18,7 @@ internal data class VedtaksresultatLagretData(
     internal fun toJson(eventName: String, søknadsType: String?): String {
         return JsonMessage("{}", MessageProblems("")).also {
             it["eventName"] = eventName
-            it["eventId"] = ULID.random()
+            it["eventId"] = UUID.randomUUID()
             it["søknadId"] = this.søknadId
             it["fnrBruker"] = this.fnrBruker
             it["vedtaksdato"] = this.vedtaksdato

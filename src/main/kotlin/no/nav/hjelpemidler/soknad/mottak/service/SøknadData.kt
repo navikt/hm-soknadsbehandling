@@ -1,7 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.github.guepardoapps.kulid.ULID
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import java.time.LocalDateTime
@@ -41,7 +40,7 @@ data class SøknadData(
 
     fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
-            val id = ULID.random()
+            val id = UUID.randomUUID()
             it["@id"] = id // @deprecated
             it["eventId"] = id
             it["@event_name"] = eventName // @deprecated
@@ -58,7 +57,7 @@ data class SøknadData(
 
     fun toVenterPaaGodkjenningJson(): String {
         return JsonMessage("{}", MessageProblems("")).also {
-            val id = ULID.random()
+            val id = UUID.randomUUID()
             it["@id"] = id // @deprecated
             it["eventId"] = id
             it["@event_name"] = "SøknadTilGodkjenning" // @deprecated

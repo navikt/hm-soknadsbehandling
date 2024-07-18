@@ -16,36 +16,18 @@ application {
 }
 
 dependencies {
-    // Kotlin
     implementation(libs.kotlin.stdlib)
-
-    // Rapids and Rivers
-    implementation(libs.rapidsAndRivers)
-
-    // Logging
     implementation(libs.kotlin.logging)
-    runtimeOnly(libs.logback.classic)
-    runtimeOnly(libs.logstash.logback.encoder)
-
-    // Other
-    // NB! Bytt til løsning fra hm-http
-    implementation(libs.konfig.deprecated)
-    // NB! Dette biblioteket vedlikeholdes ikke, hadde det holdt med UUID?
-    implementation("com.github.guepardoapps:kulid:2.0.0.0")
-
-    // Jackson
-    implementation(libs.jackson.databind)
-    implementation(libs.jackson.module.kotlin)
-    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.bundles.jackson)
+    implementation(libs.rapidsAndRivers)
+    implementation(libs.influxdb.client.kotlin)
+    runtimeOnly(libs.bundles.logging.runtime)
 
     // DigiHoT
     implementation(libs.hm.http) {
         exclude("io.ktor", "ktor-client-cio")
     }
     implementation(libs.ktor.client.apache)
-
-    // InfluxDB
-    implementation(libs.influxdb.client.kotlin)
 
     // GraphQL Client
     implementation(libs.graphql.ktor.client) {
@@ -56,10 +38,9 @@ dependencies {
     implementation(libs.graphql.client.jackson)
 
     // Test
-    testImplementation(libs.kotlin.test.junit5)
-    testImplementation(libs.ktor.server.test.host)
-    testImplementation(libs.mockk)
-    testImplementation(libs.kotest.assertions.core)
+    testImplementation(libs.bundles.ktor.server.test)
+    testImplementation(libs.handlebars)
+    testImplementation(libs.jackson.dataformat.yaml)
 }
 
 java {

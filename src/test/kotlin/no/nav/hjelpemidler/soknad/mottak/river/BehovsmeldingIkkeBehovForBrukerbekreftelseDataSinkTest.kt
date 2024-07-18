@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-internal class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
+class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
     private val capturedSøknadData = slot<SøknadData>()
     private val mock = mockk<SøknadForRiverClient>().apply {
         coEvery { lagreSøknad(capture(capturedSøknadData)) } returns Unit

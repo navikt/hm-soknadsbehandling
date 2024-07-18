@@ -1,6 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import com.github.guepardoapps.kulid.ULID
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -56,7 +55,7 @@ class SlettSoknad(
     private fun forward(søknadId: UUID, fnrBruker: String, context: MessageContext) {
         try {
             val soknadGodkjentMessage = JsonMessage("{}", MessageProblems("")).also {
-                it["@id"] = ULID.random()
+                it["@id"] = UUID.randomUUID()
                 it["@event_name"] = "SøknadSlettetAvBruker"
                 it["@opprettet"] = LocalDateTime.now()
                 it["fodselNrBruker"] = fnrBruker

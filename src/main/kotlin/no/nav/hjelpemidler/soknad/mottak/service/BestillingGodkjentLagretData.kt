@@ -1,6 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import com.github.guepardoapps.kulid.ULID
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import java.time.LocalDateTime
@@ -14,7 +13,7 @@ internal data class BestillingGodkjentLagretData(
     internal fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
             it["eventName"] = eventName
-            it["eventId"] = ULID.random()
+            it["eventId"] = UUID.randomUUID()
             it["søknadId"] = this.søknadId
             it["fnrBruker"] = this.fnrBruker
             it["opprettet"] = this.opprettet
