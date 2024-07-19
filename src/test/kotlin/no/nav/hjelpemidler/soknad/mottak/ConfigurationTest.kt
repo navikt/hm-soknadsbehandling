@@ -32,8 +32,11 @@ class ConfigurationTest {
     }
 }
 
-private val handlebars by lazy { Handlebars(FileTemplateLoader(".nais", ".yaml")) }
-private val mapper by lazy {
+private val handlebars: Handlebars by lazy {
+    Handlebars(FileTemplateLoader(".nais", ".yaml"))
+}
+
+private val mapper: YAMLMapper by lazy {
     YAMLMapper.builder()
         .addModule(kotlinModule())
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
