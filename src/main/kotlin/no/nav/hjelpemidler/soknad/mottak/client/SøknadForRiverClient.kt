@@ -23,16 +23,10 @@ import no.nav.hjelpemidler.http.openid.TokenSetProvider
 import no.nav.hjelpemidler.http.openid.openID
 import no.nav.hjelpemidler.soknad.mottak.httpClient
 import no.nav.hjelpemidler.soknad.mottak.river.StatusMedÅrsak
-import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
-import no.nav.hjelpemidler.soknad.mottak.service.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
-import no.nav.hjelpemidler.soknad.mottak.service.SoknadDataDto
-import no.nav.hjelpemidler.soknad.mottak.service.SoknadMedStatus
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
-import no.nav.hjelpemidler.soknad.mottak.service.SøknadIdFraVedtaksresultat
-import no.nav.hjelpemidler.soknad.mottak.service.UtgåttSøknad
 import java.util.Date
 import java.util.UUID
 

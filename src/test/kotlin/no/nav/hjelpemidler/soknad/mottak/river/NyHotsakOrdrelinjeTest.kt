@@ -9,7 +9,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.soknad.mottak.client.Søknad
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.service.HarOrdre
+import no.nav.hjelpemidler.soknad.mottak.client.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.test.Testdata
 import java.time.Instant

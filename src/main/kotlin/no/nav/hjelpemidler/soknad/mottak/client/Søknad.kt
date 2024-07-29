@@ -1,6 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.client
 
-import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import java.time.Instant
 import java.util.UUID

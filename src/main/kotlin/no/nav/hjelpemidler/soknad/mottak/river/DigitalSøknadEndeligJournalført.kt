@@ -10,7 +10,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.sak.InfotrygdSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
-import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
+import no.nav.hjelpemidler.soknad.mottak.client.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadUnderBehandlingData
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData

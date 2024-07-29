@@ -10,7 +10,7 @@ import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
-import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
+import no.nav.hjelpemidler.soknad.mottak.client.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import java.util.UUID

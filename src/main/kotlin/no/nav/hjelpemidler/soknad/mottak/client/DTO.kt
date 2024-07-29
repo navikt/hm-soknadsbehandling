@@ -1,4 +1,4 @@
-package no.nav.hjelpemidler.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.client
 
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus

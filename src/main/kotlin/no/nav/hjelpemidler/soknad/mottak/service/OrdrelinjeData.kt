@@ -3,6 +3,7 @@ package no.nav.hjelpemidler.soknad.mottak.service
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
+import no.nav.hjelpemidler.soknad.mottak.client.BehovsmeldingType
 import java.util.UUID
 
 data class OrdrelinjeData(

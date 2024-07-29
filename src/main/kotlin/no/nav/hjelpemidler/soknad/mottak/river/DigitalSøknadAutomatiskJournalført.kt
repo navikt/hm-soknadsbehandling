@@ -7,7 +7,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
+import no.nav.hjelpemidler.soknad.mottak.client.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadUnderBehandlingData
 import java.util.UUID
