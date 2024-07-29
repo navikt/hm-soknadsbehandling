@@ -4,30 +4,48 @@ import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
+import no.nav.hjelpemidler.soknad.mottak.client.Søknad
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.service.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import no.nav.hjelpemidler.soknad.mottak.test.Testdata
+import java.time.Instant
 import java.util.UUID
 import kotlin.test.Test
 
-internal class NyHotsakOrdrelinjeTest {
+class NyHotsakOrdrelinjeTest {
     private val client = mockk<SøknadForRiverClient>()
     private val rapid = TestRapid().apply {
         NyHotsakOrdrelinje(this, client)
     }
 
     @Test
-    internal fun `behandler ny ordrelinje`() {
+    fun `behandler ny ordrelinje`() {
         val message = Testdata.testmeldingerFraOebs.first()
         val søknadId = UUID.randomUUID()
-        val saksnummer = message.at("/data/saksnummer").textValue()
+        val sakId = message.at("/data/saksnummer").textValue().let(::HotsakSakId)
 
         coEvery {
-            client.hentSøknadIdFraHotsakSaksnummer(saksnummer)
-        } returns søknadId
+            client.hentSøknadForSak(sakId)
+        } returns Søknad(
+            søknadId = søknadId,
+            søknadOpprettet = Instant.now(),
+            søknadEndret = Instant.now(),
+            søknadGjelder = "",
+            fnrInnsender = null,
+            fnrBruker = "",
+            navnBruker = "",
+            kommunenavn = null,
+            journalpostId = null,
+            oppgaveId = null,
+            digital = true,
+            behovsmeldingstype = BehovsmeldingType.SØKNAD,
+            status = Status.GODKJENT,
+            statusEndret = Instant.now()
+        )
 
         coEvery {
             client.behovsmeldingTypeFor(søknadId)
@@ -53,6 +71,6 @@ internal class NyHotsakOrdrelinjeTest {
 
         val message1 = inspektør.message(0)
         message1.at("/eventName").textValue() shouldBe "hm-OrdrelinjeMottatt"
-        message1.at("/saksnummer").textValue() shouldBe saksnummer
+        message1.at("/saksnummer").textValue() shouldBe sakId.value
     }
 }

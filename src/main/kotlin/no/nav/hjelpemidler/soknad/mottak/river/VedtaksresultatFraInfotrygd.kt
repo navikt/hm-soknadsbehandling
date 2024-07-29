@@ -7,6 +7,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
@@ -59,6 +60,7 @@ internal class VedtaksresultatFraInfotrygd(
                 "HB" -> Status.VEDTAKSRESULTAT_HENLAGTBORTFALT
                 else -> Status.VEDTAKSRESULTAT_ANNET
             }
+            // fixme -> burde ikke dette skjedd samtidig med at vi lagrer vedtaksresultat?
             oppdaterStatus(søknadId, status)
 
             // Sjekk om ordrelinjer kom inn før vedtaket, noe som kan skje for Infotrygd fordi vi venter med å
@@ -118,7 +120,10 @@ internal class VedtaksresultatFraInfotrygd(
         søknadstype: String,
     ) {
         runCatching {
-            søknadForRiverClient.lagreVedtaksresultat(søknadId, vedtaksresultat, vedtaksdato, søknadstype)
+            søknadForRiverClient.lagreVedtaksresultat(
+                søknadId,
+                Vedtaksresultat.Infotrygd(vedtaksresultat, vedtaksdato, søknadstype)
+            )
         }.onSuccess {
             if (it == 0) {
                 logger.warn { "Ingenting ble endret når vi forsøkte å lagre vedtaksresultat for søknadId: $søknadId" }

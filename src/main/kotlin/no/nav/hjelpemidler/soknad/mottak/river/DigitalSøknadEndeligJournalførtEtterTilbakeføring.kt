@@ -1,28 +1,25 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.sak.InfotrygdSakId
+import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
-import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData.Companion.getSaksblokkFromFagsakId
-import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData.Companion.getSaksnrFromFagsakId
-import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData.Companion.getTrygdekontorNrFromFagsakId
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
-private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class DigitalSøknadEndeligJournalførtEtterTilbakeføring(
+class DigitalSøknadEndeligJournalførtEtterTilbakeføring(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient,
-) : PacketListenerWithOnError {
-
+) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "DigitalSoeknadEndeligJournalfoertEtterTilbakefoering") }
@@ -34,31 +31,24 @@ internal class DigitalSøknadEndeligJournalførtEtterTilbakeføring(
         }.register(this)
     }
 
-    private val JsonMessage.søknadId get() = this["soknadId"].textValue()
+    private val JsonMessage.søknadId get() = uuidValue("soknadId")
     private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
-    private val JsonMessage.fagsakId get() = this["hendelse"]["journalingEventSAF"]["sak"]["fagsakId"].textValue()
+    private val JsonMessage.fagsakId get() = InfotrygdSakId(this["hendelse"]["journalingEventSAF"]["sak"]["fagsakId"].textValue())
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        val søknadId = UUID.fromString(packet.søknadId)
+    override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
+        val søknadId = packet.søknadId
         val fnrBruker = packet.fnrBruker
         val fagsakId = packet.fagsakId
 
         // På dette tidspunktet har det ikkje blitt gjort eit vedtak i Infotrygd, så resultat og vedtaksdato er null
-        val vedtaksresultatData = VedtaksresultatData(
-            søknadId,
-            fnrBruker,
-            getTrygdekontorNrFromFagsakId(fagsakId),
-            getSaksblokkFromFagsakId(fagsakId),
-            getSaksnrFromFagsakId(fagsakId),
-        )
+        val vedtaksresultatData = VedtaksresultatData(søknadId, fnrBruker, fagsakId)
 
-        runBlocking {
-            oppdaterStatus(søknadId)
-            opprettKnytningMellomFagsakOgSøknad(vedtaksresultatData, fagsakId)
-            context.publish(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
+        // fixme -> burde ikke dette skjedd samtidig med at vi lagrer sakstilknytningen?
+        oppdaterStatus(søknadId)
+        opprettKnytningMellomFagsakOgSøknad(søknadId, fagsakId, fnrBruker)
+        context.publish(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
 
-            logger.info { "Endelig journalført: Digital søknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId" }
-        }
+        logger.info { "Endelig journalført: Digital søknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId" }
     }
 
     private suspend fun oppdaterStatus(søknadId: UUID) =
@@ -75,29 +65,30 @@ internal class DigitalSøknadEndeligJournalførtEtterTilbakeføring(
         }.getOrThrow()
 
     private suspend fun opprettKnytningMellomFagsakOgSøknad(
-        vedtaksresultatData: VedtaksresultatData,
-        fagsakId: String,
+        søknadId: SøknadId,
+        fagsakId: InfotrygdSakId,
+        fnrBruker: String,
     ) =
         runCatching {
-            søknadForRiverClient.lagKnytningMellomFagsakOgSøknad(vedtaksresultatData)
+            søknadForRiverClient.lagreSakstilknytning(søknadId, Sakstilknytning.Infotrygd(fagsakId, fnrBruker))
         }.onSuccess {
             when (it) {
                 0 -> {
-                    logger.warn { "Inga knytning laga mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId" }
+                    logger.warn { "Inga knytning laga mellom søknadId: $søknadId og Infotrygd sin fagsakId: $fagsakId" }
                     Prometheus.knytningMellomSøknadOgInfotrygdProblemCounter.inc()
                 }
 
                 1 -> {
-                    logger.info { "Knytning lagra mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId" }
+                    logger.info { "Knytning lagra mellom søknadId: $søknadId og Infotrygd sin fagsakId: $fagsakId" }
                     Prometheus.knytningMellomSøknadOgInfotrygdOpprettaCounter.inc()
                 }
 
                 else -> {
-                    logger.error { "Fleire knytningar laga mellom søknadId: ${vedtaksresultatData.søknadId} og Infotrygd sin fagsakId: $fagsakId" }
+                    logger.error { "Fleire knytningar laga mellom søknadId: $søknadId og Infotrygd sin fagsakId: $fagsakId" }
                     Prometheus.knytningMellomSøknadOgInfotrygdProblemCounter.inc()
                 }
             }
         }.onFailure {
-            logger.error(it) { "Feila med å lage knytning mellom søknadId: ${vedtaksresultatData.søknadId} og fagsakId: $fagsakId" }
+            logger.error(it) { "Feila med å lage knytning mellom søknadId: $søknadId og fagsakId: $fagsakId" }
         }.getOrThrow()
 }

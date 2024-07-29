@@ -24,9 +24,12 @@ dependencies {
     runtimeOnly(libs.bundles.logging.runtime)
 
     // DigiHoT
+    implementation(libs.hm.behovsmeldingsmodell)
     implementation(libs.hm.http) {
         exclude("io.ktor", "ktor-client-cio")
     }
+
+    // Ktor
     implementation(libs.ktor.client.apache)
 
     // GraphQL Client

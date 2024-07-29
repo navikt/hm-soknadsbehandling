@@ -7,6 +7,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDateTime
+import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.Status
@@ -51,6 +52,7 @@ internal class VedtaksresultatFraHotsak(
                 "HB" -> Status.VEDTAKSRESULTAT_HENLAGTBORTFALT
                 else -> Status.VEDTAKSRESULTAT_ANNET
             }
+            // fixme -> burde ikke dette skjedd samtidig med at vi lagrer vedtaksresultat?
             oppdaterStatus(søknadId, status)
 
             val vedtaksresultatLagretData = VedtaksresultatLagretData(
@@ -65,7 +67,7 @@ internal class VedtaksresultatFraHotsak(
 
     private suspend fun lagreVedtaksresultat(søknadId: UUID, vedtaksresultat: String, vedtaksdato: LocalDate) {
         runCatching {
-            søknadForRiverClient.lagreVedtaksresultatFraHotsak(søknadId, vedtaksresultat, vedtaksdato)
+            søknadForRiverClient.lagreVedtaksresultat(søknadId, Vedtaksresultat.Hotsak(vedtaksresultat, vedtaksdato))
         }.onSuccess {
             if (it == 0) {
                 logger.warn { "Ingenting ble endret når vi forsøkte å lagre vedtaksresultat fra Hotsak for søknadId: $søknadId" }

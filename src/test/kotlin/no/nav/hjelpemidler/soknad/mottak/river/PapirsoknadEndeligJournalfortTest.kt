@@ -5,22 +5,23 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.slot
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.hjelpemidler.behovsmeldingsmodell.sak.InfotrygdSakId
+import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
 import no.nav.hjelpemidler.soknad.mottak.service.Status
-import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-internal class PapirsoknadEndeligJournalfortTest {
-    private val capturedInfotrygdMock = slot<VedtaksresultatData>()
+class PapirsoknadEndeligJournalfortTest {
+    private val capturedInfotrygdMock = slot<Sakstilknytning.Infotrygd>()
     private val capturedSoknadData = slot<PapirSøknadData>()
-    private val mock = mockk<SøknadForRiverClient>().apply {
+    private val mock = mockk<SøknadForRiverClient> {
         coEvery { lagrePapirsøknad(capture(capturedSoknadData)) } returns 1
         coEvery { søknadFinnes(any()) } returns false
         coEvery { fnrOgJournalpostIdFinnes(any(), any()) } returns false
-        coEvery { lagKnytningMellomFagsakOgSøknad(capture(capturedInfotrygdMock)) } returns 1
+        coEvery { lagreSakstilknytning(any(), capture(capturedInfotrygdMock)) } returns 1
     }
     private val metricsMock = mockk<Metrics>(relaxed = true)
 
@@ -100,8 +101,6 @@ internal class PapirsoknadEndeligJournalfortTest {
         capturedSoknadData.captured.status shouldBe Status.ENDELIG_JOURNALFØRT
         capturedSoknadData.captured.navnBruker shouldBe "KRAFTIG ERT"
 
-        capturedInfotrygdMock.captured.trygdekontorNr shouldBe "4203"
-        capturedInfotrygdMock.captured.saksblokk shouldBe "A"
-        capturedInfotrygdMock.captured.saksnr shouldBe "05"
+        capturedInfotrygdMock.captured.sakId shouldBe InfotrygdSakId("4203A05")
     }
 }
