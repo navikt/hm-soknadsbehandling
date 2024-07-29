@@ -4,13 +4,13 @@ import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.soknad.mottak.client.Søknad
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
 import no.nav.hjelpemidler.soknad.mottak.service.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
-import no.nav.hjelpemidler.soknad.mottak.service.Status
 import no.nav.hjelpemidler.soknad.mottak.test.Testdata
 import java.time.Instant
 import java.util.UUID
@@ -43,7 +43,7 @@ class NyHotsakOrdrelinjeTest {
             oppgaveId = null,
             digital = true,
             behovsmeldingstype = BehovsmeldingType.SØKNAD,
-            status = Status.GODKJENT,
+            status = BehovsmeldingStatus.GODKJENT,
             statusEndret = Instant.now()
         )
 
@@ -60,7 +60,7 @@ class NyHotsakOrdrelinjeTest {
         } returns 1
 
         coEvery {
-            client.oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
+            client.oppdaterStatus(søknadId, BehovsmeldingStatus.UTSENDING_STARTET)
         } returns 1
 
         rapid.sendTestMessage(message.toString())

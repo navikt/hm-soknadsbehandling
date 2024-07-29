@@ -1,14 +1,12 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.River
-
-private val sikkerlogg = KotlinLogging.logger("tjenestekall")
+import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
 
 class RiverRequiredKeyMissingException(msg: String) : Exception(msg)
 

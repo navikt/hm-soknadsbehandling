@@ -19,9 +19,8 @@ import java.time.LocalDate
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
-private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class VedtaksresultatFraInfotrygd(
+class VedtaksresultatFraInfotrygd(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient,
     private val metrics: Metrics,

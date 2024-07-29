@@ -6,11 +6,12 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
+import no.nav.hjelpemidler.behovsmeldingsmodell.Signaturtype
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
-import no.nav.hjelpemidler.soknad.mottak.service.Signatur
 import no.nav.hjelpemidler.soknad.mottak.service.Status
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
 import java.util.UUID
@@ -24,7 +25,7 @@ private val sikkerlogg = KotlinLogging.logger("tjenestekall")
  * For søknader og bestillinger vil dette være pga at formidler har svart at bruker har signert fullmakt på papir.
  * For bytter er det ikke behov for bekreftelse fra bruker.
  */
-internal class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
+class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
     rapidsConnection: RapidsConnection,
     private val søknadForRiverClient: SøknadForRiverClient,
     private val metrics: Metrics,
@@ -37,11 +38,11 @@ internal class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
                 it.demandAny(
                     "signatur",
                     listOf(
-                        Signatur.FULLMAKT.name,
-                        Signatur.FRITAK_FRA_FULLMAKT.name,
-                        Signatur.IKKE_INNHENTET_FORDI_BYTTE.name,
-                        Signatur.IKKE_INNHENTET_FORDI_BRUKERPASSBYTTE.name,
-                    )
+                        Signaturtype.FULLMAKT,
+                        Signaturtype.FRITAK_FRA_FULLMAKT,
+                        Signaturtype.IKKE_INNHENTET_FORDI_BYTTE,
+                        Signaturtype.IKKE_INNHENTET_FORDI_BRUKERPASSBYTTE,
+                    ).map(Signaturtype::name)
                 )
             }
             validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId") }
@@ -57,7 +58,7 @@ internal class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
             ?: this["soknad"]["soknad"]["id"].textValue() // TODO: fjern fallback ["soknad"]["soknad"]["id"] når brukerpassbytte er lansert
     private val JsonMessage.behovsmeldingType get() = this["soknad"]["behovsmeldingType"].textValue()
     private val JsonMessage.behovsmelding get() = this["soknad"]
-    private val JsonMessage.signatur get() = Signatur.valueOf(this["signatur"].textValue())
+    private val JsonMessage.signatur get() = Signaturtype.valueOf(this["signatur"].textValue())
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         runBlocking {
@@ -125,8 +126,8 @@ internal class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
     }
 }
 
-private fun Signatur.tilStatus() = when (this) {
-    Signatur.IKKE_INNHENTET_FORDI_BYTTE -> Status.INNSENDT_FULLMAKT_IKKE_PÅKREVD
-    Signatur.IKKE_INNHENTET_FORDI_BRUKERPASSBYTTE -> Status.BRUKERPASSBYTTE_INNSENDT
-    else -> Status.GODKJENT_MED_FULLMAKT
+private fun Signaturtype.tilStatus() = when (this) {
+    Signaturtype.IKKE_INNHENTET_FORDI_BYTTE -> Status.INNSENDT_FULLMAKT_IKKE_PÅKREVD
+    Signaturtype.IKKE_INNHENTET_FORDI_BRUKERPASSBYTTE -> Status.BRUKERPASSBYTTE_INNSENDT
+    else -> BehovsmeldingStatus.GODKJENT_MED_FULLMAKT
 }

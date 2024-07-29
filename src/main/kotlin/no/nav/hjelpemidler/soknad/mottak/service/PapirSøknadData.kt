@@ -2,13 +2,14 @@ package no.nav.hjelpemidler.soknad.mottak.service
 
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import java.time.LocalDateTime
 import java.util.UUID
 
 data class PapirSøknadData(
     val fnrBruker: String,
     val soknadId: UUID,
-    val status: Status,
+    val status: BehovsmeldingStatus,
     val journalpostid: Int,
     val navnBruker: String,
 ) {
