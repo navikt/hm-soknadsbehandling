@@ -111,13 +111,13 @@ class VedtaksresultatFraInfotrygd(
             )
         }.onSuccess {
             if (it == 0) {
-                logger.warn { "Ingenting ble endret når vi forsøkte å lagre vedtaksresultat for søknadId: $søknadId" }
+                logger.warn { "Ingenting ble endret når vi forsøkte å lagre vedtaksresultat fra Infotrygd for søknadId: $søknadId" }
             } else {
-                logger.info { "Vedtaksresultat er nå lagret for søknadId: $søknadId vedtaksresultat: $vedtaksresultat vedtaksdato: $vedtaksdato" }
+                logger.info { "Vedtaksresultat fra Infotrygd er nå lagret for søknadId: $søknadId, vedtaksresultat: $vedtaksresultat, vedtaksdato: $vedtaksdato" }
                 Prometheus.vedtaksresultatLagretCounter.inc()
             }
         }.onFailure {
-            logger.error(it) { "Feil under lagring av vedtaksresultat for søknadId: $søknadId" }
+            logger.error(it) { "Feil under lagring av vedtaksresultat fra Infotrygd for søknadId: $søknadId" }
         }.getOrThrow()
     }
 

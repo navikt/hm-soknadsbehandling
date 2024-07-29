@@ -55,11 +55,11 @@ class VedtaksresultatFraHotsak(
             if (it == 0) {
                 logger.warn { "Ingenting ble endret når vi forsøkte å lagre vedtaksresultat fra Hotsak for søknadId: $søknadId" }
             } else {
-                logger.info { "Vedtaksresultat fra Hotsak er nå lagret for søknadId: $søknadId, vedtaksresultat: $vedtaksresultat vedtaksdato: $vedtaksdato" }
+                logger.info { "Vedtaksresultat fra Hotsak er nå lagret for søknadId: $søknadId, vedtaksresultat: $vedtaksresultat, vedtaksdato: $vedtaksdato" }
                 Prometheus.vedtaksresultatLagretCounter.inc()
             }
         }.onFailure {
-            logger.error(it) { "Feil under lagring av vedtaksresultat for søknadId: $søknadId" }
+            logger.error(it) { "Feil under lagring av vedtaksresultat fra Hotsak for søknadId: $søknadId" }
         }.getOrThrow()
     }
 }
