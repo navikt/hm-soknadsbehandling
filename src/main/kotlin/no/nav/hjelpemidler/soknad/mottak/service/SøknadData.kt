@@ -5,6 +5,7 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.soknad.mottak.client.SoknadDataDto
+import no.nav.hjelpemidler.soknad.mottak.client.Søknad
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -18,6 +19,16 @@ data class SøknadData(
     val kommunenavn: String?,
     val soknadGjelder: String?,
 ) {
+    constructor(søknad: Søknad) : this(
+        fnrBruker = søknad.fnrBruker,
+        navnBruker = søknad.navnBruker,
+        fnrInnsender = requireNotNull(søknad.fnrInnsender) { "fnrInnsender mangler" },
+        soknadId = søknad.søknadId,
+        soknad = søknad.data,
+        status = søknad.status,
+        kommunenavn = søknad.kommunenavn,
+        soknadGjelder = søknad.søknadGjelder,
+    )
 
     companion object {
         fun mapFraDto(soknadDataDto: SoknadDataDto): SøknadData {

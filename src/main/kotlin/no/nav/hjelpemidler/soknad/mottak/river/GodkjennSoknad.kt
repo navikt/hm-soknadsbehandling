@@ -60,7 +60,7 @@ class GodkjennSoknad(
 
     private suspend fun hentSoknadData(søknadId: UUID): SøknadData =
         runCatching {
-            søknadForRiverClient.hentSøknadData(søknadId)
+            SøknadData(søknadForRiverClient.hentSøknad(søknadId, true))
         }.onFailure {
             logger.error(it) { "Failed to retrieve søknad with søknadId: $søknadId" }
         }.getOrThrow()

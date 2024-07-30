@@ -1,5 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import com.fasterxml.jackson.databind.node.NullNode
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -7,9 +8,9 @@ import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
+import no.nav.hjelpemidler.soknad.mottak.client.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.client.Søknad
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.client.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.test.Testdata
 import java.time.Instant
@@ -44,7 +45,8 @@ class NyHotsakOrdrelinjeTest {
             digital = true,
             behovsmeldingstype = BehovsmeldingType.SØKNAD,
             status = BehovsmeldingStatus.GODKJENT,
-            statusEndret = Instant.now()
+            statusEndret = Instant.now(),
+            data = NullNode.getInstance(),
         )
 
         coEvery {

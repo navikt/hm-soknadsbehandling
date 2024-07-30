@@ -8,6 +8,7 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.accept
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -45,9 +46,11 @@ class SøknadForRiverClient(
         }
     }
 
-    suspend fun hentSøknad(søknadId: UUID): Søknad {
+    suspend fun hentSøknad(søknadId: UUID, inkluderData: Boolean = false): Søknad {
         return httpClient
-            .get("$baseUrl/soknad/$søknadId")
+            .get("$baseUrl/soknad/$søknadId") {
+                parameter("inkluderData", inkluderData)
+            }
             .body<Søknad>()
     }
 
@@ -153,10 +156,14 @@ class SøknadForRiverClient(
         fnrBruker: String,
         saksblokkOgSaksnr: String,
     ): List<SøknadIdFraVedtaksresultat> {
+        data class Request(
+            val fnrBruker: String,
+            val saksblokkOgSaksnr: String,
+        )
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.post("$baseUrl/soknad/fra-vedtaksresultat-v2") {
-                    setBody(SøknadFraVedtaksresultatDto(fnrBruker, saksblokkOgSaksnr))
+                    setBody(Request(fnrBruker, saksblokkOgSaksnr))
                 }.body<Array<SøknadIdFraVedtaksresultat>>().toList()
             }.getOrLogAndThrow()
         }
@@ -165,9 +172,11 @@ class SøknadForRiverClient(
     /**
      * NB! Fungerer kun for Hotsak.
      */
-    suspend fun hentSøknadForSak(sakId: HotsakSakId): Søknad {
+    suspend fun hentSøknadForSak(sakId: HotsakSakId, inkluderData: Boolean = false): Søknad {
         return httpClient
-            .get("$baseUrl/sak/$sakId/soknad")
+            .get("$baseUrl/sak/$sakId/soknad") {
+                parameter("inkluderData", inkluderData)
+            }
             .body<Søknad>()
     }
 
@@ -176,11 +185,6 @@ class SøknadForRiverClient(
             .get("$baseUrl/soknad/$søknadId/sak")
             .body<Søknad>()
     }
-
-    data class SøknadFraVedtaksresultatDto(
-        val fnrBruker: String,
-        val saksblokkOgSaksnr: String,
-    )
 
     suspend fun lagreVedtaksresultat(søknadId: UUID, vedtaksresultat: Vedtaksresultat): Int {
         return httpClient
@@ -191,20 +195,19 @@ class SøknadForRiverClient(
     }
 
     suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean {
+        data class Request(
+            val fnrBruker: String,
+            val journalpostId: Int,
+        )
         return withContext(Dispatchers.IO) {
             runCatching {
                 // NB! Skrivefeil i URL
                 httpClient.post("$baseUrl/infotrygd/fnr-jounralpost") {
-                    setBody(FnrOgJournalpostIdFinnesDto(fnrBruker, journalpostId))
+                    setBody(Request(fnrBruker, journalpostId))
                 }.body<JsonNode>()["second"].booleanValue()
             }.getOrLogAndThrow()
         }
     }
-
-    data class FnrOgJournalpostIdFinnesDto(
-        val fnrBruker: String,
-        val journalpostId: Int,
-    )
 
     suspend fun oppdaterStatus(søknadId: UUID, status: Status): Int {
         return withContext(Dispatchers.IO) {
@@ -220,16 +223,6 @@ class SøknadForRiverClient(
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.put("$baseUrl/soknad/statusV2") { setBody(statusMedÅrsak) }.body<Int>()
-            }.getOrLogAndThrow()
-        }
-    }
-
-    suspend fun hentSøknadData(søknadId: UUID): SøknadData {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.get("$baseUrl/soknadsdata/bruker/$søknadId")
-                    .body<SoknadDataDto>()
-                    .let { SøknadData.mapFraDto(it) }
             }.getOrLogAndThrow()
         }
     }

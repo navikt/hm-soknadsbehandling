@@ -1,48 +1,44 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.slot
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSoknad
+import no.nav.hjelpemidler.soknad.mottak.test.lagSøknad
+import no.nav.hjelpemidler.soknad.mottak.test.readTree
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
-internal class SøknadsgodkjenningServiceTest {
+class SøknadsgodkjenningServiceTest {
     private val capturedSøknadId = slot<UUID>()
 
-    val soknadId = UUID.fromString("62f68547-11ae-418c-8ab7-4d2af985bcd8")
+    private val søknadId = UUID.randomUUID()
 
-    private val mockSoknad =
-        ObjectMapper().readTree(
-            """
-                {
-                    "soknad": {
-                        "date": "2020-06-19",
-                        "bruker": {
-                            "fornavn": "fornavn",
-                            "etternavn": "etternavn"
-                        },
-                        "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
-                    }
+    private val søknad = readTree(
+        """
+            {
+                "soknad": {
+                    "date": "2020-06-19",
+                    "bruker": {
+                        "fornavn": "fornavn",
+                        "etternavn": "etternavn"
+                    },
+                    "id": "$søknadId"
                 }
-            """
-        )
-
+            }
+        """.trimIndent()
+    )
     private val mock = mockk<SøknadForRiverClient>().apply {
-        coEvery { oppdaterStatus(soknadId, Status.GODKJENT) } returns 1
-        coEvery { hentSøknadData(capture(capturedSøknadId)) } returns SøknadData(
-            "123",
-            "navn",
-            "234",
-            soknadId,
-            mockSoknad,
-            Status.VENTER_GODKJENNING,
-            "oslo",
-            soknadGjelder = "Søknad om Hjelpemidler",
+        coEvery { oppdaterStatus(søknadId, BehovsmeldingStatus.GODKJENT) } returns 1
+        coEvery { hentSøknad(capture(capturedSøknadId), true) } returns lagSøknad(
+            søknadId = søknadId,
+            status = BehovsmeldingStatus.VENTER_GODKJENNING,
+            data = søknad
         )
     }
 
@@ -52,19 +48,19 @@ internal class SøknadsgodkjenningServiceTest {
 
     @Test
     fun `Søknad blir godkjent`() {
-
+        @Language("JSON")
         val okPacket = """
             {
                 "eventName": "godkjentAvBruker",
-                "soknadId": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
+                "soknadId": "$søknadId"
             }
-        """.trimMargin()
+        """.trimIndent()
 
         rapid.sendTestMessage(okPacket)
 
         coVerify {
-            mock.oppdaterStatus(soknadId, Status.GODKJENT)
-            mock.hentSøknadData(soknadId)
+            mock.oppdaterStatus(søknadId, BehovsmeldingStatus.GODKJENT)
+            mock.hentSøknad(søknadId, true)
         }
     }
 }

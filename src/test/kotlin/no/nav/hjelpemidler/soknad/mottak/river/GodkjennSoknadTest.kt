@@ -1,6 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -10,88 +9,79 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.service.Status
-import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
+import no.nav.hjelpemidler.soknad.mottak.test.lagSøknad
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
-internal class GodkjennSoknadTest {
-    private val soknadId = "e8dac11d-fa66-4561-89d7-88a62ab31c2b"
-    private val soknadIdDuplikat = "b6babd58-e46e-4adf-9799-707d41c5322e"
-    private val capturedStatus = slot<Status>()
-    private val capturedSoknadId = slot<UUID>()
+class GodkjennSoknadTest {
+    private val søknadId = UUID.randomUUID()
+    private val søknadIdDuplikat = UUID.randomUUID()
+    private val capturedStatus = slot<BehovsmeldingStatus>()
+    private val capturedSøknadId = slot<UUID>()
     private val mock = mockk<SøknadForRiverClient>().apply {
-        coEvery { oppdaterStatus(capture(capturedSoknadId), capture(capturedStatus)) } returns 1
-        coEvery { hentSøknadData(UUID.fromString(soknadId)) } returns SøknadData(
-            "fnrBruker",
-            "fornavn etternavn",
-            "fnrInnsender",
-            UUID.fromString(soknadId),
-            ObjectMapper().readTree(
-                """ {
-                    "fnrBruker": "fnrBruker",
-                    "soknadId": "$soknadId",
-                    "datoOpprettet": "2021-02-23T09:46:45.146+00:00",
-                    "soknad": {
-                        "id": "e8dac11d-fa66-4561-89d7-88a62ab31c2b",
-                        "date": "2021-02-16",
-                        "bruker": {
-                            "kilde": "PDL",
-                            "adresse": "Trandemveien 29",
-                            "fnummer": "12345678910",
-                            "fornavn": "Sedat",
-                            "poststed": "Hebnes",
-                            "signatur": "BRUKER_BEKREFTER",
-                            "etternavn": "Kronjuvel",
-                            "postnummer": "4235",
-                            "telefonNummer": "12341234"
-                        },
-                        "levering": "postkassa, postkassa, postkassa",
-                        "hjelpemidler": "foo",
-                        "brukersituasjon": "bar"
-                        }
-                    } """
-            ),
-            status = Status.VENTER_GODKJENNING,
-            kommunenavn = null,
-            soknadGjelder = "Søknad om Hjelpemidler",
+        coEvery { oppdaterStatus(capture(capturedSøknadId), capture(capturedStatus)) } returns 1
+        coEvery { hentSøknad(søknadId, true) } returns lagSøknad(
+            søknadId = søknadId,
+            status = BehovsmeldingStatus.VENTER_GODKJENNING,
+            data = """
+                {
+                  "fnrBruker": "fnrBruker",
+                  "soknadId": "$søknadId",
+                  "datoOpprettet": "2021-02-23T09:46:45.146+00:00",
+                  "soknad": {
+                    "id": "$søknadId",
+                    "date": "2021-02-16",
+                    "bruker": {
+                      "kilde": "PDL",
+                      "adresse": "Trandemveien 29",
+                      "fnummer": "12345678910",
+                      "fornavn": "Sedat",
+                      "poststed": "Hebnes",
+                      "signatur": "BRUKER_BEKREFTER",
+                      "etternavn": "Kronjuvel",
+                      "postnummer": "4235",
+                      "telefonNummer": "12341234"
+                    },
+                    "levering": "postkassa, postkassa, postkassa",
+                    "hjelpemidler": "foo",
+                    "brukersituasjon": "bar"
+                  }
+                }
+            """.trimIndent()
         )
-        coEvery { hentSøknadData(UUID.fromString(soknadIdDuplikat)) } returns SøknadData(
-            "fnrBruker",
-            "fornavn etternavn",
-            "fnrInnsender",
-            UUID.fromString(soknadIdDuplikat),
-            ObjectMapper().readTree(
-                """ {
-                    "fnrBruker": "fnrBruker",
-                    "soknadId": "$soknadIdDuplikat",
-                    "datoOpprettet": "2021-02-23T09:46:45.146+00:00",
-                    "soknad": {
-                        "id": "e8dac11d-fa66-4561-89d7-88a62ab31c2b",
-                        "date": "2021-02-16",
-                        "bruker": {
-                            "kilde": "PDL",
-                            "adresse": "Trandemveien 29",
-                            "fnummer": "12345678910",
-                            "fornavn": "Sedat",
-                            "poststed": "Hebnes",
-                            "signatur": "BRUKER_BEKREFTER",
-                            "etternavn": "Kronjuvel",
-                            "postnummer": "4235",
-                            "telefonNummer": "12341234"
-                        },
-                        "levering": "postkassa, postkassa, postkassa",
-                        "hjelpemidler": "foo",
-                        "brukersituasjon": "bar"
-                        }
-                    } """
-            ),
-            status = Status.GODKJENT,
-            kommunenavn = null,
-            soknadGjelder = "Søknad om Hjelpemidler",
+        coEvery { hentSøknad(søknadIdDuplikat, true) } returns lagSøknad(
+            søknadId = søknadIdDuplikat,
+            status = BehovsmeldingStatus.GODKJENT,
+            data = """
+                {
+                  "fnrBruker": "fnrBruker",
+                  "soknadId": "$søknadIdDuplikat",
+                  "datoOpprettet": "2021-02-23T09:46:45.146+00:00",
+                  "soknad": {
+                    "id": "$søknadIdDuplikat",
+                    "date": "2021-02-16",
+                    "bruker": {
+                      "kilde": "PDL",
+                      "adresse": "Trandemveien 29",
+                      "fnummer": "12345678910",
+                      "fornavn": "Sedat",
+                      "poststed": "Hebnes",
+                      "signatur": "BRUKER_BEKREFTER",
+                      "etternavn": "Kronjuvel",
+                      "postnummer": "4235",
+                      "telefonNummer": "12341234"
+                    },
+                    "levering": "postkassa, postkassa, postkassa",
+                    "hjelpemidler": "foo",
+                    "brukersituasjon": "bar"
+                  }
+                }
+            """.trimIndent()
         )
     }
 
@@ -102,20 +92,20 @@ internal class GodkjennSoknadTest {
     @BeforeEach
     fun reset() {
         rapid.reset()
-        capturedSoknadId.clear()
+        capturedSøknadId.clear()
         capturedStatus.clear()
     }
 
     @Test
     fun `Do not forward already godkjent søknad`() {
-
+        @Language("JSON")
         val okPacket = """
             {
                 "eventName": "godkjentAvBruker",
                 "fodselNrBruker": "fnrBruker",
-                "soknadId": "$soknadIdDuplikat"
+                "soknadId": "$søknadIdDuplikat"
             }
-        """.trimMargin()
+        """.trimIndent()
 
         rapid.sendTestMessage(okPacket)
 
@@ -128,19 +118,19 @@ internal class GodkjennSoknadTest {
 
     @Test
     fun `Update soknad and forward if packet contains required keys`() {
-
+        @Language("JSON")
         val okPacket = """
             {
                 "eventName": "godkjentAvBruker",
-                "fodselNrBruker": "fnrBruker",
-                "soknadId": "$soknadId"
+                "fodselNrBruker": "01987654321",
+                "soknadId": "$søknadId"
             }
-        """.trimMargin()
+        """.trimIndent()
 
         rapid.sendTestMessage(okPacket)
 
-        capturedSoknadId.captured.toString() shouldBe soknadId
-        capturedStatus.captured shouldBe Status.GODKJENT
+        capturedSøknadId.captured shouldBe søknadId
+        capturedStatus.captured shouldBe BehovsmeldingStatus.GODKJENT
 
         Thread.sleep(1000)
 
@@ -148,11 +138,11 @@ internal class GodkjennSoknadTest {
 
         inspektør.size shouldBeExactly 1
 
-        inspektør.key(0) shouldBe "fnrBruker"
+        inspektør.key(0) shouldBe "01987654321"
         val jsonNode = inspektør.message(0)
 
-        jsonNode["soknadId"].textValue() shouldBe soknadId
-        jsonNode["fnrBruker"].textValue() shouldBe "fnrBruker"
+        jsonNode["soknadId"].textValue() shouldBe søknadId.toString()
+        jsonNode["fnrBruker"].textValue() shouldBe "01987654321"
         jsonNode["eventName"].textValue() shouldBe "hm-søknadGodkjentAvBrukerMottatt"
         jsonNode["opprettet"].textValue() shouldNotBe null
         jsonNode["soknad"] shouldNotBe null
@@ -160,13 +150,13 @@ internal class GodkjennSoknadTest {
 
     @Test
     fun `Do not react to events without soknadId key`() {
-
+        @Language("JSON")
         val invalidPacket = """
             {
                 "eventName": "godkjentAvBruker",
                 "fodselNrBruker": "fnrBruker"
             }
-        """.trimMargin()
+        """.trimIndent()
 
         Assertions.assertThrows(RiverRequiredKeyMissingException::class.java) {
             rapid.sendTestMessage(invalidPacket)
@@ -175,14 +165,14 @@ internal class GodkjennSoknadTest {
 
     @Test
     fun `Do not react to events with irrelevant eventName`() {
-
+        @Language("JSON")
         val invalidPacket = """
             {
                 "eventName": "theseAreNotTheEventsYouAreLookingFor",
                 "fodselNrBruker": "fnrBruker",
-                "soknadId": "$soknadId"
+                "soknadId": "$søknadId"
             }
-        """.trimMargin()
+        """.trimIndent()
 
         rapid.sendTestMessage(invalidPacket)
 

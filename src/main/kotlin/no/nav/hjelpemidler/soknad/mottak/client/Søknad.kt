@@ -1,6 +1,8 @@
 package no.nav.hjelpemidler.soknad.mottak.client
 
-import no.nav.hjelpemidler.soknad.mottak.service.Status
+import com.fasterxml.jackson.databind.JsonNode
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import java.time.Instant
 import java.util.UUID
 
@@ -17,6 +19,7 @@ data class Søknad(
     val oppgaveId: String?,
     val digital: Boolean,
     val behovsmeldingstype: BehovsmeldingType,
-    val status: Status,
+    val status: BehovsmeldingStatus,
     val statusEndret: Instant,
+    val data: JsonNode,
 )
