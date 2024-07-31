@@ -16,6 +16,9 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
+import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
@@ -23,12 +26,10 @@ import no.nav.hjelpemidler.http.correlationId
 import no.nav.hjelpemidler.http.openid.TokenSetProvider
 import no.nav.hjelpemidler.http.openid.openID
 import no.nav.hjelpemidler.soknad.mottak.httpClient
-import no.nav.hjelpemidler.soknad.mottak.river.StatusMedÅrsak
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
-import no.nav.hjelpemidler.soknad.mottak.service.Status
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
-import java.util.Date
+import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.Statusendring
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -209,28 +210,23 @@ class SøknadForRiverClient(
         }
     }
 
-    suspend fun oppdaterStatus(søknadId: UUID, status: Status): Int {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.put("$baseUrl/soknad/status/$søknadId") { setBody(status) }.body<Int>()
-            }.getOrLogAndThrow()
-        }
+    suspend fun oppdaterStatus(søknadId: SøknadId, status: BehovsmeldingStatus): Int {
+        return oppdaterStatus(søknadId, Statusendring(status))
     }
 
     suspend fun oppdaterStatus(
-        statusMedÅrsak: StatusMedÅrsak,
+        søknadId: SøknadId,
+        statusendring: Statusendring,
     ): Int {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.put("$baseUrl/soknad/statusV2") { setBody(statusMedÅrsak) }.body<Int>()
-            }.getOrLogAndThrow()
-        }
+        return httpClient
+            .put("$baseUrl/soknad/$søknadId/status") {
+                setBody(statusendring)
+            }
+            .body<Int>()
     }
 
     suspend fun hentSøknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad> {
         return withContext(Dispatchers.IO) {
-            SoknadMedStatus(UUID.randomUUID(), Date(), Date(), Status.UTLØPT, true, "")
-
             runCatching {
                 httpClient.get("$baseUrl/soknad/utgaatt/$dager").body<List<UtgåttSøknad>>()
             }.getOrLogAndThrow()

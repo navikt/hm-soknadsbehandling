@@ -5,13 +5,13 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.soknad.mottak.asObject
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.publish
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
-import no.nav.hjelpemidler.soknad.mottak.service.Status
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -96,7 +96,7 @@ class NyHotsakOrdrelinje(
                 return
             }
 
-            søknadForRiverClient.oppdaterStatus(søknadId, Status.UTSENDING_STARTET)
+            søknadForRiverClient.oppdaterStatus(søknadId, BehovsmeldingStatus.UTSENDING_STARTET)
 
             context.publish(
                 ordrelinjeData.fnrBruker,

@@ -31,6 +31,7 @@ import no.nav.hjelpemidler.soknad.mottak.river.SlettSoknad
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadsgodkjenningService
+import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.time.Duration.Companion.seconds
@@ -59,6 +60,8 @@ fun main() {
         azureADClient.withScope(Configuration.DELBESTILLING_API_SCOPE),
     )
 
+    val søknadsbehandlingService = SøknadsbehandlingService(søknadForRiverClient)
+
     RapidApplication.create(no.nav.hjelpemidler.configuration.Configuration.current)
         .apply {
             val metrics = Metrics(this, pdlClient)
@@ -74,12 +77,12 @@ fun main() {
             NyHotsakOrdrelinje(this, søknadForRiverClient)
             VedtaksresultatFraInfotrygd(this, søknadForRiverClient, metrics)
             PapirSøknadEndeligJournalført(this, søknadForRiverClient, metrics)
-            DigitalSøknadAutomatiskJournalført(this, søknadForRiverClient)
+            DigitalSøknadAutomatiskJournalført(this, søknadsbehandlingService)
             VedtaksresultatFraHotsak(this, søknadForRiverClient)
             HotsakOpprettet(this, søknadForRiverClient)
             DigitalSøknadEndeligJournalførtEtterTilbakeføring(this, søknadForRiverClient)
-            BestillingFerdigstiltFraHotsak(this, søknadForRiverClient)
-            BestillingAvvistFraHotsak(this, søknadForRiverClient)
+            BestillingFerdigstiltFraHotsak(this, søknadsbehandlingService)
+            BestillingAvvistFraHotsak(this, søknadsbehandlingService)
             // Delbestilling
             DelbestillingStatus(this, delbestillingClient)
             DelbestillingOrdrelinjeStatus(this, delbestillingClient)

@@ -5,7 +5,7 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import java.time.LocalDateTime
 import java.util.UUID
 
-internal data class BestillingAvvistLagretData(
+data class BestillingAvvistLagretData(
     val søknadId: UUID,
     val fnrBruker: String,
     val opprettet: LocalDateTime,
