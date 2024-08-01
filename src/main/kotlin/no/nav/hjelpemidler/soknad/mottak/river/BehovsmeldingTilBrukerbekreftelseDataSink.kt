@@ -6,6 +6,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
+import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
@@ -13,7 +14,6 @@ import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingSer
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
-private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
 /**
  * Plukker opp behovsmeldinger som må bekreftes av bruker (i hm-dinehjelpemidler på Mitt NAV) før de kan sendes videre i flyten.
