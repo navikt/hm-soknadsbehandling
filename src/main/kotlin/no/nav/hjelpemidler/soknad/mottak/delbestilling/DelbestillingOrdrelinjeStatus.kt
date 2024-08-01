@@ -52,7 +52,7 @@ class DelbestillingOrdrelinjeStatus(
 
         } catch (e: Exception) {
             logger.error(e) { "Håndtering av hm-uvalidert-ordrelinje event feilet" }
-            // fixme -> burde det krasje her?
+            throw e
         }
     }
 }
