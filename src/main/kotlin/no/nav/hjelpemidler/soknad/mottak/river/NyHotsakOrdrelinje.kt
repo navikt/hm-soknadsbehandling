@@ -116,7 +116,7 @@ class NyHotsakOrdrelinje(
 
             if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
                 context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
-                Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
+                Prometheus.ordrelinjeVideresendtCounter.inc()
                 logger.info { "Ordrelinje sendt: ${ordrelinjeData.søknadId}" }
                 sikkerlogg.info { "Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})" }
             } else {
@@ -132,9 +132,9 @@ class NyHotsakOrdrelinje(
             søknadForRiverClient.lagreOrdrelinje(ordrelinje)
         }.onSuccess {
             if (it == 0) {
-                logger.warn { "Duplikat av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra" }
+                logger.warn { "Duplikat av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikke blitt lagret" }
             } else {
-                logger.info { "Lagra ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
+                logger.info { "Lagret ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
                 Prometheus.ordrelinjeLagretCounter.inc()
             }
         }.onFailure {

@@ -84,7 +84,7 @@ class BehovsmeldingTilBrukerbekreftelseDataSink(
             sikkerlogg.info { "Søknad klar til godkjenning med søknadId: ${søknadData.soknadId}, fnr: ${søknadData.fnrBruker})" }
         } catch (e: Exception) {
             logger.error(e) { "forward() feilet, søknadId: ${søknadData.soknadId}" }
-            // fixme -> hvorfor lar ikke dette krasje?
+            // fixme -> hvorfor ikke rethrow her?
         }
     }
 

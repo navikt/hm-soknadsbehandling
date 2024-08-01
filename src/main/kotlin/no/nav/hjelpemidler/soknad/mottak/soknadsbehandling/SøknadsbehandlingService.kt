@@ -8,6 +8,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
 import no.nav.hjelpemidler.soknad.mottak.client.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.client.Søknad
+import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingGrunnlag
 import no.nav.hjelpemidler.soknad.mottak.service.PapirsøknadData
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
@@ -21,8 +22,13 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
         val søknadId = grunnlag.søknadId
         log.info { "Lagrer behovsmelding, søknadId: $søknadId" }
         val lagret = when (grunnlag) {
-            is PapirsøknadData -> søknadsbehandlingClient.lagrePapirsøknad(grunnlag)
-            is SøknadData -> søknadsbehandlingClient.lagreDigitalSøknad(grunnlag)
+            is PapirsøknadData -> {
+                søknadsbehandlingClient.lagrePapirsøknad(grunnlag)
+            }
+
+            is SøknadData -> {
+                søknadsbehandlingClient.lagreDigitalSøknad(grunnlag)
+            }
         } > 0
         if (lagret) {
             log.info { "Behovsmelding ble lagret, søknadId: $søknadId" }
@@ -67,12 +73,15 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
         oppdaterStatus(søknadId, Statusendring(status))
 
     suspend fun lagreSakstilknytning(søknadId: UUID, sakstilknytning: Sakstilknytning): Boolean {
-        // todo -> metrics
         log.info { "Lagrer sakstilknytning for søknad, søknadId: $søknadId, sakId: ${sakstilknytning.sakId}, system: ${sakstilknytning.system}" }
         val result = søknadsbehandlingClient.lagreSakstilknytning(søknadId, sakstilknytning)
         val lagret = result > 0
         if (lagret) {
             log.info { "Sakstilknytning ble lagret, søknadId: $søknadId, sakId: ${sakstilknytning.sakId}" }
+            when (sakstilknytning) {
+                is Sakstilknytning.Infotrygd -> Prometheus.sakstilknytningInfotrygdLagretCounter.inc()
+                is Sakstilknytning.Hotsak -> Prometheus.sakstilknytningHotsakLagretCounter.inc()
+            }
         } else {
             log.warn { "Sakstilknytning ble ikke lagret, søknadId: $søknadId, sakId: ${sakstilknytning.sakId}" }
         }
@@ -80,12 +89,15 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
     }
 
     suspend fun lagreVedtaksresultat(søknadId: UUID, vedtaksresultat: Vedtaksresultat): Boolean {
-        // todo -> metrics
         log.info { "Lagrer vedtaksresultat for søknad, søknadId: $søknadId, system: ${vedtaksresultat.system}" }
         val result = søknadsbehandlingClient.lagreVedtaksresultat(søknadId, vedtaksresultat)
         val lagret = result > 0
         if (lagret) {
             log.info { "Vedtaksresultat ble lagret, søknadId: $søknadId" }
+            when (vedtaksresultat) {
+                is Vedtaksresultat.Infotrygd -> Prometheus.vedtaksresultatInfotrygdLagretCounter.inc()
+                is Vedtaksresultat.Hotsak -> Prometheus.vedtaksresultatHotsakLagretCounter.inc()
+            }
         } else {
             log.warn { "Vedtaksresultat ble ikke lagret, søknadId: $søknadId" }
         }

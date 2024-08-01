@@ -93,7 +93,7 @@ class VedtaksresultatFraInfotrygd(
                 data = null,
             )
             context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
-            Prometheus.ordrelinjeLagretOgSendtTilRapidCounter.inc()
+            Prometheus.ordrelinjeVideresendtCounter.inc()
             logger.info { "Ordrelinje sendt ved vedtak: ${ordrelinjeData.søknadId}" }
         }
     }
