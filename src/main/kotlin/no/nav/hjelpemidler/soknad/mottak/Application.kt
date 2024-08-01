@@ -2,6 +2,7 @@ package no.nav.hjelpemidler.soknad.mottak
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.engine.apache.Apache
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.RapidApplication
@@ -20,17 +21,18 @@ import no.nav.hjelpemidler.soknad.mottak.river.BestillingFerdigstiltFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadAutomatiskJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalførtEtterTilbakeføring
-import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSoknad
+import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSøknad
 import no.nav.hjelpemidler.soknad.mottak.river.HotsakOpprettet
 import no.nav.hjelpemidler.soknad.mottak.river.JournalpostSink
 import no.nav.hjelpemidler.soknad.mottak.river.NyHotsakOrdrelinje
 import no.nav.hjelpemidler.soknad.mottak.river.NyInfotrygdOrdrelinje
 import no.nav.hjelpemidler.soknad.mottak.river.OppgaveSink
-import no.nav.hjelpemidler.soknad.mottak.river.PapirSøknadEndeligJournalført
-import no.nav.hjelpemidler.soknad.mottak.river.SlettSoknad
+import no.nav.hjelpemidler.soknad.mottak.river.PapirsøknadEndeligJournalført
+import no.nav.hjelpemidler.soknad.mottak.river.SlettSøknad
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
-import no.nav.hjelpemidler.soknad.mottak.service.SøknadsgodkjenningService
+import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
+import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsgodkjenningService
 import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.time.Duration.Companion.seconds
@@ -43,43 +45,56 @@ fun main() {
     }
 
     val søknadForRiverClient = SøknadForRiverClient(
-        Configuration.soknadsbehandlingDb.baseUrl,
-        azureADClient.withScope(Configuration.azure.dbApiScope),
+        Configuration.SOKNADSBEHANDLING_API_BASEURL,
+        azureADClient.withScope(Configuration.SOKNADSBEHANDLING_API_SCOPE),
     )
     val infotrygdProxyClient = InfotrygdProxyClient(
-        Configuration.infotrygdProxy.baseUrl,
-        azureADClient.withScope(Configuration.azure.infotrygdProxyScope),
+        Configuration.INFOTRYGD_PROXY_API_BASEURL,
+        azureADClient.withScope(Configuration.INFOTRYGD_PROXY_API_SCOPE),
     )
     val pdlClient = PdlClient(
-        Configuration.pdl.baseUrl,
-        azureADClient.withScope(Configuration.pdl.apiScope),
+        Configuration.PDL_GRAPHQL_URL,
+        azureADClient.withScope(Configuration.PDL_GRAPHQL_SCOPE),
     )
     val delbestillingClient = DelbestillingClient(
-        Configuration.delbestillingApi.baseUrl,
-        azureADClient.withScope(Configuration.azure.delbestillingApiScope),
+        Configuration.DELBESTILLING_API_BASEURL,
+        azureADClient.withScope(Configuration.DELBESTILLING_API_SCOPE),
     )
 
-    RapidApplication.Builder(RapidApplication.RapidApplicationConfig.fromEnv(Configuration.rapidApplication))
-        .build().apply {
+    val søknadsbehandlingService = SøknadsbehandlingService(søknadForRiverClient)
+
+    RapidApplication.create(no.nav.hjelpemidler.configuration.Configuration.current)
+        .apply {
             val metrics = Metrics(this, pdlClient)
-            BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(this, søknadForRiverClient, metrics)
-            BehovsmeldingTilBrukerbekreftelseDataSink(this, søknadForRiverClient, metrics)
-            SlettSoknad(this, søknadForRiverClient)
-            GodkjennSoknad(this, søknadForRiverClient)
+
             startSøknadUtgåttScheduling(SøknadsgodkjenningService(søknadForRiverClient, this))
+
+            BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(this, søknadsbehandlingService, metrics)
+            BehovsmeldingTilBrukerbekreftelseDataSink(this, søknadsbehandlingService, metrics)
+
+            BestillingAvvistFraHotsak(this, søknadsbehandlingService)
+            BestillingFerdigstiltFraHotsak(this, søknadsbehandlingService)
+
+            DigitalSøknadAutomatiskJournalført(this, søknadsbehandlingService)
+            DigitalSøknadEndeligJournalført(this, søknadsbehandlingService)
+            DigitalSøknadEndeligJournalførtEtterTilbakeføring(this, søknadsbehandlingService)
+            PapirsøknadEndeligJournalført(this, søknadsbehandlingService, metrics)
+
+            GodkjennSøknad(this, søknadsbehandlingService)
+
+            HotsakOpprettet(this, søknadsbehandlingService)
+
             JournalpostSink(this, søknadForRiverClient)
             OppgaveSink(this, søknadForRiverClient)
-            DigitalSøknadEndeligJournalført(this, søknadForRiverClient)
-            NyInfotrygdOrdrelinje(this, søknadForRiverClient, infotrygdProxyClient)
+
             NyHotsakOrdrelinje(this, søknadForRiverClient)
-            VedtaksresultatFraInfotrygd(this, søknadForRiverClient, metrics)
-            PapirSøknadEndeligJournalført(this, søknadForRiverClient, metrics)
-            DigitalSøknadAutomatiskJournalført(this, søknadForRiverClient)
-            VedtaksresultatFraHotsak(this, søknadForRiverClient)
-            HotsakOpprettet(this, søknadForRiverClient)
-            DigitalSøknadEndeligJournalførtEtterTilbakeføring(this, søknadForRiverClient)
-            BestillingFerdigstiltFraHotsak(this, søknadForRiverClient)
-            BestillingAvvistFraHotsak(this, søknadForRiverClient)
+            NyInfotrygdOrdrelinje(this, søknadForRiverClient, infotrygdProxyClient)
+
+            SlettSøknad(this, søknadsbehandlingService)
+
+            VedtaksresultatFraHotsak(this, søknadsbehandlingService)
+            VedtaksresultatFraInfotrygd(this, søknadsbehandlingService, metrics)
+
             // Delbestilling
             DelbestillingStatus(this, delbestillingClient)
             DelbestillingOrdrelinjeStatus(this, delbestillingClient)
@@ -91,7 +106,7 @@ private fun startSøknadUtgåttScheduling(søknadsgodkjenningService: Søknadsgo
     val timer = Timer("utgatt-soknader-task", true)
 
     timer.scheduleAtFixedRate(60000, 1000 * 60 * 60) {
-        runBlocking {
+        runBlocking(Dispatchers.IO) {
             launch {
                 logger.info { "Markerer utgåtte søknader..." }
                 val antallUtgåtte = søknadsgodkjenningService.slettUtgåtteSøknader()

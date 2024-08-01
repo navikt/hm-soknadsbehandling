@@ -3,21 +3,19 @@ package no.nav.hjelpemidler.soknad.mottak.delbestilling
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.module.kotlin.convertValue
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.hjelpemidler.soknad.mottak.river.PacketListenerWithOnError
+import no.nav.hjelpemidler.soknad.mottak.river.AsyncPacketListener
 import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
-internal class DelbestillingOrdrelinjeStatus(
+class DelbestillingOrdrelinjeStatus(
     rapidsConnection: RapidsConnection,
     private val delbestillingClient: DelbestillingClient,
-) : PacketListenerWithOnError {
-
+) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
             validate { it.demandAny("eventName", listOf("hm-uvalidert-ordrelinje")) }
@@ -27,35 +25,34 @@ internal class DelbestillingOrdrelinjeStatus(
 
     private val JsonMessage.ordrelinje get() = jsonMapper.convertValue<Ordrelinje>(this["orderLine"])
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        runBlocking {
-            try {
-                val ordrelinje = packet.ordrelinje
-                val ordrenummer = ordrelinje.ordrenr
-                val hmsnr = ordrelinje.artikkelnr
-                val hjelpemiddeltype = ordrelinje.hjelpemiddeltype
-                val datoOppdatert = ordrelinje.sistOppdatert
+    override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
+        try {
+            val ordrelinje = packet.ordrelinje
+            val ordrenummer = ordrelinje.ordrenr
+            val hmsnr = ordrelinje.artikkelnr
+            val hjelpemiddeltype = ordrelinje.hjelpemiddeltype
+            val datoOppdatert = ordrelinje.sistOppdatert
 
-                if (hjelpemiddeltype == "Del") {
-                    /**
-                     * Her vet vi egentlig ikke om dette er skipningsbekreftelse for en delbestilling,
-                     * men hm-delbestilling-api vet det utifra om den kjenner igjen ordrenummeret.
-                     * Så vi sender alt til hm-delbestilling-api, så må den ignorere det som ikke er relatert til delbestillinger.
-                     */
-                    logger.info { "Mottok skipningsbekreftelse for ordrenummer: $ordrenummer på hmsnr: $hmsnr" }
-                    delbestillingClient.oppdaterDellinjeStatus(
-                        ordrenummer,
-                        Status.SKIPNINGSBEKREFTET,
-                        hmsnr,
-                        datoOppdatert
-                    )
-                } else {
-                    logger.info { "Ignorerer skipningsbekreftelse for ordrenummer: $ordrenummer med hjelpemiddeltype: $hjelpemiddeltype" }
-                }
-
-            } catch (e: Exception) {
-                logger.error(e) { "Håndtering av hm-uvalidert-ordrelinje event feilet" }
+            if (hjelpemiddeltype == "Del") {
+                /*
+                    Her vet vi egentlig ikke om dette er skipningsbekreftelse for en delbestilling,
+                    men hm-delbestilling-api vet det utifra om den kjenner igjen ordrenummeret.
+                    Så vi sender alt til hm-delbestilling-api, så må den ignorere det som ikke er relatert til delbestillinger.
+                 */
+                logger.info { "Mottok skipningsbekreftelse for ordrenummer: $ordrenummer på hmsnr: $hmsnr" }
+                delbestillingClient.oppdaterDellinjeStatus(
+                    ordrenummer,
+                    Status.SKIPNINGSBEKREFTET,
+                    hmsnr,
+                    datoOppdatert
+                )
+            } else {
+                logger.info { "Ignorerer skipningsbekreftelse for ordrenummer: $ordrenummer med hjelpemiddeltype: $hjelpemiddeltype" }
             }
+
+        } catch (e: Exception) {
+            logger.error(e) { "Håndtering av hm-uvalidert-ordrelinje event feilet" }
+            // fixme -> burde det krasje her?
         }
     }
 }

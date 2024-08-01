@@ -47,9 +47,35 @@ spec:
   envFrom:
     - secret: hm-influxdb-secret
     - secret: hm-soknadsbehandling
+    - secret: hm-slack-hook
   env:
-    - name: SOKNADSBEHANDLING_DB_BASEURL
-      value: http://hm-soknadsbehandling-db.teamdigihot.svc.cluster.local/api
+    - name: HTTP_PORT
+      value: "8080"
     - name: DELBESTILLING_API_BASEURL
       value: http://hm-delbestilling-api.teamdigihot.svc.cluster.local/api
-
+    - name: DELBESTILLING_API_SCOPE
+      value: api://prod-gcp.teamdigihot.hm-delbestilling-api/.default
+    - name: GRUNNDATA_GRAPHQL_URL
+      value: http://hm-grunndata-search/graphql
+    - name: INFOTRYGD_PROXY_API_BASEURL
+      value: https://hm-infotrygd-proxy.prod-fss-pub.nais.io
+    - name: INFOTRYGD_PROXY_API_SCOPE
+      value: api://prod-fss.teamdigihot.hm-infotrygd-proxy/.default
+    - name: KAFKA_CONSUMER_GROUP_ID
+      value: hm-soknadsbehandling-v1
+    - name: KAFKA_RESET_POLICY
+      value: earliest
+    - name: KAFKA_RAPID_TOPIC
+      value: teamdigihot.hm-soknadsbehandling-v1
+    - name: OPPSLAG_API_BASEURL
+      value: http://digihot-oppslag/api
+    - name: PDL_GRAPHQL_SCOPE
+      value: api://prod-fss.pdl.pdl-api/.default
+    - name: PDL_GRAPHQL_URL
+      value: https://pdl-api.prod-fss-pub.nais.io/graphql
+    - name: POST_DOKUMENTBESKRIVELSE_TO_SLACK
+      value: "true"
+    - name: SOKNADSBEHANDLING_API_BASEURL
+      value: http://hm-soknadsbehandling-db.teamdigihot.svc.cluster.local/api
+    - name: SOKNADSBEHANDLING_API_SCOPE
+      value: api://prod-gcp.teamdigihot.hm-soknadsbehandling-db/.default

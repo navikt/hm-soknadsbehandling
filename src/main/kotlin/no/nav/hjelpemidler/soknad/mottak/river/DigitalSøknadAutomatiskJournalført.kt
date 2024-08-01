@@ -1,25 +1,20 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingType
-import no.nav.hjelpemidler.soknad.mottak.service.Status
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadUnderBehandlingData
-import java.util.UUID
+import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 
-private val logger = KotlinLogging.logger {}
-private val sikkerlogg = KotlinLogging.logger("tjenestekall")
+private val log = KotlinLogging.logger {}
 
-internal class DigitalSøknadAutomatiskJournalført(
+class DigitalSøknadAutomatiskJournalført(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient,
-) : PacketListenerWithOnError {
-
+    private val søknadsbehandlingService: SøknadsbehandlingService,
+) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "hm-opprettetOgFerdigstiltJournalpost") }
@@ -27,45 +22,40 @@ internal class DigitalSøknadAutomatiskJournalført(
         }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        logger.info {
-            "Digital søknad journalført, søknadId: ${packet["soknadId"].asText()}, journalpostId: ${packet["joarkRef"].asText()}"
-        }
+    private val JsonMessage.søknadId get() = uuidValue("soknadId")
+    private val JsonMessage.sakId get() = get("sakId").textValue()
+    private val JsonMessage.journalpostId get() = get("joarkRef").textValue()
+    private val JsonMessage.fnrBruker get() = get("fnrBruker").textValue()
 
-        val søknadId = packet["soknadId"].asText()
-        val søknadIdUid = UUID.fromString(søknadId)
-        val fnrBruker = packet["fnrBruker"].asText()
+    override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
+        val søknadId = packet.søknadId
+        val sakId = packet.sakId
+        val journalpostId = packet.journalpostId
+        val fnrBruker = packet.fnrBruker
 
-        runBlocking {
-            val behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadIdUid) ?: BehovsmeldingType.SØKNAD
-            val rowsUpdated = oppdaterStatus(søknadIdUid)
+        log.info { "Digital søknad journalført, søknadId: $søknadId, sakId: $sakId, journalpostId: $journalpostId" }
 
-            if (rowsUpdated > 0) {
-                logger.info {
-                    "Status på ${
-                        behovsmeldingType.toString().lowercase()
-                    } satt til endelig journalført: $søknadId"
-                }
+        val oppdatert = søknadsbehandlingService.oppdaterStatus(søknadId, BehovsmeldingStatus.ENDELIG_JOURNALFØRT)
+        if (oppdatert) {
+            val behovsmeldingType = søknadsbehandlingService.hentBehovsmeldingstype(søknadId)
 
-                // Melding til Ditt NAV
-                context.publish(
-                    fnrBruker,
-                    SøknadUnderBehandlingData(
-                        UUID.fromString(søknadId),
-                        fnrBruker,
-                        behovsmeldingType,
-                    ).toJson("hm-SøknadUnderBehandling")
-                )
-            } else {
-                logger.warn { "Status er allerede satt til endelig journalført, søknadId: $søknadId" }
+            log.info {
+                "Status på ${
+                    behovsmeldingType.toString().lowercase()
+                } satt til endelig journalført, søknadId: $søknadId"
             }
+
+            // Melding til Ditt NAV
+            context.publish(
+                fnrBruker,
+                SøknadUnderBehandlingData(
+                    søknadId,
+                    fnrBruker,
+                    behovsmeldingType,
+                ).toJson("hm-SøknadUnderBehandling")
+            )
+        } else {
+            log.warn { "Status er allerede satt til endelig journalført, søknadId: $søknadId, sakId: $sakId, journalpostId: $journalpostId" }
         }
     }
-
-    private suspend fun oppdaterStatus(søknadId: UUID) =
-        runCatching {
-            søknadForRiverClient.oppdaterStatus(søknadId, Status.ENDELIG_JOURNALFØRT)
-        }.onFailure {
-            logger.error(it) { "Failed to update søknad to endelig journalført, søknadId: $søknadId" }
-        }.getOrThrow()
 }

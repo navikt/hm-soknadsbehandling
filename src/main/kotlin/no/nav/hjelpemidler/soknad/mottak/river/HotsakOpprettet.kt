@@ -1,20 +1,20 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import java.util.UUID
+import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
+import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
+import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
-internal class HotsakOpprettet(
+class HotsakOpprettet(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient,
-) : PacketListenerWithOnError {
+    private val søknadsbehandlingService: SøknadsbehandlingService,
+) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "hm-sakOpprettet") }
@@ -22,29 +22,13 @@ internal class HotsakOpprettet(
         }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        logger.info {
-            "Received sak-opprettet event with søknadId: ${packet["soknadId"].asText()} and sakId: ${packet["sakId"].asText()}"
-        }
+    private val JsonMessage.søknadId get() = uuidValue("soknadId")
+    private val JsonMessage.sakId get() = HotsakSakId(this["sakId"].textValue())
 
-        val søknadId = packet["soknadId"].asText()
-        val sakId = packet["sakId"].asText()
-
-        runBlocking {
-            opprettKnytningMellomHotsakOgSøknad(UUID.fromString(søknadId), sakId)
-        }
+    override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
+        val søknadId = packet.søknadId
+        val sakId = packet.sakId
+        log.info { "Sak for søknadId: $søknadId opprettet i Hotsak, sakId: $sakId" }
+        søknadsbehandlingService.lagreSakstilknytning(søknadId, Sakstilknytning.Hotsak(sakId))
     }
-
-    private suspend fun opprettKnytningMellomHotsakOgSøknad(søknadId: UUID, sakId: String) =
-        runCatching {
-            søknadForRiverClient.lagKnytningMellomHotsakOgSøknad(søknadId, sakId)
-        }.onSuccess {
-            if (it > 0) {
-                logger.info { "Knyttet sak til søknad, sakId: $sakId, søknadId: $søknadId" }
-            } else {
-                logger.warn { "Sak med sakId: $sakId er allerede knyttet til søknadId: $søknadId" }
-            }
-        }.onFailure {
-            logger.error(it) { "Kunne ikke knytte sammen sakId: $sakId med søknadId: $søknadId" }
-        }.getOrThrow()
 }

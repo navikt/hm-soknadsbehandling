@@ -1,23 +1,17 @@
-package no.nav.hjelpemidler.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.soknadsbehandling
 
-import com.github.guepardoapps.kulid.ULID
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.time.LocalDateTime
+import java.util.UUID
 
-internal class SøknadsgodkjenningService(
+class SøknadsgodkjenningService(
     private val søknadForRiverClient: SøknadForRiverClient,
     private val rapidsConnection: RapidsConnection,
 ) {
-
-    companion object {
-        const val EN_UKE = 7
-        const val FEMTEN_DAGER = 15
-    }
-
     suspend fun slettUtgåtteSøknader(): Int {
         val utgåtteSøknader = søknadForRiverClient.hentSøknaderTilGodkjenningEldreEnn(FEMTEN_DAGER)
         utgåtteSøknader.forEach { søknad ->
@@ -25,7 +19,7 @@ internal class SøknadsgodkjenningService(
 
             if (antallOppdatert > 0) {
                 val søknadErUtgåttMessage = JsonMessage("{}", MessageProblems("")).also {
-                    it["eventId"] = ULID.random()
+                    it["eventId"] = UUID.randomUUID()
                     it["eventName"] = "hm-GodkjenningsfristErUtløpt"
                     it["opprettet"] = LocalDateTime.now()
                     it["fnrBruker"] = søknad.fnrBruker!!
@@ -38,5 +32,10 @@ internal class SøknadsgodkjenningService(
         }
 
         return utgåtteSøknader.size
+    }
+
+    companion object {
+        const val EN_UKE = 7
+        const val FEMTEN_DAGER = 15
     }
 }

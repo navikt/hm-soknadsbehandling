@@ -1,27 +1,27 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import com.github.guepardoapps.kulid.ULID
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
+import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
 import java.time.LocalDateTime
 import java.util.UUID
 
-data class PapirSøknadData(
+data class PapirsøknadData(
     val fnrBruker: String,
-    val soknadId: UUID,
-    val status: Status,
-    val journalpostid: Int,
+    override val søknadId: SøknadId,
+    val status: BehovsmeldingStatus,
+    val journalpostId: String,
     val navnBruker: String,
-) {
+) : BehovsmeldingGrunnlag {
     fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
-            val id = ULID.random()
-            it["eventId"] = id
+            it["eventId"] = UUID.randomUUID()
             it["eventName"] = eventName
             it["opprettet"] = LocalDateTime.now()
             it["fnrBruker"] = this.fnrBruker
-            it["journalpostId"] = this.journalpostid
-            it["soknadId"] = this.soknadId
+            it["journalpostId"] = this.journalpostId
+            it["soknadId"] = this.søknadId
         }.toJson()
     }
 }
