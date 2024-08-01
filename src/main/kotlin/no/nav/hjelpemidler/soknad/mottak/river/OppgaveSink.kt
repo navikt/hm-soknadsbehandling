@@ -1,20 +1,18 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
-private val sikkerlogg = KotlinLogging.logger("tjenestekall")
 
-internal class OppgaveSink(rapidsConnection: RapidsConnection, private val søknadForRiverClient: SøknadForRiverClient) :
-    PacketListenerWithOnError {
-
+class OppgaveSink(
+    rapidsConnection: RapidsConnection,
+    private val søknadForRiverClient: SøknadForRiverClient,
+) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
             validate {
@@ -27,33 +25,24 @@ internal class OppgaveSink(rapidsConnection: RapidsConnection, private val søkn
         }.register(this)
     }
 
-    private val JsonMessage.søknadId get() = this["soknadId"].textValue()
+    private val JsonMessage.søknadId get() = uuidValue("soknadId")
     private val JsonMessage.oppgaveId get() = this["oppgaveId"].textValue()
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        runBlocking {
-            try {
-                val rowsUpdated = update(UUID.fromString(packet.søknadId), packet.oppgaveId)
-                if (rowsUpdated > 0) {
-                    logger.info { "Søknad med søknadId: ${packet.søknadId} oppdatert med oppgaveId: ${packet.oppgaveId}" }
-                } else {
-                    logger.error {
-                        "Kunne ikke oppdatere søknadId: ${packet.søknadId} med oppgaveId: ${packet.oppgaveId}. Kontroller at søknadId eksisterer og ikke allerede har registrert en oppgaveId."
-                    }
+    override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
+        val søknadId = packet.søknadId
+        val oppgaveId = packet.oppgaveId
+        try {
+            val rowsUpdated = søknadForRiverClient.oppdaterOppgaveId(søknadId, oppgaveId)
+            if (rowsUpdated > 0) {
+                logger.info { "Søknad med søknadId: $søknadId oppdatert med oppgaveId: $oppgaveId" }
+            } else {
+                logger.error {
+                    "Kunne ikke oppdatere søknadId: $søknadId med oppgaveId: $oppgaveId. Kontroller at søknadId eksisterer og ikke allerede har registrert en oppgaveId."
                 }
-            } catch (e: Exception) {
-                throw RuntimeException(
-                    "Håndtering av ny oppgaveId: ${packet.oppgaveId} for søknadId: ${packet.søknadId} feilet",
-                    e
-                )
             }
+        } catch (e: Exception) {
+            logger.error(e) { "Håndtering av ny oppgaveId: $oppgaveId for søknadId: $søknadId feilet" }
+            throw e
         }
     }
-
-    private suspend fun update(søknadId: UUID, oppgaveId: String) =
-        runCatching {
-            søknadForRiverClient.oppdaterOppgaveId(søknadId, oppgaveId)
-        }.onFailure {
-            logger.error(it) { "Kunne ikke oppdatere søknadId: $søknadId med oppgaveId: $oppgaveId" }
-        }.getOrThrow()
 }

@@ -43,7 +43,6 @@ class NyHotsakOrdrelinje(
     private val JsonMessage.produktgruppeNr get() = this["data"]["produktgruppeNr"].textValue()
     private val JsonMessage.hjelpemiddeltype get() = this["data"]["hjelpemiddeltype"].textValue()
     private val JsonMessage.data get() = this["data"]
-
     private val JsonMessage.saksnummer get() = this["data"]["saksnummer"].textValue()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
@@ -52,8 +51,8 @@ class NyHotsakOrdrelinje(
             sikkerlogg.error { "Skippet event med tomt HOTSAK saksnummer: ${packet.toJson()}" }
             return
         }
-        if (skipEvent(packet.eventId)) {
-            logger.info { "Hopper over event i skip-list: ${packet.eventId}" }
+        if (packet.eventId in skipList) {
+            logger.info { "Hopper over event i skipList: ${packet.eventId}" }
             sikkerlogg.error { "Skippet event: ${packet.toJson()}" }
             return
         }
@@ -61,9 +60,9 @@ class NyHotsakOrdrelinje(
             logger.info { "Hotsak ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
 
             // Match ordrelinje to Hotsak-table
-            val søknad = søknadForRiverClient.hentSøknadForSak(HotsakSakId(packet.saksnummer))
-            if (søknad == null) { // fixme -> dette skjer i prod
-                logger.warn { "Ordrelinje med eventId ${packet.eventId} og saksnummer ${packet.saksnummer} kan ikke matches mot en søknadId" }
+            val søknad = søknadForRiverClient.finnSøknadForSak(HotsakSakId(packet.saksnummer))
+            if (søknad == null) {
+                logger.warn { "Ordrelinje med eventId: ${packet.eventId} og sakId: ${packet.saksnummer} kan ikke matches mot en søknadId" }
                 return
             }
             val søknadId = søknad.søknadId
@@ -128,14 +127,9 @@ class NyHotsakOrdrelinje(
         }
     }
 
-    private fun skipEvent(eventId: UUID): Boolean {
-        val skipList = mutableListOf<UUID>()
-        return skipList.any { it == eventId }
-    }
-
     private suspend fun save(ordrelinje: OrdrelinjeData): Int =
         runCatching {
-            søknadForRiverClient.lagreSøknad(ordrelinje)
+            søknadForRiverClient.lagreOrdrelinje(ordrelinje)
         }.onSuccess {
             if (it == 0) {
                 logger.warn { "Duplikat av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikkje blitt lagra" }
@@ -146,4 +140,6 @@ class NyHotsakOrdrelinje(
         }.onFailure {
             logger.error(it) { "Feil under lagring av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
         }.getOrThrow()
+
+    private val skipList = listOf<UUID>()
 }

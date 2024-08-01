@@ -9,3 +9,8 @@ object Testdata {
 }
 
 fun readTree(@Language("JSON") content: String): JsonNode = jsonMapper.readTree(content)
+
+@JvmInline
+value class Json(@Language("JSON") private val content: String) : CharSequence by content {
+    override fun toString(): String = content
+}

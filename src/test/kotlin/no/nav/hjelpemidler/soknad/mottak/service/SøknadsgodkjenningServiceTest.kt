@@ -7,10 +7,12 @@ import io.mockk.slot
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSoknad
+import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSøknad
+import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.Statusendring
+import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
+import no.nav.hjelpemidler.soknad.mottak.test.Json
 import no.nav.hjelpemidler.soknad.mottak.test.lagSøknad
 import no.nav.hjelpemidler.soknad.mottak.test.readTree
-import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
@@ -34,8 +36,8 @@ class SøknadsgodkjenningServiceTest {
         """.trimIndent()
     )
     private val mock = mockk<SøknadForRiverClient>().apply {
-        coEvery { oppdaterStatus(søknadId, BehovsmeldingStatus.GODKJENT) } returns 1
-        coEvery { hentSøknad(capture(capturedSøknadId), true) } returns lagSøknad(
+        coEvery { oppdaterStatus(søknadId, Statusendring(BehovsmeldingStatus.GODKJENT)) } returns 1
+        coEvery { hentSøknad(capture(capturedSøknadId), any()) } returns lagSøknad(
             søknadId = søknadId,
             status = BehovsmeldingStatus.VENTER_GODKJENNING,
             data = søknad
@@ -43,24 +45,25 @@ class SøknadsgodkjenningServiceTest {
     }
 
     private val rapid = TestRapid().apply {
-        GodkjennSoknad(this, mock)
+        GodkjennSøknad(this, SøknadsbehandlingService(mock))
     }
 
     @Test
     fun `Søknad blir godkjent`() {
-        @Language("JSON")
-        val okPacket = """
-            {
-                "eventName": "godkjentAvBruker",
-                "soknadId": "$søknadId"
-            }
-        """.trimIndent()
+        val okPacket = Json(
+            """
+                {
+                    "eventName": "godkjentAvBruker",
+                    "soknadId": "$søknadId"
+                }
+            """.trimIndent()
+        )
 
-        rapid.sendTestMessage(okPacket)
+        rapid.sendTestMessage(okPacket.toString())
 
         coVerify {
-            mock.oppdaterStatus(søknadId, BehovsmeldingStatus.GODKJENT)
-            mock.hentSøknad(søknadId, true)
+            mock.oppdaterStatus(søknadId, Statusendring(BehovsmeldingStatus.GODKJENT))
+            mock.hentSøknad(søknadId, false)
         }
     }
 }

@@ -7,17 +7,14 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatLagretData
-import java.time.LocalDate
-import java.util.UUID
+import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 
 private val logger = KotlinLogging.logger {}
 
 class VedtaksresultatFraHotsak(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient,
+    private val søknadsbehandlingService: SøknadsbehandlingService,
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
@@ -37,7 +34,10 @@ class VedtaksresultatFraHotsak(
         val vedtaksresultat = packet.vedtaksresultat
         val vedtaksdato = packet.vedtaksdato
 
-        lagreVedtaksresultat(søknadId, vedtaksresultat, vedtaksdato.toLocalDate())
+        søknadsbehandlingService.lagreVedtaksresultat(
+            søknadId,
+            Vedtaksresultat.Hotsak(vedtaksresultat, vedtaksdato.toLocalDate())
+        )
 
         val vedtaksresultatLagretData = VedtaksresultatLagretData(
             søknadId,
@@ -45,21 +45,7 @@ class VedtaksresultatFraHotsak(
             vedtaksdato,
             vedtaksresultat
         )
-        context.publish(fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatFraHotsakLagret", null))
-    }
 
-    private suspend fun lagreVedtaksresultat(søknadId: UUID, vedtaksresultat: String, vedtaksdato: LocalDate) {
-        runCatching {
-            søknadForRiverClient.lagreVedtaksresultat(søknadId, Vedtaksresultat.Hotsak(vedtaksresultat, vedtaksdato))
-        }.onSuccess {
-            if (it == 0) {
-                logger.warn { "Ingenting ble endret når vi forsøkte å lagre vedtaksresultat fra Hotsak for søknadId: $søknadId" }
-            } else {
-                logger.info { "Vedtaksresultat fra Hotsak er nå lagret for søknadId: $søknadId, vedtaksresultat: $vedtaksresultat, vedtaksdato: $vedtaksdato" }
-                Prometheus.vedtaksresultatLagretCounter.inc()
-            }
-        }.onFailure {
-            logger.error(it) { "Feil under lagring av vedtaksresultat fra Hotsak for søknadId: $søknadId" }
-        }.getOrThrow()
+        context.publish(fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatFraHotsakLagret", null))
     }
 }

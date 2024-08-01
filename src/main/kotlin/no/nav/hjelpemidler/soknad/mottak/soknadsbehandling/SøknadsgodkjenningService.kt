@@ -1,4 +1,4 @@
-package no.nav.hjelpemidler.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.soknadsbehandling
 
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
@@ -8,16 +8,10 @@ import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.time.LocalDateTime
 import java.util.UUID
 
-internal class SøknadsgodkjenningService(
+class SøknadsgodkjenningService(
     private val søknadForRiverClient: SøknadForRiverClient,
     private val rapidsConnection: RapidsConnection,
 ) {
-
-    companion object {
-        const val EN_UKE = 7
-        const val FEMTEN_DAGER = 15
-    }
-
     suspend fun slettUtgåtteSøknader(): Int {
         val utgåtteSøknader = søknadForRiverClient.hentSøknaderTilGodkjenningEldreEnn(FEMTEN_DAGER)
         utgåtteSøknader.forEach { søknad ->
@@ -38,5 +32,10 @@ internal class SøknadsgodkjenningService(
         }
 
         return utgåtteSøknader.size
+    }
+
+    companion object {
+        const val EN_UKE = 7
+        const val FEMTEN_DAGER = 15
     }
 }

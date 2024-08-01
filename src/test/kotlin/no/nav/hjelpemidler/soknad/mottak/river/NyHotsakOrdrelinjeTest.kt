@@ -24,13 +24,13 @@ class NyHotsakOrdrelinjeTest {
     }
 
     @Test
-    fun `behandler ny ordrelinje`() {
+    fun `Behandler ny ordrelinje`() {
         val message = Testdata.testmeldingerFraOebs.first()
         val søknadId = UUID.randomUUID()
         val sakId = message.at("/data/saksnummer").textValue().let(::HotsakSakId)
 
         coEvery {
-            client.hentSøknadForSak(sakId)
+            client.finnSøknadForSak(sakId)
         } returns Søknad(
             søknadId = søknadId,
             søknadOpprettet = Instant.now(),
@@ -58,7 +58,7 @@ class NyHotsakOrdrelinjeTest {
         } returns HarOrdre(harOrdreAvTypeHjelpemidler = false, harOrdreAvTypeDel = false)
 
         coEvery {
-            client.lagreSøknad(any<OrdrelinjeData>())
+            client.lagreOrdrelinje(any<OrdrelinjeData>())
         } returns 1
 
         coEvery {

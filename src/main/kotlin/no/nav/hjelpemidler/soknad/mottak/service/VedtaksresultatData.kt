@@ -3,19 +3,19 @@ package no.nav.hjelpemidler.soknad.mottak.service
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.InfotrygdSakId
 import java.time.LocalDate
-import java.util.UUID
 
 data class VedtaksresultatData(
-    val søknadId: UUID,
+    override val søknadId: SøknadId,
     val fnrBruker: String,
     val trygdekontorNr: String?,
     val saksblokk: String?,
     val saksnr: String?,
     val vedtaksresultat: String? = null,
     val vedtaksdato: LocalDate? = null,
-) {
+) : TilknyttetSøknad {
     constructor(søknadId: SøknadId, fnrBruker: String, fagsakId: InfotrygdSakId) : this(
         søknadId = søknadId,
         fnrBruker = fnrBruker,

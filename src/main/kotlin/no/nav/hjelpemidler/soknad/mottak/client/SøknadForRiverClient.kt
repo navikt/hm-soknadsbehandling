@@ -27,7 +27,7 @@ import no.nav.hjelpemidler.http.openid.TokenSetProvider
 import no.nav.hjelpemidler.http.openid.openID
 import no.nav.hjelpemidler.soknad.mottak.httpClient
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
-import no.nav.hjelpemidler.soknad.mottak.service.PapirSøknadData
+import no.nav.hjelpemidler.soknad.mottak.service.PapirsøknadData
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.Statusendring
 import java.util.UUID
@@ -47,15 +47,21 @@ class SøknadForRiverClient(
         }
     }
 
-    suspend fun hentSøknad(søknadId: UUID, inkluderData: Boolean = false): Søknad {
+    suspend fun finnSøknad(søknadId: SøknadId, inkluderData: Boolean = false): Søknad? {
         return httpClient
             .get("$baseUrl/soknad/$søknadId") {
                 parameter("inkluderData", inkluderData)
             }
-            .body<Søknad>()
+            .body<Søknad?>()
     }
 
-    suspend fun lagrePapirsøknad(søknadData: PapirSøknadData): Int {
+    suspend fun hentSøknad(søknadId: SøknadId, inkluderData: Boolean = false): Søknad {
+        return checkNotNull(finnSøknad(søknadId, inkluderData)) {
+            "Fant ikke søknad med søknadId: $søknadId"
+        }
+    }
+
+    suspend fun lagrePapirsøknad(søknadData: PapirsøknadData): Int {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.post("$baseUrl/soknad/papir") {
@@ -65,30 +71,22 @@ class SøknadForRiverClient(
         }
     }
 
-    suspend fun lagreSøknad(søknadData: SøknadData) {
+    suspend fun lagreDigitalSøknad(søknadData: SøknadData): Int {
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.post("$baseUrl/soknad/bruker") {
                     setBody(søknadData)
-                }.body<String>()
-            }.getOrLogAndThrow()
-        }
-    }
-
-    suspend fun lagreSøknad(ordrelinje: OrdrelinjeData): Int {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.post("$baseUrl/ordre") {
-                    setBody(ordrelinje)
                 }.body<Int>()
             }.getOrLogAndThrow()
         }
     }
 
-    suspend fun søknadFinnes(søknadId: UUID): Boolean {
+    suspend fun lagreOrdrelinje(ordrelinje: OrdrelinjeData): Int {
         return withContext(Dispatchers.IO) {
             runCatching {
-                httpClient.get("$baseUrl/soknad/bruker/finnes/$søknadId").body<JsonNode>().get("second").booleanValue()
+                httpClient.post("$baseUrl/ordre") {
+                    setBody(ordrelinje)
+                }.body<Int>()
             }.getOrLogAndThrow()
         }
     }
@@ -173,12 +171,21 @@ class SøknadForRiverClient(
     /**
      * NB! Fungerer kun for Hotsak.
      */
-    suspend fun hentSøknadForSak(sakId: HotsakSakId, inkluderData: Boolean = false): Søknad {
+    suspend fun finnSøknadForSak(sakId: HotsakSakId, inkluderData: Boolean = false): Søknad? {
         return httpClient
             .get("$baseUrl/sak/$sakId/soknad") {
                 parameter("inkluderData", inkluderData)
             }
-            .body<Søknad>()
+            .body<Søknad?>()
+    }
+
+    /**
+     * NB! Fungerer kun for Hotsak.
+     */
+    suspend fun hentSøknadForSak(sakId: HotsakSakId, inkluderData: Boolean = false): Søknad {
+        return checkNotNull(finnSøknadForSak(sakId, inkluderData)) {
+            "Fant ikke søknad for sakId: $sakId"
+        }
     }
 
     suspend fun hentSakForSøknad(søknadId: UUID): Søknad {
@@ -195,10 +202,11 @@ class SøknadForRiverClient(
             .body<Int>()
     }
 
-    suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: Int): Boolean {
+    // fixme -> slettes, gjør i backend
+    suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: String): Boolean {
         data class Request(
             val fnrBruker: String,
-            val journalpostId: Int,
+            val journalpostId: String,
         )
         return withContext(Dispatchers.IO) {
             runCatching {
