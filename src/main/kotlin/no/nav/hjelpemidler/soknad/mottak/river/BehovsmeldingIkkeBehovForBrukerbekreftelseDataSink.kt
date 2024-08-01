@@ -100,7 +100,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
             sikkerlogg.info { "Behovsmelding sendt med id: ${søknadData.soknadId}, fnr: ${søknadData.fnrBruker}" }
         } catch (e: Exception) {
             logger.error(e) { "forward() feilet, søknadId: ${søknadData.soknadId}" }
-            // fixme -> hvorfor ikke rethrow her?
+            throw e
         }
     }
 
