@@ -17,8 +17,8 @@
         <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
     </appender>
 
-    <logger name="no.nav.helse.rapids_rivers" level="DEBUG" />
-    <logger name="no.nav.hjelpemidler.soknad.mottak" level="DEBUG" />
+    <logger name="no.nav.helse.rapids_rivers" level="INFO" />
+    <logger name="no.nav.hjelpemidler.soknad.mottak" level="INFO" />
     <logger name="no.nav.hjelpemidler.soknad.mottak.metrics" level="INFO" />
     <logger name="io.ktor.auth" level="TRACE" />
 

@@ -17,7 +17,7 @@ data class VedtaksresultatLagretData(
     val vedtaksresultat: String,
     val eksternVarslingDeaktivert: Boolean = false,
 ) : TilknyttetSøknad {
-    fun toJson(eventName: String, søknadsType: String?): String {
+    fun toJson(eventName: String, søknadstype: String?): String {
         return JsonMessage("{}", MessageProblems("")).also {
             it["eventName"] = eventName
             it["eventId"] = UUID.randomUUID()
@@ -26,9 +26,9 @@ data class VedtaksresultatLagretData(
             it["vedtaksdato"] = this.vedtaksdato
             it["vedtaksresultat"] = this.vedtaksresultat
             it["eksternVarslingDeaktivert"] = this.eksternVarslingDeaktivert
-            søknadsType?.let { st ->
-                log.info { "DEBUG: sender vedtak til ditt-nav med søknadsType=$st" }
-                it["søknadsType"] = st
+            if (søknadstype != null) {
+                log.debug { "Sender vedtak til Ditt NAV med søknadstype: $søknadstype" }
+                it["søknadsType"] = søknadstype
             }
         }.toJson()
     }

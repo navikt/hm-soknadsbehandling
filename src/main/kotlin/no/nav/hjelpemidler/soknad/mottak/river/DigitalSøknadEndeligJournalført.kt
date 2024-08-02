@@ -44,7 +44,7 @@ class DigitalSøknadEndeligJournalført(
         if (packet.søknadId == UUID.fromString("1a404d1a-4cd9-4eb9-89f9-fa964230b8fe")) {
             logger.info { "Tar søknadId: ${packet.søknadId} ut av køen og logger til sikkerlogg her" }
             val rawJson = packet.toJson()
-            sikkerlogg.info { "DEBUG DEBUG: rawJson for skipped søknad, søknadId: ${packet.søknadId}, rawJson: $rawJson" }
+            sikkerlogg.debug { "JSON for søknad som ble skippet, søknadId: ${packet.søknadId}, json: $rawJson" }
             return
         }
 
