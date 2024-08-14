@@ -64,7 +64,7 @@ class BehovsmeldingTilBrukerbekreftelseDataSink(
                 return
             }
 
-            logger.info { "Søknad til godkjenning mottatt: $søknadId (søknadGjelder: ${søknadData.soknadGjelder})" }
+            logger.info { "Behovsmelding til godkjenning mottatt: $søknadId (gjelder: '${søknadData.soknadGjelder}')" }
 
             søknadsbehandlingService.lagreBehovsmelding(søknadData.toGrunnlag())
 
