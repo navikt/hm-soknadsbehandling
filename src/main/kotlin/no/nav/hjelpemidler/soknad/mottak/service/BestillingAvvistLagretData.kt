@@ -1,8 +1,9 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
 import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
+import no.nav.hjelpemidler.soknad.mottak.river.Melding
+import no.nav.hjelpemidler.soknad.mottak.river.jsonMessageOf
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -12,16 +13,14 @@ data class BestillingAvvistLagretData(
     val opprettet: LocalDateTime,
     val begrunnelse: String,
     val valgteÅrsaker: List<String>,
-) : TilknyttetSøknad {
-    fun toJson(eventName: String): String {
-        return JsonMessage("{}", MessageProblems("")).also {
-            it["eventName"] = eventName
-            it["eventId"] = UUID.randomUUID()
-            it["søknadId"] = this.søknadId
-            it["fnrBruker"] = this.fnrBruker
-            it["opprettet"] = this.opprettet
-            it["begrunnelse"] = this.begrunnelse
-            it["valgteÅrsaker"] = this.valgteÅrsaker
-        }.toJson()
-    }
+) : TilknyttetSøknad, Melding {
+    override fun toJsonMessage(eventName: String): JsonMessage = jsonMessageOf(
+        "eventName" to eventName,
+        "eventId" to UUID.randomUUID(),
+        "søknadId" to søknadId,
+        "fnrBruker" to fnrBruker,
+        "opprettet" to opprettet,
+        "begrunnelse" to begrunnelse,
+        "valgteÅrsaker" to valgteÅrsaker,
+    )
 }

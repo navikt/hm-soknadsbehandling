@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.convertValue
 import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
 import no.nav.hjelpemidler.soknad.mottak.client.Søknad
 import no.nav.hjelpemidler.soknad.mottak.jsonMapper
+import no.nav.hjelpemidler.soknad.mottak.river.Melding
+import no.nav.hjelpemidler.soknad.mottak.river.jsonMessageOf
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -22,7 +24,7 @@ data class SøknadData(
     val status: BehovsmeldingStatus,
     val kommunenavn: String?,
     val soknadGjelder: String?,
-) : BehovsmeldingGrunnlag {
+) : TilknyttetSøknad, Melding {
     override val søknadId: SøknadId @JsonIgnore get() = soknadId
 
     constructor(søknad: Søknad) : this(
@@ -47,35 +49,35 @@ data class SøknadData(
         behovsmeldingGjelder = soknadGjelder,
     )
 
-    fun toJson(eventName: String): String {
-        return JsonMessage("{}", MessageProblems("")).also {
-            val id = UUID.randomUUID()
-            it["@id"] = id // @deprecated
-            it["eventId"] = id
-            it["@event_name"] = eventName // @deprecated
-            it["eventName"] = eventName
-            it["opprettet"] = LocalDateTime.now()
-            it["fodselNrBruker"] = this.fnrBruker // @deprecated
-            it["fnrBruker"] = this.fnrBruker
-            it["soknad"] = this.soknad
-            it["soknadId"] = this.soknadId
-            it["fnrInnsender"] = this.fnrInnsender
-            if (this.soknadGjelder != null) it["soknadGjelder"] = this.soknadGjelder
-        }.toJson()
+    override fun toJsonMessage(eventName: String): JsonMessage {
+        val id = UUID.randomUUID()
+        return jsonMessageOf(
+            "@id" to id, // @deprecated
+            "eventId" to id,
+            "@event_name" to eventName, // @deprecated
+            "eventName" to eventName,
+            "opprettet" to LocalDateTime.now(),
+            "fodselNrBruker" to fnrBruker, // @deprecated
+            "fnrBruker" to fnrBruker,
+            "soknad" to soknad,
+            "soknadId" to soknadId,
+            "fnrInnsender" to fnrInnsender,
+            "soknadGjelder" to soknadGjelder,
+        )
     }
 
     fun toVenterPåGodkjenningJson(): String {
-        return JsonMessage("{}", MessageProblems("")).also {
-            val id = UUID.randomUUID()
-            it["@id"] = id // @deprecated
-            it["eventId"] = id
-            it["@event_name"] = "SøknadTilGodkjenning" // @deprecated
-            it["eventName"] = "hm-SøknadTilGodkjenning"
-            it["opprettet"] = LocalDateTime.now()
-            it["fodselNrBruker"] = this.fnrBruker // @deprecated
-            it["fnrBruker"] = this.fnrBruker
-            it["soknadId"] = this.soknadId
-            it["kommunenavn"] = this.kommunenavn ?: ""
-        }.toJson()
+        val id = UUID.randomUUID()
+        return jsonMessageOf(
+            "@id" to id, // @deprecated
+            "eventId" to id,
+            "@event_name" to "SøknadTilGodkjenning", // @deprecated
+            "eventName" to "hm-SøknadTilGodkjenning",
+            "opprettet" to LocalDateTime.now(),
+            "fodselNrBruker" to this.fnrBruker, // @deprecated
+            "fnrBruker" to this.fnrBruker,
+            "soknadId" to this.soknadId,
+            "kommunenavn" to (this.kommunenavn ?: ""),
+        ).toJson()
     }
 }

@@ -55,14 +55,15 @@ class DigitalSøknadEndeligJournalført(
         // På dette tidspunktet har det ikkje blitt gjort eit vedtak i Infotrygd, så vedtaksresultat og vedtaksdato er null
         val vedtaksresultatData = VedtaksresultatData(søknadId, fnrBruker, fagsakId)
 
-        context.publish(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
+        context.publish(fnrBruker, vedtaksresultatData, "hm-InfotrygdAddToPollVedtakList")
 
         val behovsmeldingType = søknadsbehandlingService.hentBehovsmeldingstype(søknadId)
 
         // Melding til Ditt NAV
         context.publish(
             fnrBruker,
-            SøknadUnderBehandlingData(søknadId, fnrBruker, behovsmeldingType).toJson("hm-SøknadUnderBehandling"),
+            SøknadUnderBehandlingData(søknadId, fnrBruker, behovsmeldingType),
+            "hm-SøknadUnderBehandling",
         )
         logger.info {
             "Endelig journalført: Digital ${

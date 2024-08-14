@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
 import com.fasterxml.jackson.module.kotlin.treeToValue
-import no.nav.helse.rapids_rivers.MessageContext
 
 val jsonMapper: JsonMapper = jacksonMapperBuilder()
     .addModule(JavaTimeModule())
@@ -17,6 +16,3 @@ val jsonMapper: JsonMapper = jacksonMapperBuilder()
 
 inline fun <reified T> JsonNode.asObject(): T =
     jsonMapper.treeToValue(this)
-
-fun <T : Any> MessageContext.publish(key: String, message: T): Unit =
-    publish(key, jsonMapper.writeValueAsString(message))

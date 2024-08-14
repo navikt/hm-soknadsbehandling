@@ -44,7 +44,7 @@ class DigitalSøknadEndeligJournalførtEtterTilbakeføring(
         // På dette tidspunktet har det ikkje blitt gjort eit vedtak i Infotrygd, så vedtaksresultat og vedtaksdato er null
         val vedtaksresultatData = VedtaksresultatData(søknadId, fnrBruker, fagsakId)
 
-        context.publish(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
+        context.publish(fnrBruker, vedtaksresultatData, "hm-InfotrygdAddToPollVedtakList")
 
         logger.info { "Endelig journalført: Digital søknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId" }
     }

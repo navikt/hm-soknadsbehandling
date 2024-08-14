@@ -48,6 +48,6 @@ class BestillingAvvistFraHotsak(
             valgteÅrsaker.toList(),
         )
 
-        context.publish(fnrBruker, bestillingAvvistLagretData.toJson("hm-BestillingAvvistFraHotsakLagret"))
+        context.publish(fnrBruker, bestillingAvvistLagretData, "hm-BestillingAvvistFraHotsakLagret")
     }
 }

@@ -48,11 +48,8 @@ class DigitalSøknadAutomatiskJournalført(
             // Melding til Ditt NAV
             context.publish(
                 fnrBruker,
-                SøknadUnderBehandlingData(
-                    søknadId,
-                    fnrBruker,
-                    behovsmeldingType,
-                ).toJson("hm-SøknadUnderBehandling")
+                SøknadUnderBehandlingData(søknadId, fnrBruker, behovsmeldingType),
+                "hm-SøknadUnderBehandling",
             )
         } else {
             log.warn { "Status er allerede satt til endelig journalført, søknadId: $søknadId, sakId: $sakId, journalpostId: $journalpostId" }

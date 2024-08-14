@@ -11,7 +11,6 @@ import no.nav.hjelpemidler.soknad.mottak.asObject
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
-import no.nav.hjelpemidler.soknad.mottak.publish
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import java.util.UUID
 
@@ -115,7 +114,7 @@ class NyHotsakOrdrelinje(
             }
 
             if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
-                context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
+                context.publish(ordrelinjeData.fnrBruker, ordrelinjeData, "hm-OrdrelinjeLagret")
                 Prometheus.ordrelinjeVideresendtCounter.inc()
                 logger.info { "Ordrelinje sendt: ${ordrelinjeData.søknadId}" }
                 sikkerlogg.info { "Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})" }

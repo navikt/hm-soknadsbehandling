@@ -94,7 +94,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
 
     private fun forward(søknadData: SøknadData, context: MessageContext) {
         try {
-            context.publish(søknadData.fnrBruker, søknadData.toJson("hm-behovsmeldingMottatt"))
+            context.publish(søknadData.fnrBruker, søknadData, "hm-behovsmeldingMottatt")
             Prometheus.søknadMedFullmaktCounter.inc()
             logger.info { "Behovsmelding sent, søknadId: ${søknadData.soknadId}" }
             sikkerlogg.info { "Behovsmelding sendt med id: ${søknadData.soknadId}, fnr: ${søknadData.fnrBruker}" }

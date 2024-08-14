@@ -39,13 +39,17 @@ class VedtaksresultatFraHotsak(
             Vedtaksresultat.Hotsak(vedtaksresultat, vedtaksdato.toLocalDate())
         )
 
-        val vedtaksresultatLagretData = VedtaksresultatLagretData(
-            søknadId,
+        context.publish(
             fnrBruker,
-            vedtaksdato,
-            vedtaksresultat
+            VedtaksresultatLagretData(
+                søknadId = søknadId,
+                fnrBruker = fnrBruker,
+                vedtaksdato = vedtaksdato,
+                vedtaksresultat = vedtaksresultat,
+                eksternVarslingDeaktivert = false,
+                søknadstype = null,
+            ),
+            "hm-VedtaksresultatFraHotsakLagret",
         )
-
-        context.publish(fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatFraHotsakLagret", null))
     }
 }

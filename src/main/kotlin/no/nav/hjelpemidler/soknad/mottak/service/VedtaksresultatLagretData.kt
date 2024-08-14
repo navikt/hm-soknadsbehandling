@@ -1,14 +1,12 @@
 package no.nav.hjelpemidler.soknad.mottak.service
 
-import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
+import no.nav.hjelpemidler.soknad.mottak.river.Melding
+import no.nav.hjelpemidler.soknad.mottak.river.jsonMessageOf
 import java.time.LocalDateTime
 import java.util.UUID
-
-private val log = KotlinLogging.logger {}
 
 data class VedtaksresultatLagretData(
     override val søknadId: SøknadId,
@@ -16,20 +14,16 @@ data class VedtaksresultatLagretData(
     val vedtaksdato: LocalDateTime,
     val vedtaksresultat: String,
     val eksternVarslingDeaktivert: Boolean = false,
-) : TilknyttetSøknad {
-    fun toJson(eventName: String, søknadstype: String?): String {
-        return JsonMessage("{}", MessageProblems("")).also {
-            it["eventName"] = eventName
-            it["eventId"] = UUID.randomUUID()
-            it["søknadId"] = this.søknadId
-            it["fnrBruker"] = this.fnrBruker
-            it["vedtaksdato"] = this.vedtaksdato
-            it["vedtaksresultat"] = this.vedtaksresultat
-            it["eksternVarslingDeaktivert"] = this.eksternVarslingDeaktivert
-            if (søknadstype != null) {
-                log.debug { "Sender vedtak til Ditt NAV med søknadstype: $søknadstype" }
-                it["søknadsType"] = søknadstype
-            }
-        }.toJson()
-    }
+    val søknadstype: String? = null,
+) : TilknyttetSøknad, Melding {
+    override fun toJsonMessage(eventName: String): JsonMessage = jsonMessageOf(
+        "eventName" to eventName,
+        "eventId" to UUID.randomUUID(),
+        "søknadId" to søknadId,
+        "fnrBruker" to fnrBruker,
+        "vedtaksdato" to vedtaksdato,
+        "vedtaksresultat" to vedtaksresultat,
+        "eksternVarslingDeaktivert" to eksternVarslingDeaktivert,
+        "søknadsType" to søknadstype,
+    )
 }

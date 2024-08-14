@@ -2,10 +2,11 @@ package no.nav.hjelpemidler.soknad.mottak.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
+import no.nav.hjelpemidler.soknad.mottak.river.Melding
+import no.nav.hjelpemidler.soknad.mottak.river.jsonMessageOf
 import java.util.UUID
 
 data class OrdrelinjeData(
@@ -24,14 +25,12 @@ data class OrdrelinjeData(
     val produktgruppeNr: String,
     val hjelpemiddeltype: String,
     val data: JsonNode?,
-) : TilknyttetSøknad {
-    fun toJson(eventName: String): String {
-        return JsonMessage("{}", MessageProblems("")).also {
-            it["eventName"] = eventName
-            it["eventId"] = UUID.randomUUID()
-            it["søknadId"] = this.søknadId
-            it["fnrBruker"] = this.fnrBruker
-            it["behovsmeldingType"] = this.behovsmeldingType
-        }.toJson()
-    }
+) : TilknyttetSøknad, Melding {
+    override fun toJsonMessage(eventName: String): JsonMessage = jsonMessageOf(
+        "eventName" to eventName,
+        "eventId" to UUID.randomUUID(),
+        "søknadId" to søknadId,
+        "fnrBruker" to fnrBruker,
+        "behovsmeldingType" to behovsmeldingType,
+    )
 }

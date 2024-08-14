@@ -78,17 +78,14 @@ class PapirsøknadEndeligJournalført(
                 return
             }
 
-            context.publish(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
+            context.publish(fnrBruker, vedtaksresultatData, "hm-InfotrygdAddToPollVedtakList")
             log.info { "Papirsøknad mottatt og lagret: $søknadId" }
 
             // Send melding til Ditt NAV
             context.publish(
                 fnrBruker,
-                SøknadUnderBehandlingData(
-                    søknadId,
-                    fnrBruker,
-                    BehovsmeldingType.SØKNAD
-                ).toJson("hm-SøknadUnderBehandling")
+                SøknadUnderBehandlingData(søknadId, fnrBruker, BehovsmeldingType.SØKNAD),
+                "hm-SøknadUnderBehandling",
             )
             log.info { "Endelig journalført: Papirsøknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId" }
 

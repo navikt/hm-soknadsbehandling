@@ -56,14 +56,18 @@ class VedtaksresultatFraInfotrygd(
         val mottokOrdrelinjeFørVedtak = søknadsbehandlingService.harOrdreForSøknad(søknadId)
 
         // Lagre vedtaksstatus og send beskjed til Ditt NAV
-        val vedtaksresultatLagretData = VedtaksresultatLagretData(
-            søknadId,
+        context.publish(
             fnrBruker,
-            vedtaksdato.atStartOfDay(),
-            vedtaksresultat,
-            mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler
+            VedtaksresultatLagretData(
+                søknadId = søknadId,
+                fnrBruker = fnrBruker,
+                vedtaksdato = vedtaksdato.atStartOfDay(),
+                vedtaksresultat = vedtaksresultat,
+                eksternVarslingDeaktivert = mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler,
+                søknadstype = packet.søknadstype
+            ),
+            "hm-VedtaksresultatLagret",
         )
-        context.publish(fnrBruker, vedtaksresultatLagretData.toJson("hm-VedtaksresultatLagret", packet.søknadstype))
 
         // Hvis vi allerede har ordrelinjer i databasen for denne søknaden: send utsending startet.
         if (mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler || mottokOrdrelinjeFørVedtak.harOrdreAvTypeDel) {
@@ -92,7 +96,7 @@ class VedtaksresultatFraInfotrygd(
                 hjelpemiddeltype = "",
                 data = null,
             )
-            context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
+            context.publish(ordrelinjeData.fnrBruker, ordrelinjeData, "hm-OrdrelinjeLagret")
             Prometheus.ordrelinjeVideresendtCounter.inc()
             logger.info { "Ordrelinje sendt ved vedtak: ${ordrelinjeData.søknadId}" }
         }

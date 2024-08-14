@@ -165,7 +165,7 @@ class NyInfotrygdOrdrelinje(
                 }
 
                 if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
-                    context.publish(ordrelinjeData.fnrBruker, ordrelinjeData.toJson("hm-OrdrelinjeLagret"))
+                    context.publish(ordrelinjeData.fnrBruker, ordrelinjeData, "hm-OrdrelinjeLagret")
                     Prometheus.ordrelinjeVideresendtCounter.inc()
                     logger.info { "Ordrelinje sendt: ${ordrelinjeData.søknadId}" }
                     sikkerlogg.info { "Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})" }

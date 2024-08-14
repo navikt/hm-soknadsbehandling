@@ -64,8 +64,7 @@ class GodkjennSøknad(
         val søknadId = søknadData.søknadId.toString()
 
         try {
-            val message = SøknadData(søknadData).toJson("hm-søknadGodkjentAvBrukerMottatt")
-            context.publish(fnrBruker, message)
+            context.publish(fnrBruker, SøknadData(søknadData), "hm-søknadGodkjentAvBrukerMottatt")
             Prometheus.søknadGodkjentAvBrukerCounter.inc()
             log.info { "Søknad er godkjent av bruker: $søknadId" }
             sikkerlogg.info { "Søknad er godkjent med søknadId: $søknadId, fnr: $fnrBruker" }

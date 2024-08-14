@@ -33,6 +33,6 @@ class BestillingFerdigstiltFraHotsak(
 
         val bestillingGodkjentLagretData = BestillingGodkjentLagretData(søknadId, fnrBruker, opprettet)
 
-        context.publish(fnrBruker, bestillingGodkjentLagretData.toJson("hm-BestillingGodkjentFraHotsakLagret"))
+        context.publish(fnrBruker, bestillingGodkjentLagretData, "hm-BestillingGodkjentFraHotsakLagret")
     }
 }
