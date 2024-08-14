@@ -3,38 +3,30 @@ package no.nav.hjelpemidler.soknad.mottak.soknadsbehandling
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
+import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
+import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
 import no.nav.hjelpemidler.soknad.mottak.client.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.client.Søknad
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
-import no.nav.hjelpemidler.soknad.mottak.service.BehovsmeldingGrunnlag
-import no.nav.hjelpemidler.soknad.mottak.service.PapirsøknadData
-import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
 import java.util.UUID
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient as SøknadsbehandlingClient
 
 private val log = KotlinLogging.logger {}
 
 class SøknadsbehandlingService(private val søknadsbehandlingClient: SøknadsbehandlingClient) {
-    suspend fun lagreBehovsmelding(grunnlag: BehovsmeldingGrunnlag) {
+    suspend fun lagreBehovsmelding(grunnlag: Behovsmeldingsgrunnlag): Boolean {
         val søknadId = grunnlag.søknadId
         log.info { "Lagrer behovsmelding, søknadId: $søknadId" }
-        val lagret = when (grunnlag) {
-            is PapirsøknadData -> {
-                søknadsbehandlingClient.lagrePapirsøknad(grunnlag)
-            }
-
-            is SøknadData -> {
-                søknadsbehandlingClient.lagreDigitalSøknad(grunnlag)
-            }
-        } > 0
+        val lagret = søknadsbehandlingClient.lagreBehovsmelding(grunnlag) > 0
         if (lagret) {
             log.info { "Behovsmelding ble lagret, søknadId: $søknadId" }
         } else {
             log.warn { "Behovsmelding ble ikke lagret, søknadId: $søknadId" }
         }
+        return lagret
     }
 
     suspend fun finnSøknad(søknadId: SøknadId, inkluderData: Boolean = false): Søknad? {
@@ -70,7 +62,7 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
     }
 
     suspend fun oppdaterStatus(søknadId: UUID, status: BehovsmeldingStatus): Boolean =
-        oppdaterStatus(søknadId, Statusendring(status))
+        oppdaterStatus(søknadId, Statusendring(status, null, null))
 
     suspend fun lagreSakstilknytning(søknadId: UUID, sakstilknytning: Sakstilknytning): Boolean {
         log.info { "Lagrer sakstilknytning for søknad, søknadId: $søknadId, sakId: ${sakstilknytning.sakId}, system: ${sakstilknytning.system}" }
@@ -110,7 +102,7 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
 
     suspend fun slettSøknad(søknadId: SøknadId): Boolean {
         log.info { "Sletter søknad, søknadId: $søknadId" }
-        val result = søknadsbehandlingClient.slettSøknad(søknadId)
+        val result = søknadsbehandlingClient.oppdaterStatus(søknadId, BehovsmeldingStatus.SLETTET)
         val slettet = result > 0
         if (slettet) {
             log.info { "Søknad ble slettet, søknadId: $søknadId" }
@@ -118,9 +110,5 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
             log.warn { "Søknad ble ikke slettet (eller er allerede slettet), søknadId: $søknadId" }
         }
         return slettet
-    }
-
-    suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: String): Boolean {
-        return søknadsbehandlingClient.fnrOgJournalpostIdFinnes(fnrBruker, journalpostId)
     }
 }

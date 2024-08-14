@@ -7,10 +7,10 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
+import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.InfotrygdSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
-import no.nav.hjelpemidler.soknad.mottak.service.PapirsøknadData
 import no.nav.hjelpemidler.soknad.mottak.service.SøknadUnderBehandlingData
 import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
@@ -58,27 +58,25 @@ class PapirsøknadEndeligJournalført(
         val søknadId = UUID.randomUUID()
         val fnrBruker = packet.fnrBruker
         val fagsakId = packet.fagsakId
+        val journalpostId = packet.journalpostId
 
         val vedtaksresultatData = VedtaksresultatData(søknadId, fnrBruker, fagsakId)
 
         try {
-            val søknad = PapirsøknadData(
-                fnrBruker = fnrBruker,
-                søknadId = søknadId,
-                status = BehovsmeldingStatus.ENDELIG_JOURNALFØRT,
-                journalpostId = packet.journalpostId,
-                navnBruker = packet.navnBruker
+            val lagret = søknadsbehandlingService.lagreBehovsmelding(
+                Behovsmeldingsgrunnlag.Papir(
+                    søknadId = søknadId,
+                    status = BehovsmeldingStatus.ENDELIG_JOURNALFØRT,
+                    fnrBruker = fnrBruker,
+                    navnBruker = packet.navnBruker,
+                    journalpostId = journalpostId,
+                    sakstilknytning = Sakstilknytning.Infotrygd(fagsakId, fnrBruker),
+                )
             )
-
-            // fixme -> kunne vi ikke bare sjekket dette i backend?
-            if (søknadsbehandlingService.fnrOgJournalpostIdFinnes(søknad.fnrBruker, søknad.journalpostId)) {
-                log.warn { "En søknad med dette fødselsnummeret og journalpostId-en er allerede lagret i databasen: $søknadId, journalpostId: ${søknad.journalpostId}, eventId: ${packet.eventId}" }
+            if (!lagret) {
+                log.warn { "En søknad med dette fødselsnummeret og journalpostId: $journalpostId er allerede lagret, søknadId: $søknadId" }
                 return
             }
-
-            // fixme -> kunne vi ikke gjort de neste to kallene i én transaksjon?
-            søknadsbehandlingService.lagreBehovsmelding(søknad)
-            søknadsbehandlingService.lagreSakstilknytning(søknadId, Sakstilknytning.Infotrygd(fagsakId, fnrBruker))
 
             context.publish(fnrBruker, vedtaksresultatData.toJson("hm-InfotrygdAddToPollVedtakList"))
             log.info { "Papirsøknad mottatt og lagret: $søknadId" }
@@ -94,7 +92,7 @@ class PapirsøknadEndeligJournalført(
             )
             log.info { "Endelig journalført: Papirsøknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId" }
 
-            metrics.papirsøknad(packet.fnrBruker)
+            metrics.papirsøknad(fnrBruker)
         } catch (e: Exception) {
             log.error(e) { "Håndtering av eventId: ${packet.eventId} feilet" }
             throw e

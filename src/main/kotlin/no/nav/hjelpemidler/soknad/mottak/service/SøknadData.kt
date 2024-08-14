@@ -2,11 +2,14 @@ package no.nav.hjelpemidler.soknad.mottak.service
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.convertValue
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
+import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
 import no.nav.hjelpemidler.soknad.mottak.client.Søknad
+import no.nav.hjelpemidler.soknad.mottak.jsonMapper
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -31,6 +34,17 @@ data class SøknadData(
         status = søknad.status,
         kommunenavn = søknad.kommunenavn,
         soknadGjelder = søknad.søknadGjelder,
+    )
+
+    fun toGrunnlag() = Behovsmeldingsgrunnlag.Digital(
+        søknadId = soknadId,
+        status = status,
+        fnrBruker = fnrBruker,
+        navnBruker = navnBruker,
+        fnrInnsender = fnrInnsender,
+        kommunenavn = kommunenavn,
+        behovsmelding = jsonMapper.convertValue(soknad),
+        behovsmeldingGjelder = soknadGjelder,
     )
 
     fun toJson(eventName: String): String {

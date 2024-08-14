@@ -10,8 +10,8 @@ import io.mockk.slot
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
+import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
-import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import no.nav.hjelpemidler.soknad.mottak.test.Json
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -19,10 +19,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class BehovsmeldingTilBrukerbekreftelseDataSinkTest {
-    private val capturedSøknadData = slot<SøknadData>()
+    private val capturedGrunnlag = slot<Behovsmeldingsgrunnlag.Digital>()
     private val mock = mockk<SøknadForRiverClient>().apply {
         coEvery { finnSøknad(any(), any()) } returns null
-        coEvery { lagreDigitalSøknad(capture(capturedSøknadData)) } returns 1
+        coEvery { lagreBehovsmelding(capture(capturedGrunnlag)) } returns 1
     }
 
     private val rapid = TestRapid().apply {
@@ -32,7 +32,7 @@ class BehovsmeldingTilBrukerbekreftelseDataSinkTest {
     @BeforeEach
     fun reset() {
         rapid.reset()
-        capturedSøknadData.clear()
+        capturedGrunnlag.clear()
     }
 
     @Test
@@ -62,9 +62,9 @@ class BehovsmeldingTilBrukerbekreftelseDataSinkTest {
 
         rapid.sendTestMessage(okPacket.toString())
 
-        capturedSøknadData.captured.fnrBruker shouldBe "fnrBruker"
-        capturedSøknadData.captured.fnrInnsender shouldBe "fodselNrInnsender"
-        capturedSøknadData.captured.status shouldBe BehovsmeldingStatus.VENTER_GODKJENNING
+        capturedGrunnlag.captured.fnrBruker shouldBe "fnrBruker"
+        capturedGrunnlag.captured.fnrInnsender shouldBe "fodselNrInnsender"
+        capturedGrunnlag.captured.status shouldBe BehovsmeldingStatus.VENTER_GODKJENNING
     }
 
     @Test

@@ -67,7 +67,7 @@ fun main() {
         .apply {
             val metrics = Metrics(this, pdlClient)
 
-            startSøknadUtgåttScheduling(SøknadsgodkjenningService(søknadForRiverClient, this))
+            startSøknadUtgåttScheduling(SøknadsgodkjenningService(this, søknadForRiverClient))
 
             BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(this, søknadsbehandlingService, metrics)
             BehovsmeldingTilBrukerbekreftelseDataSink(this, søknadsbehandlingService, metrics)

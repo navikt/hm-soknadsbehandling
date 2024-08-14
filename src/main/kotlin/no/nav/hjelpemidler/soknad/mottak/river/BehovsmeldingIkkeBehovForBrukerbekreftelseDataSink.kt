@@ -81,7 +81,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
 
             logger.info { "Behovsmelding med fullmakt eller uten behov for signatur mottatt: ${packet.behovsmeldingId} (soknadGjelder: ${søknadData.soknadGjelder})" }
 
-            søknadsbehandlingService.lagreBehovsmelding(søknadData)
+            søknadsbehandlingService.lagreBehovsmelding(søknadData.toGrunnlag())
 
             forward(søknadData, context)
 

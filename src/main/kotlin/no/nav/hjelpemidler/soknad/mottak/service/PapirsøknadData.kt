@@ -14,6 +14,7 @@ data class PapirsøknadData(
     val journalpostId: String,
     val navnBruker: String,
 ) : BehovsmeldingGrunnlag {
+    // todo -> ble ikke denne brukt tidligere heller?
     fun toJson(eventName: String): String {
         return JsonMessage("{}", MessageProblems("")).also {
             it["eventId"] = UUID.randomUUID()

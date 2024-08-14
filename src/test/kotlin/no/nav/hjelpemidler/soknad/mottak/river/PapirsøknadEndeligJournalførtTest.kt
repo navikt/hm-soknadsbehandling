@@ -6,23 +6,19 @@ import io.mockk.mockk
 import io.mockk.slot
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
+import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.InfotrygdSakId
-import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
-import no.nav.hjelpemidler.soknad.mottak.service.PapirsøknadData
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import no.nav.hjelpemidler.soknad.mottak.test.Json
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class PapirsøknadEndeligJournalførtTest {
-    private val capturedSakstilknytning = slot<Sakstilknytning.Infotrygd>()
-    private val capturedPapirsøknadData = slot<PapirsøknadData>()
+    private val capturedGrunnlag = slot<Behovsmeldingsgrunnlag.Papir>()
     private val mock = mockk<SøknadForRiverClient> {
-        coEvery { lagrePapirsøknad(capture(capturedPapirsøknadData)) } returns 1
-        coEvery { fnrOgJournalpostIdFinnes(any(), any()) } returns false
-        coEvery { lagreSakstilknytning(any(), capture(capturedSakstilknytning)) } returns 1
+        coEvery { lagreBehovsmelding(capture(capturedGrunnlag)) } returns 1
     }
     private val metricsMock = mockk<Metrics>(relaxed = true)
 
@@ -33,7 +29,7 @@ class PapirsøknadEndeligJournalførtTest {
     @BeforeEach
     fun reset() {
         rapid.reset()
-        capturedPapirsøknadData.clear()
+        capturedGrunnlag.clear()
     }
 
     @Test
@@ -97,11 +93,11 @@ class PapirsøknadEndeligJournalførtTest {
 
         rapid.sendTestMessage(okPacket.toString())
 
-        capturedPapirsøknadData.captured.fnrBruker shouldBe "10127622634"
-        capturedPapirsøknadData.captured.journalpostId shouldBe "453647364"
-        capturedPapirsøknadData.captured.status shouldBe BehovsmeldingStatus.ENDELIG_JOURNALFØRT
-        capturedPapirsøknadData.captured.navnBruker shouldBe "KRAFTIG ERT"
+        capturedGrunnlag.captured.fnrBruker shouldBe "10127622634"
+        capturedGrunnlag.captured.journalpostId shouldBe "453647364"
+        capturedGrunnlag.captured.status shouldBe BehovsmeldingStatus.ENDELIG_JOURNALFØRT
+        capturedGrunnlag.captured.navnBruker shouldBe "KRAFTIG ERT"
 
-        capturedSakstilknytning.captured.sakId shouldBe InfotrygdSakId("4203A05")
+        capturedGrunnlag.captured.sakstilknytning?.sakId shouldBe InfotrygdSakId("4203A05")
     }
 }

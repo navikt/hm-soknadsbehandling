@@ -1,12 +1,10 @@
 package no.nav.hjelpemidler.soknad.mottak.client
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.accept
-import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
@@ -14,11 +12,12 @@ import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
+import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
+import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Fagsak
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
@@ -27,9 +26,6 @@ import no.nav.hjelpemidler.http.openid.TokenSetProvider
 import no.nav.hjelpemidler.http.openid.openID
 import no.nav.hjelpemidler.soknad.mottak.httpClient
 import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
-import no.nav.hjelpemidler.soknad.mottak.service.PapirsøknadData
-import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
-import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.Statusendring
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -61,70 +57,12 @@ class SøknadForRiverClient(
         }
     }
 
-    suspend fun lagrePapirsøknad(søknadData: PapirsøknadData): Int {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.post("$baseUrl/soknad/papir") {
-                    setBody(søknadData)
-                }.body<Int>()
-            }.getOrLogAndThrow()
-        }
-    }
-
-    suspend fun lagreDigitalSøknad(søknadData: SøknadData): Int {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.post("$baseUrl/soknad/bruker") {
-                    setBody(søknadData)
-                }.body<Int>()
-            }.getOrLogAndThrow()
-        }
-    }
-
-    suspend fun lagreOrdrelinje(ordrelinje: OrdrelinjeData): Int {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.post("$baseUrl/ordre") {
-                    setBody(ordrelinje)
-                }.body<Int>()
-            }.getOrLogAndThrow()
-        }
-    }
-
-    suspend fun ordreSisteDøgn(søknadId: UUID): HarOrdre {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.get("$baseUrl/soknad/ordre/ordrelinje-siste-doegn/$søknadId").body<HarOrdre>()
-            }.getOrLogAndThrow()
-        }
-    }
-
-    suspend fun harOrdreForSøknad(søknadId: UUID): HarOrdre {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.get("$baseUrl/soknad/ordre/har-ordre/$søknadId").body<HarOrdre>()
-            }.getOrLogAndThrow()
-        }
-    }
-
-    suspend fun slettSøknad(søknadId: UUID): Int {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.delete("$baseUrl/soknad/bruker") {
-                    setBody(søknadId)
-                }.body<Int>()
-            }.getOrLogAndThrow()
-        }
-    }
-
-    suspend fun slettUtløptSøknad(søknadId: UUID): Int {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.delete("$baseUrl/soknad/utlopt/bruker") {
-                    setBody(søknadId)
-                }.body<Int>()
-            }.getOrLogAndThrow()
-        }
+    suspend fun lagreBehovsmelding(grunnlag: Behovsmeldingsgrunnlag): Int {
+        return httpClient
+            .post("$baseUrl/soknad") {
+                setBody(grunnlag)
+            }
+            .body<Int>()
     }
 
     suspend fun oppdaterJournalpostId(søknadId: UUID, journalpostId: String): Int {
@@ -151,49 +89,6 @@ class SøknadForRiverClient(
             .body<Int>()
     }
 
-    suspend fun hentSøknadIdFraVedtaksresultat(
-        fnrBruker: String,
-        saksblokkOgSaksnr: String,
-    ): List<SøknadIdFraVedtaksresultat> {
-        data class Request(
-            val fnrBruker: String,
-            val saksblokkOgSaksnr: String,
-        )
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.post("$baseUrl/soknad/fra-vedtaksresultat-v2") {
-                    setBody(Request(fnrBruker, saksblokkOgSaksnr))
-                }.body<Array<SøknadIdFraVedtaksresultat>>().toList()
-            }.getOrLogAndThrow()
-        }
-    }
-
-    /**
-     * NB! Fungerer kun for Hotsak.
-     */
-    suspend fun finnSøknadForSak(sakId: HotsakSakId, inkluderData: Boolean = false): Søknad? {
-        return httpClient
-            .get("$baseUrl/sak/$sakId/soknad") {
-                parameter("inkluderData", inkluderData)
-            }
-            .body<Søknad?>()
-    }
-
-    /**
-     * NB! Fungerer kun for Hotsak.
-     */
-    suspend fun hentSøknadForSak(sakId: HotsakSakId, inkluderData: Boolean = false): Søknad {
-        return checkNotNull(finnSøknadForSak(sakId, inkluderData)) {
-            "Fant ikke søknad for sakId: $sakId"
-        }
-    }
-
-    suspend fun hentSakForSøknad(søknadId: UUID): Søknad {
-        return httpClient
-            .get("$baseUrl/soknad/$søknadId/sak")
-            .body<Søknad>()
-    }
-
     suspend fun lagreVedtaksresultat(søknadId: UUID, vedtaksresultat: Vedtaksresultat): Int {
         return httpClient
             .post("$baseUrl/soknad/$søknadId/vedtaksresultat") {
@@ -202,24 +97,16 @@ class SøknadForRiverClient(
             .body<Int>()
     }
 
-    // fixme -> slettes, gjør i backend
-    suspend fun fnrOgJournalpostIdFinnes(fnrBruker: String, journalpostId: String): Boolean {
-        data class Request(
-            val fnrBruker: String,
-            val journalpostId: String,
-        )
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                // NB! Skrivefeil i URL
-                httpClient.post("$baseUrl/infotrygd/fnr-jounralpost") {
-                    setBody(Request(fnrBruker, journalpostId))
-                }.body<JsonNode>()["second"].booleanValue()
-            }.getOrLogAndThrow()
-        }
+    suspend fun lagreOrdrelinje(ordrelinje: OrdrelinjeData): Int {
+        return httpClient
+            .post("$baseUrl/soknad/${ordrelinje.søknadId}/ordre") {
+                setBody(ordrelinje)
+            }
+            .body<Int>()
     }
 
     suspend fun oppdaterStatus(søknadId: SøknadId, status: BehovsmeldingStatus): Int {
-        return oppdaterStatus(søknadId, Statusendring(status))
+        return oppdaterStatus(søknadId, Statusendring(status, null, null))
     }
 
     suspend fun oppdaterStatus(
@@ -233,12 +120,21 @@ class SøknadForRiverClient(
             .body<Int>()
     }
 
-    suspend fun hentSøknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad> {
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.get("$baseUrl/soknad/utgaatt/$dager").body<List<UtgåttSøknad>>()
-            }.getOrLogAndThrow()
-        }
+    /**
+     * NB! Fungerer kun for Hotsak.
+     */
+    suspend fun finnSøknadForSak(sakId: HotsakSakId, inkluderData: Boolean = false): Søknad? {
+        return httpClient
+            .get("$baseUrl/sak/$sakId/soknad") {
+                parameter("inkluderData", inkluderData)
+            }
+            .body<Søknad?>()
+    }
+
+    suspend fun finnSakForSøknad(søknadId: UUID): Fagsak? {
+        return httpClient
+            .get("$baseUrl/soknad/$søknadId/sak")
+            .body<Fagsak?>()
     }
 
     suspend fun behovsmeldingTypeFor(søknadId: UUID): BehovsmeldingType? {
@@ -249,7 +145,38 @@ class SøknadForRiverClient(
             null
         }
     }
-}
 
-private fun <T> Result<T>.getOrLogAndThrow(message: String? = null): T =
-    onFailure { logger.error(it) { message ?: it.message } }.getOrThrow()
+    suspend fun hentSøknadIdFraVedtaksresultat(
+        fnrBruker: String,
+        saksblokkOgSaksnr: String,
+    ): List<SøknadIdFraVedtaksresultat> {
+        data class Request(
+            val fnrBruker: String,
+            val saksblokkOgSaksnr: String,
+        )
+        return httpClient
+            .post("$baseUrl/soknad/fra-vedtaksresultat-v2") {
+                setBody(Request(fnrBruker, saksblokkOgSaksnr))
+            }
+            .body<List<SøknadIdFraVedtaksresultat>>()
+
+    }
+
+    suspend fun hentSøknaderTilGodkjenningEldreEnn(dager: Int): List<UtgåttSøknad> {
+        return httpClient
+            .get("$baseUrl/soknad/utgaatt/$dager")
+            .body<List<UtgåttSøknad>>()
+    }
+
+    suspend fun ordreSisteDøgn(søknadId: UUID): HarOrdre {
+        return httpClient
+            .get("$baseUrl/soknad/ordre/ordrelinje-siste-doegn/$søknadId")
+            .body<HarOrdre>()
+    }
+
+    suspend fun harOrdreForSøknad(søknadId: UUID): HarOrdre {
+        return httpClient
+            .get("$baseUrl/soknad/ordre/har-ordre/$søknadId")
+            .body<HarOrdre>()
+    }
+}

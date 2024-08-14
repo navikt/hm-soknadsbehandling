@@ -11,18 +11,18 @@ import io.mockk.slot
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
+import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
-import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import no.nav.hjelpemidler.soknad.mottak.test.Json
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
-    private val capturedSøknadData = slot<SøknadData>()
+    private val capturedGrunnlag = slot<Behovsmeldingsgrunnlag.Digital>()
     private val mock = mockk<SøknadForRiverClient>().apply {
-        coEvery { lagreDigitalSøknad(capture(capturedSøknadData)) } returns 1
+        coEvery { lagreBehovsmelding(capture(capturedGrunnlag)) } returns 1
     }
 
     private val rapid = TestRapid().apply {
@@ -36,7 +36,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
     @BeforeEach
     fun reset() {
         rapid.reset()
-        capturedSøknadData.clear()
+        capturedGrunnlag.clear()
     }
 
     @Test
@@ -67,10 +67,10 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
 
         rapid.sendTestMessage(okPacket.toString())
 
-        capturedSøknadData.captured.fnrBruker shouldBe "fnrBruker"
-        capturedSøknadData.captured.fnrInnsender shouldBe "fodselNrInnsender"
-        capturedSøknadData.captured.status shouldBe BehovsmeldingStatus.GODKJENT_MED_FULLMAKT
-        capturedSøknadData.captured.soknadGjelder shouldBe "Søknad om hjelpemidler"
+        capturedGrunnlag.captured.fnrBruker shouldBe "fnrBruker"
+        capturedGrunnlag.captured.fnrInnsender shouldBe "fodselNrInnsender"
+        capturedGrunnlag.captured.status shouldBe BehovsmeldingStatus.GODKJENT_MED_FULLMAKT
+        capturedGrunnlag.captured.behovsmeldingGjelder shouldBe "Søknad om hjelpemidler"
     }
 
     @Test
@@ -101,10 +101,10 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
 
         rapid.sendTestMessage(okPacket.toString())
 
-        capturedSøknadData.captured.fnrBruker shouldBe "fnrBruker"
-        capturedSøknadData.captured.fnrInnsender shouldBe "fodselNrInnsender"
-        capturedSøknadData.captured.status shouldBe BehovsmeldingStatus.GODKJENT_MED_FULLMAKT
-        capturedSøknadData.captured.soknadGjelder shouldBe "Bestilling av hjelpemidler"
+        capturedGrunnlag.captured.fnrBruker shouldBe "fnrBruker"
+        capturedGrunnlag.captured.fnrInnsender shouldBe "fodselNrInnsender"
+        capturedGrunnlag.captured.status shouldBe BehovsmeldingStatus.GODKJENT_MED_FULLMAKT
+        capturedGrunnlag.captured.behovsmeldingGjelder shouldBe "Bestilling av hjelpemidler"
     }
 
     @Test
@@ -193,7 +193,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
         )
 
         rapid.sendTestMessage(okPacket.toString())
-        capturedSøknadData.captured.status shouldBe BehovsmeldingStatus.GODKJENT_MED_FULLMAKT
+        capturedGrunnlag.captured.status shouldBe BehovsmeldingStatus.GODKJENT_MED_FULLMAKT
     }
 
     @Test
@@ -223,7 +223,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
         )
 
         rapid.sendTestMessage(okPacket.toString())
-        capturedSøknadData.captured.status shouldBe BehovsmeldingStatus.GODKJENT_MED_FULLMAKT
+        capturedGrunnlag.captured.status shouldBe BehovsmeldingStatus.GODKJENT_MED_FULLMAKT
     }
 
     @Test
@@ -253,7 +253,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
         )
 
         rapid.sendTestMessage(okPacket.toString())
-        capturedSøknadData.captured.status shouldBe BehovsmeldingStatus.INNSENDT_FULLMAKT_IKKE_PÅKREVD
+        capturedGrunnlag.captured.status shouldBe BehovsmeldingStatus.INNSENDT_FULLMAKT_IKKE_PÅKREVD
     }
 
     @Test
