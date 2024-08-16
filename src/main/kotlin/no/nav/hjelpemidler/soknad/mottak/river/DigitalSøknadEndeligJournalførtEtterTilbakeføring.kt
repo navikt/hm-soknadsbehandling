@@ -8,7 +8,7 @@ import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.InfotrygdSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
-import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
+import no.nav.hjelpemidler.soknad.mottak.melding.OvervåkVedtaksresultatMelding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 
 private val logger = KotlinLogging.logger {}
@@ -42,10 +42,7 @@ class DigitalSøknadEndeligJournalførtEtterTilbakeføring(
         søknadsbehandlingService.lagreSakstilknytning(søknadId, Sakstilknytning.Infotrygd(fagsakId, fnrBruker))
 
         // På dette tidspunktet har det ikkje blitt gjort eit vedtak i Infotrygd, så vedtaksresultat og vedtaksdato er null
-        val vedtaksresultatData = VedtaksresultatData(søknadId, fnrBruker, fagsakId)
-
-        context.publish(fnrBruker, vedtaksresultatData, "hm-InfotrygdAddToPollVedtakList")
-
-        logger.info { "Endelig journalført: Digital søknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId" }
+        context.publish(fnrBruker, OvervåkVedtaksresultatMelding(søknadId, fnrBruker, fagsakId))
+        logger.info { "Endelig journalført digital søknad mottatt, den er lagret og det er gitt beskjed til hm-infotrygd-poller og hm-ditt-nav for søknadId: $søknadId" }
     }
 }

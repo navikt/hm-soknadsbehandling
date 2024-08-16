@@ -6,7 +6,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
-import no.nav.hjelpemidler.soknad.mottak.service.SøknadUnderBehandlingData
+import no.nav.hjelpemidler.soknad.mottak.melding.SøknadUnderBehandlingMelding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 
 private val log = KotlinLogging.logger {}
@@ -46,11 +46,7 @@ class DigitalSøknadAutomatiskJournalført(
             }
 
             // Melding til Ditt NAV
-            context.publish(
-                fnrBruker,
-                SøknadUnderBehandlingData(søknadId, fnrBruker, behovsmeldingType),
-                "hm-SøknadUnderBehandling",
-            )
+            context.publish(fnrBruker, SøknadUnderBehandlingMelding(søknadId, fnrBruker, behovsmeldingType))
         } else {
             log.warn { "Status er allerede satt til endelig journalført, søknadId: $søknadId, sakId: $sakId, journalpostId: $journalpostId" }
         }

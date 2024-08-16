@@ -7,7 +7,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
-import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatLagretData
+import no.nav.hjelpemidler.soknad.mottak.melding.VedtaksresultatLagretMelding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 
 private val logger = KotlinLogging.logger {}
@@ -41,15 +41,15 @@ class VedtaksresultatFraHotsak(
 
         context.publish(
             fnrBruker,
-            VedtaksresultatLagretData(
+            VedtaksresultatLagretMelding(
                 søknadId = søknadId,
                 fnrBruker = fnrBruker,
                 vedtaksdato = vedtaksdato,
                 vedtaksresultat = vedtaksresultat,
                 eksternVarslingDeaktivert = false,
                 søknadstype = null,
+                eventName = "hm-VedtaksresultatFraHotsakLagret"
             ),
-            "hm-VedtaksresultatFraHotsakLagret",
         )
     }
 }

@@ -19,7 +19,7 @@ private val log = KotlinLogging.logger {}
 class SøknadsbehandlingService(private val søknadsbehandlingClient: SøknadsbehandlingClient) {
     suspend fun lagreBehovsmelding(grunnlag: Behovsmeldingsgrunnlag): Boolean {
         val søknadId = grunnlag.søknadId
-        log.info { "Lagrer behovsmelding, søknadId: $søknadId" }
+        log.info { "Lagrer behovsmelding, søknadId: $søknadId, kilde: ${grunnlag.kilde}" }
         val lagret = søknadsbehandlingClient.lagreBehovsmelding(grunnlag) > 0
         if (lagret) {
             log.info { "Behovsmelding ble lagret, søknadId: $søknadId" }
@@ -66,8 +66,7 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
 
     suspend fun lagreSakstilknytning(søknadId: UUID, sakstilknytning: Sakstilknytning): Boolean {
         log.info { "Lagrer sakstilknytning for søknad, søknadId: $søknadId, sakId: ${sakstilknytning.sakId}, system: ${sakstilknytning.system}" }
-        val result = søknadsbehandlingClient.lagreSakstilknytning(søknadId, sakstilknytning)
-        val lagret = result > 0
+        val lagret = søknadsbehandlingClient.lagreSakstilknytning(søknadId, sakstilknytning) > 0
         if (lagret) {
             log.info { "Sakstilknytning ble lagret, søknadId: $søknadId, sakId: ${sakstilknytning.sakId}" }
             when (sakstilknytning) {

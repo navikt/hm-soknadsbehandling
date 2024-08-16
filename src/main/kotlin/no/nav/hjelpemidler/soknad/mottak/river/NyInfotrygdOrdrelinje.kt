@@ -1,5 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import com.fasterxml.jackson.module.kotlin.convertValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -8,11 +9,13 @@ import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
+import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.jsonMapper
 import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
+import no.nav.hjelpemidler.soknad.mottak.melding.OrdrelinjeLagretMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
-import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -40,7 +43,7 @@ class NyInfotrygdOrdrelinje(
     private val JsonMessage.antall get() = this["data"]["antall"].doubleValue()
     private val JsonMessage.enhet get() = this["data"]["enhet"].textValue()
     private val JsonMessage.produktgruppe get() = this["data"]["produktgruppe"].textValue()
-    private val JsonMessage.produktgruppeNr get() = this["data"]["produktgruppeNr"].textValue()
+    private val JsonMessage.produktgruppenr get() = this["data"]["produktgruppeNr"].textValue()
     private val JsonMessage.hjelpemiddeltype get() = this["data"]["hjelpemiddeltype"].textValue()
     private val JsonMessage.data get() = this["data"]
 
@@ -130,9 +133,9 @@ class NyInfotrygdOrdrelinje(
                 }
             }
 
-            val ordrelinjeData = OrdrelinjeData(
+            val behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadId) ?: BehovsmeldingType.SØKNAD
+            val ordrelinje = Ordrelinje(
                 søknadId = søknadId,
-                behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadId) ?: BehovsmeldingType.SØKNAD,
                 oebsId = packet.oebsId,
                 fnrBruker = packet.fnrBruker,
                 serviceforespørsel = packet.serviceforespørsel,
@@ -143,13 +146,13 @@ class NyInfotrygdOrdrelinje(
                 antall = packet.antall,
                 enhet = packet.enhet,
                 produktgruppe = packet.produktgruppe,
-                produktgruppeNr = packet.produktgruppeNr,
+                produktgruppenr = packet.produktgruppenr,
                 hjelpemiddeltype = packet.hjelpemiddeltype,
-                data = packet.data,
+                data = jsonMapper.convertValue(packet.data),
             )
 
-            val ordreSisteDøgn = søknadForRiverClient.ordreSisteDøgn(søknadId = søknadId)
-            val result = save(ordrelinjeData)
+            val ordreSisteDøgn = søknadForRiverClient.ordreSisteDøgn(søknadId)
+            val result = save(ordrelinje)
 
             if (result == 0) {
                 return
@@ -158,17 +161,17 @@ class NyInfotrygdOrdrelinje(
             if (!mottokOrdrelinjeFørVedtak) {
                 søknadForRiverClient.oppdaterStatus(søknadId, BehovsmeldingStatus.UTSENDING_STARTET)
 
-                if (ordrelinjeData.hjelpemiddeltype == "Del") {
-                    logger.info { "Ordrelinje for 'Del' lagret: ${ordrelinjeData.søknadId}" }
+                if (ordrelinje.hjelpemiddeltype == "Del") {
+                    logger.info { "Ordrelinje for 'Del' lagret: ${ordrelinje.søknadId}" }
                     // Vi skal ikke agere ytterligere på disse
                     return
                 }
 
                 if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
-                    context.publish(ordrelinjeData.fnrBruker, ordrelinjeData, "hm-OrdrelinjeLagret")
+                    context.publish(ordrelinje.fnrBruker, OrdrelinjeLagretMelding(ordrelinje, behovsmeldingType))
                     Prometheus.ordrelinjeVideresendtCounter.inc()
-                    logger.info { "Ordrelinje sendt: ${ordrelinjeData.søknadId}" }
-                    sikkerlogg.info { "Ordrelinje på bruker: ${ordrelinjeData.søknadId}, fnr: ${ordrelinjeData.fnrBruker})" }
+                    logger.info { "Ordrelinje sendt, søknadId: $søknadId" }
+                    sikkerlogg.info { "Ordrelinje sendt, søknadId: $søknadId, fnrBruker: ${ordrelinje.fnrBruker}" }
                 } else {
                     logger.info { "Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId" }
                 }
@@ -180,7 +183,7 @@ class NyInfotrygdOrdrelinje(
         }
     }
 
-    private suspend fun save(ordrelinje: OrdrelinjeData): Int =
+    private suspend fun save(ordrelinje: Ordrelinje): Int =
         runCatching {
             søknadForRiverClient.lagreOrdrelinje(ordrelinje)
         }.onSuccess {

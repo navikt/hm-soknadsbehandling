@@ -1,4 +1,4 @@
-package no.nav.hjelpemidler.soknad.mottak.service
+package no.nav.hjelpemidler.soknad.mottak.soknadsbehandling
 
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -9,7 +9,6 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
 import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSøknad
-import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import no.nav.hjelpemidler.soknad.mottak.test.Json
 import no.nav.hjelpemidler.soknad.mottak.test.lagSøknad
 import no.nav.hjelpemidler.soknad.mottak.test.readTree

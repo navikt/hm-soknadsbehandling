@@ -9,8 +9,8 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.InfotrygdSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
-import no.nav.hjelpemidler.soknad.mottak.service.SøknadUnderBehandlingData
-import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
+import no.nav.hjelpemidler.soknad.mottak.melding.OvervåkVedtaksresultatMelding
+import no.nav.hjelpemidler.soknad.mottak.melding.SøknadUnderBehandlingMelding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import java.util.UUID
 
@@ -53,22 +53,15 @@ class DigitalSøknadEndeligJournalført(
         søknadsbehandlingService.lagreSakstilknytning(søknadId, Sakstilknytning.Infotrygd(fagsakId, fnrBruker))
 
         // På dette tidspunktet har det ikkje blitt gjort eit vedtak i Infotrygd, så vedtaksresultat og vedtaksdato er null
-        val vedtaksresultatData = VedtaksresultatData(søknadId, fnrBruker, fagsakId)
-
-        context.publish(fnrBruker, vedtaksresultatData, "hm-InfotrygdAddToPollVedtakList")
+        context.publish(fnrBruker, OvervåkVedtaksresultatMelding(søknadId, fnrBruker, fagsakId))
 
         val behovsmeldingType = søknadsbehandlingService.hentBehovsmeldingstype(søknadId)
 
         // Melding til Ditt NAV
-        context.publish(
-            fnrBruker,
-            SøknadUnderBehandlingData(søknadId, fnrBruker, behovsmeldingType),
-            "hm-SøknadUnderBehandling",
-        )
+        context.publish(fnrBruker, SøknadUnderBehandlingMelding(søknadId, fnrBruker, behovsmeldingType))
         logger.info {
-            "Endelig journalført: Digital ${
-                behovsmeldingType.toString().lowercase()
-            } mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId"
+            val type = behovsmeldingType.toString().lowercase()
+            "Endelig journalført digital $type mottatt, den er lagret og det er gitt beskjed til hm-infotrygd-poller og hm-ditt-nav for søknadId: $søknadId"
         }
     }
 }

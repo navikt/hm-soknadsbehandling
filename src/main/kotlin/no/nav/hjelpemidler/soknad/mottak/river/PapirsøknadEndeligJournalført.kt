@@ -10,9 +10,9 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.InfotrygdSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
+import no.nav.hjelpemidler.soknad.mottak.melding.OvervåkVedtaksresultatMelding
+import no.nav.hjelpemidler.soknad.mottak.melding.SøknadUnderBehandlingMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
-import no.nav.hjelpemidler.soknad.mottak.service.SøknadUnderBehandlingData
-import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatData
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import java.util.UUID
 
@@ -60,8 +60,6 @@ class PapirsøknadEndeligJournalført(
         val fagsakId = packet.fagsakId
         val journalpostId = packet.journalpostId
 
-        val vedtaksresultatData = VedtaksresultatData(søknadId, fnrBruker, fagsakId)
-
         try {
             val lagret = søknadsbehandlingService.lagreBehovsmelding(
                 Behovsmeldingsgrunnlag.Papir(
@@ -78,20 +76,16 @@ class PapirsøknadEndeligJournalført(
                 return
             }
 
-            context.publish(fnrBruker, vedtaksresultatData, "hm-InfotrygdAddToPollVedtakList")
-            log.info { "Papirsøknad mottatt og lagret: $søknadId" }
+            context.publish(fnrBruker, OvervåkVedtaksresultatMelding(søknadId, fnrBruker, fagsakId))
+            log.info { "Papirsøknad mottatt og lagret, søknadId: $søknadId" }
 
             // Send melding til Ditt NAV
-            context.publish(
-                fnrBruker,
-                SøknadUnderBehandlingData(søknadId, fnrBruker, BehovsmeldingType.SØKNAD),
-                "hm-SøknadUnderBehandling",
-            )
-            log.info { "Endelig journalført: Papirsøknad mottatt, lagret, og beskjed til Infotrygd-poller og hm-ditt-nav sendt for søknadId: $søknadId" }
+            context.publish(fnrBruker, SøknadUnderBehandlingMelding(søknadId, fnrBruker, BehovsmeldingType.SØKNAD))
+            log.info { "Endelig journalført papirsøknad mottatt, den er lagret og det er gitt beskjed til hm-infotrygd-poller og hm-ditt-nav for søknadId: $søknadId" }
 
             metrics.papirsøknad(fnrBruker)
         } catch (e: Exception) {
-            log.error(e) { "Håndtering av eventId: ${packet.eventId} feilet" }
+            log.error(e) { "Håndtering av eventId: ${packet.eventId}, søknadId: $søknadId feilet" }
             throw e
         }
     }

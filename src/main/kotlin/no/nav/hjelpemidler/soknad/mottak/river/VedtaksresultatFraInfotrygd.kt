@@ -8,10 +8,10 @@ import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
+import no.nav.hjelpemidler.soknad.mottak.melding.OrdrelinjeLagretMelding
+import no.nav.hjelpemidler.soknad.mottak.melding.VedtaksresultatLagretMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
-import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
-import no.nav.hjelpemidler.soknad.mottak.service.VedtaksresultatLagretData
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 
 private val logger = KotlinLogging.logger {}
@@ -58,15 +58,15 @@ class VedtaksresultatFraInfotrygd(
         // Lagre vedtaksstatus og send beskjed til Ditt NAV
         context.publish(
             fnrBruker,
-            VedtaksresultatLagretData(
+            VedtaksresultatLagretMelding(
                 søknadId = søknadId,
                 fnrBruker = fnrBruker,
                 vedtaksdato = vedtaksdato.atStartOfDay(),
                 vedtaksresultat = vedtaksresultat,
                 eksternVarslingDeaktivert = mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler,
-                søknadstype = packet.søknadstype
+                søknadstype = packet.søknadstype,
+                eventName = "hm-VedtaksresultatLagret",
             ),
-            "hm-VedtaksresultatLagret",
         )
 
         // Hvis vi allerede har ordrelinjer i databasen for denne søknaden: send utsending startet.
@@ -78,27 +78,10 @@ class VedtaksresultatFraInfotrygd(
                 return
             }
 
-            val ordrelinjeData = OrdrelinjeData(
-                søknadId = søknadId,
-                behovsmeldingType = søknadsbehandlingService.hentBehovsmeldingstype(søknadId),
-                fnrBruker = fnrBruker,
-                // Resten av feltene brukes ikke i json:
-                oebsId = 0,
-                serviceforespørsel = null,
-                ordrenr = 0,
-                ordrelinje = 0,
-                delordrelinje = 0,
-                artikkelnr = "",
-                antall = 0.0,
-                enhet = "",
-                produktgruppe = "",
-                produktgruppeNr = "",
-                hjelpemiddeltype = "",
-                data = null,
-            )
-            context.publish(ordrelinjeData.fnrBruker, ordrelinjeData, "hm-OrdrelinjeLagret")
+            val behovsmeldingType = søknadsbehandlingService.hentBehovsmeldingstype(søknadId)
+            context.publish(fnrBruker, OrdrelinjeLagretMelding(søknadId, fnrBruker, behovsmeldingType))
             Prometheus.ordrelinjeVideresendtCounter.inc()
-            logger.info { "Ordrelinje sendt ved vedtak: ${ordrelinjeData.søknadId}" }
+            logger.info { "Ordrelinje sendt ved vedtak, søknadId: $søknadId" }
         }
     }
 }

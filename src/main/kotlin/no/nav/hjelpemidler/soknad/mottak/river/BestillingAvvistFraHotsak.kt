@@ -7,9 +7,13 @@ import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
+import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
 import no.nav.hjelpemidler.soknad.mottak.asObject
-import no.nav.hjelpemidler.soknad.mottak.service.BestillingAvvistLagretData
+import no.nav.hjelpemidler.soknad.mottak.melding.Melding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
+import java.time.LocalDateTime
+import java.util.UUID
 
 class BestillingAvvistFraHotsak(
     rapidsConnection: RapidsConnection,
@@ -31,23 +35,35 @@ class BestillingAvvistFraHotsak(
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId
         val fnrBruker = packet.fnrBruker
-        val opprettet = packet.opprettet
         val valgteÅrsaker = packet.valgteÅrsaker
         val begrunnelse = packet.begrunnelse
+        val opprettet = packet.opprettet
 
         søknadsbehandlingService.oppdaterStatus(
             søknadId,
             Statusendring(BehovsmeldingStatus.BESTILLING_AVVIST, valgteÅrsaker, begrunnelse)
         )
 
-        val bestillingAvvistLagretData = BestillingAvvistLagretData(
-            søknadId,
+        context.publish(
             fnrBruker,
-            opprettet,
-            begrunnelse,
-            valgteÅrsaker.toList(),
+            BestillingAvvistLagretMelding(
+                søknadId = søknadId,
+                fnrBruker = fnrBruker,
+                valgteÅrsaker = valgteÅrsaker,
+                begrunnelse = begrunnelse,
+                opprettet = opprettet,
+            ),
         )
-
-        context.publish(fnrBruker, bestillingAvvistLagretData, "hm-BestillingAvvistFraHotsakLagret")
     }
+}
+
+data class BestillingAvvistLagretMelding(
+    override val søknadId: SøknadId,
+    val fnrBruker: String,
+    val valgteÅrsaker: Set<String>,
+    val begrunnelse: String,
+    val opprettet: LocalDateTime,
+) : TilknyttetSøknad, Melding {
+    override val eventId: UUID = UUID.randomUUID()
+    override val eventName: String = "hm-BestillingAvvistFraHotsakLagret"
 }

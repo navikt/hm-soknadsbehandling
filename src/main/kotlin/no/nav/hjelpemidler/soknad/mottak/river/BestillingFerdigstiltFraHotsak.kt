@@ -6,8 +6,12 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
-import no.nav.hjelpemidler.soknad.mottak.service.BestillingGodkjentLagretData
+import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
+import no.nav.hjelpemidler.soknad.mottak.melding.Melding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
+import java.time.LocalDateTime
+import java.util.UUID
 
 class BestillingFerdigstiltFraHotsak(
     rapidsConnection: RapidsConnection,
@@ -31,8 +35,15 @@ class BestillingFerdigstiltFraHotsak(
 
         søknadsbehandlingService.oppdaterStatus(søknadId, BehovsmeldingStatus.BESTILLING_FERDIGSTILT)
 
-        val bestillingGodkjentLagretData = BestillingGodkjentLagretData(søknadId, fnrBruker, opprettet)
-
-        context.publish(fnrBruker, bestillingGodkjentLagretData, "hm-BestillingGodkjentFraHotsakLagret")
+        context.publish(fnrBruker, BestillingGodkjentLagretMelding(søknadId, fnrBruker, opprettet))
     }
+}
+
+data class BestillingGodkjentLagretMelding(
+    override val søknadId: SøknadId,
+    val fnrBruker: String,
+    val opprettet: LocalDateTime,
+) : TilknyttetSøknad, Melding {
+    override val eventId: UUID = UUID.randomUUID()
+    override val eventName: String = "hm-BestillingGodkjentFraHotsakLagret"
 }

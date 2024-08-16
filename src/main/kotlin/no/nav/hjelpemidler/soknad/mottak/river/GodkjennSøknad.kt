@@ -8,10 +8,10 @@ import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.soknad.mottak.client.Søknad
 import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
+import no.nav.hjelpemidler.soknad.mottak.melding.BehovsmeldingMottattMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
-import no.nav.hjelpemidler.soknad.mottak.service.SøknadData
-import no.nav.hjelpemidler.soknad.mottak.service.periodeMellomDatoer
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -42,7 +42,14 @@ class GodkjennSøknad(
                 loggTidBruktForGodkjenning(søknad)
                 søknadsbehandlingService.oppdaterStatus(søknadId, BehovsmeldingStatus.GODKJENT)
                 val oppdatertSøknad = søknadsbehandlingService.hentSøknad(søknadId, true)
-                forward(oppdatertSøknad, context)
+                val fnrBruker = oppdatertSøknad.fnrBruker
+                context.publish(
+                    fnrBruker,
+                    BehovsmeldingMottattMelding("hm-søknadGodkjentAvBrukerMottatt", oppdatertSøknad)
+                )
+                Prometheus.søknadGodkjentAvBrukerCounter.inc()
+                log.info { "Søknad er godkjent av bruker, søknadId: $søknadId" }
+                sikkerlogg.info { "Søknad er godkjent av bruker, søknadId: $søknadId, fnrBruker: $fnrBruker" }
             }
         } catch (e: Exception) {
             log.error(e) { "Håndtering av brukergodkjenning for søknadId: $søknadId feilet" }
@@ -51,25 +58,12 @@ class GodkjennSøknad(
     }
 
     private fun loggTidBruktForGodkjenning(søknad: Søknad) {
-        val opprettetDato = søknad.søknadOpprettet
-        val tid = periodeMellomDatoer(
-            LocalDateTime.ofInstant(opprettetDato, ZoneId.systemDefault()),
+        val duration = Duration.between(
+            LocalDateTime.ofInstant(søknad.søknadOpprettet, ZoneId.systemDefault()),
             LocalDateTime.now()
         )
+        val tid =
+            "${duration.toDaysPart()} dager, ${duration.toHoursPart()} timer, ${duration.toMinutesPart()} minutter, ${duration.toSecondsPart()} sekunder"
         log.info { "Tid brukt fra opprettelse til godkjenning av søknad med søknadId: ${søknad.søknadId} var: $tid" }
-    }
-
-    private fun forward(søknadData: Søknad, context: MessageContext) {
-        val fnrBruker = søknadData.fnrBruker
-        val søknadId = søknadData.søknadId.toString()
-
-        try {
-            context.publish(fnrBruker, SøknadData(søknadData), "hm-søknadGodkjentAvBrukerMottatt")
-            Prometheus.søknadGodkjentAvBrukerCounter.inc()
-            log.info { "Søknad er godkjent av bruker: $søknadId" }
-            sikkerlogg.info { "Søknad er godkjent med søknadId: $søknadId, fnr: $fnrBruker" }
-        } catch (e: Exception) {
-            log.error(e) { "forward() failed, søknadId: $søknadId" }
-        }
     }
 }

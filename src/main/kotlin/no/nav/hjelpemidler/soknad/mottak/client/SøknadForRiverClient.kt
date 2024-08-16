@@ -17,6 +17,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Fagsak
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
@@ -25,7 +26,6 @@ import no.nav.hjelpemidler.http.correlationId
 import no.nav.hjelpemidler.http.openid.TokenSetProvider
 import no.nav.hjelpemidler.http.openid.openID
 import no.nav.hjelpemidler.soknad.mottak.httpClient
-import no.nav.hjelpemidler.soknad.mottak.service.OrdrelinjeData
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -97,7 +97,7 @@ class SøknadForRiverClient(
             .body<Int>()
     }
 
-    suspend fun lagreOrdrelinje(ordrelinje: OrdrelinjeData): Int {
+    suspend fun lagreOrdrelinje(ordrelinje: Ordrelinje): Int {
         return httpClient
             .post("$baseUrl/soknad/${ordrelinje.søknadId}/ordre") {
                 setBody(ordrelinje)
