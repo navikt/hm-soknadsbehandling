@@ -7,7 +7,7 @@ import io.mockk.slot
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSøknad
 import no.nav.hjelpemidler.soknad.mottak.test.Json
 import no.nav.hjelpemidler.soknad.mottak.test.lagSøknad
@@ -34,7 +34,7 @@ class SøknadsgodkjenningServiceTest {
             }
         """.trimIndent()
     )
-    private val mock = mockk<SøknadForRiverClient>().apply {
+    private val mock = mockk<SøknadsbehandlingClient>().apply {
         coEvery { oppdaterStatus(søknadId, Statusendring(BehovsmeldingStatus.GODKJENT, null, null)) } returns 1
         coEvery { hentSøknad(capture(capturedSøknadId), any()) } returns lagSøknad(
             søknadId = søknadId,

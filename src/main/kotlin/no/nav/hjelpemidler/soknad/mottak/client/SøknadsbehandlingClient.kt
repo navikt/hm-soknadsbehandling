@@ -30,7 +30,7 @@ import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
 
-class SøknadForRiverClient(
+class SøknadsbehandlingClient(
     private val baseUrl: String,
     private val tokenSetProvider: TokenSetProvider,
 ) {

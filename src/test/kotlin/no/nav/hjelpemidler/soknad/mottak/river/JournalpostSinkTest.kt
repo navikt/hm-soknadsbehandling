@@ -5,7 +5,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.slot
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.test.Json
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -16,7 +16,7 @@ class JournalpostSinkTest {
     private val capturedSøknadId = slot<UUID>()
     private val journalpostId = "123456789"
     private val capturedJournalpostId = slot<String>()
-    private val mock = mockk<SøknadForRiverClient>().apply {
+    private val mock = mockk<SøknadsbehandlingClient>().apply {
         coEvery { oppdaterJournalpostId(capture(capturedSøknadId), capture(capturedJournalpostId)) } returns 1
     }
 

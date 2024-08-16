@@ -7,21 +7,21 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.time.LocalDateTime
 import java.util.UUID
 
 class SøknadsgodkjenningService(
     private val rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient,
+    private val søknadsbehandlingClient: SøknadsbehandlingClient,
 ) {
     suspend fun slettUtgåtteSøknader(): Int = coroutineScope {
-        val utgåtteSøknader = søknadForRiverClient.hentSøknaderTilGodkjenningEldreEnn(FEMTEN_DAGER)
+        val utgåtteSøknader = søknadsbehandlingClient.hentSøknaderTilGodkjenningEldreEnn(FEMTEN_DAGER)
 
         utgåtteSøknader.map { søknad ->
             async {
-                val antallOppdatert = søknadForRiverClient.oppdaterStatus(
+                val antallOppdatert = søknadsbehandlingClient.oppdaterStatus(
                     søknad.søknadId!!,
                     BehovsmeldingStatus.UTLØPT,
                 )

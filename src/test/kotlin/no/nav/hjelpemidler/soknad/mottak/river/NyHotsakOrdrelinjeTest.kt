@@ -11,16 +11,16 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.soknad.mottak.client.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.client.Søknad
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.test.Testdata
 import java.time.Instant
 import java.util.UUID
 import kotlin.test.Test
 
 class NyHotsakOrdrelinjeTest {
-    private val client = mockk<SøknadForRiverClient>()
+    private val mock = mockk<SøknadsbehandlingClient>()
     private val rapid = TestRapid().apply {
-        NyHotsakOrdrelinje(this, client)
+        NyHotsakOrdrelinje(this, mock)
     }
 
     @Test
@@ -30,7 +30,7 @@ class NyHotsakOrdrelinjeTest {
         val sakId = message.at("/data/saksnummer").textValue().let(::HotsakSakId)
 
         coEvery {
-            client.finnSøknadForSak(sakId)
+            mock.finnSøknadForSak(sakId)
         } returns Søknad(
             søknadId = søknadId,
             søknadOpprettet = Instant.now(),
@@ -50,19 +50,19 @@ class NyHotsakOrdrelinjeTest {
         )
 
         coEvery {
-            client.behovsmeldingTypeFor(søknadId)
+            mock.behovsmeldingTypeFor(søknadId)
         } returns BehovsmeldingType.SØKNAD
 
         coEvery {
-            client.ordreSisteDøgn(søknadId)
+            mock.ordreSisteDøgn(søknadId)
         } returns HarOrdre(harOrdreAvTypeHjelpemidler = false, harOrdreAvTypeDel = false)
 
         coEvery {
-            client.lagreOrdrelinje(any<Ordrelinje>())
+            mock.lagreOrdrelinje(any<Ordrelinje>())
         } returns 1
 
         coEvery {
-            client.oppdaterStatus(søknadId, BehovsmeldingStatus.UTSENDING_STARTET)
+            mock.oppdaterStatus(søknadId, BehovsmeldingStatus.UTSENDING_STARTET)
         } returns 1
 
         rapid.sendTestMessage(message.toString())

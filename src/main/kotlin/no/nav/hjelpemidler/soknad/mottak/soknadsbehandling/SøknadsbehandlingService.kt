@@ -10,9 +10,9 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
 import no.nav.hjelpemidler.soknad.mottak.client.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.client.Søknad
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.util.UUID
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient as SøknadsbehandlingClient
 
 private val log = KotlinLogging.logger {}
 

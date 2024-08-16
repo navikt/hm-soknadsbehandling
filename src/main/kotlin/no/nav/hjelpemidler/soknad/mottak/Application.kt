@@ -9,7 +9,7 @@ import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.hjelpemidler.http.openid.azureADClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingClient
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingOrdrelinjeStatus
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingStatus
@@ -44,7 +44,7 @@ fun main() {
         cache(leeway = 10.seconds)
     }
 
-    val søknadForRiverClient = SøknadForRiverClient(
+    val søknadsbehandlingClient = SøknadsbehandlingClient(
         Configuration.SOKNADSBEHANDLING_API_BASEURL,
         azureADClient.withScope(Configuration.SOKNADSBEHANDLING_API_SCOPE),
     )
@@ -61,13 +61,13 @@ fun main() {
         azureADClient.withScope(Configuration.DELBESTILLING_API_SCOPE),
     )
 
-    val søknadsbehandlingService = SøknadsbehandlingService(søknadForRiverClient)
+    val søknadsbehandlingService = SøknadsbehandlingService(søknadsbehandlingClient)
 
     RapidApplication.create(no.nav.hjelpemidler.configuration.Configuration.current)
         .apply {
             val metrics = Metrics(this, pdlClient)
 
-            startSøknadUtgåttScheduling(SøknadsgodkjenningService(this, søknadForRiverClient))
+            startSøknadUtgåttScheduling(SøknadsgodkjenningService(this, søknadsbehandlingClient))
 
             BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(this, søknadsbehandlingService, metrics)
             BehovsmeldingTilBrukerbekreftelseDataSink(this, søknadsbehandlingService, metrics)
@@ -84,11 +84,11 @@ fun main() {
 
             HotsakOpprettet(this, søknadsbehandlingService)
 
-            JournalpostSink(this, søknadForRiverClient)
-            OppgaveSink(this, søknadForRiverClient)
+            JournalpostSink(this, søknadsbehandlingClient)
+            OppgaveSink(this, søknadsbehandlingClient)
 
-            NyHotsakOrdrelinje(this, søknadForRiverClient)
-            NyInfotrygdOrdrelinje(this, søknadForRiverClient, infotrygdProxyClient)
+            NyHotsakOrdrelinje(this, søknadsbehandlingClient)
+            NyInfotrygdOrdrelinje(this, søknadsbehandlingClient, infotrygdProxyClient)
 
             SlettSøknad(this, søknadsbehandlingService)
 

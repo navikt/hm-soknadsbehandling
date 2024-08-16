@@ -12,7 +12,7 @@ import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import no.nav.hjelpemidler.soknad.mottak.test.Json
 import no.nav.hjelpemidler.soknad.mottak.test.lagSøknad
@@ -26,7 +26,7 @@ class GodkjennSøknadTest {
     private val søknadIdDuplikat = UUID.randomUUID()
     private val capturedStatusendring = slot<Statusendring>()
     private val capturedSøknadId = slot<UUID>()
-    private val mock = mockk<SøknadForRiverClient>().apply {
+    private val mock = mockk<SøknadsbehandlingClient>().apply {
         coEvery { oppdaterStatus(capture(capturedSøknadId), capture(capturedStatusendring)) } returns 1
         coEvery { hentSøknad(søknadId, any()) } returns lagSøknad(
             søknadId = søknadId,

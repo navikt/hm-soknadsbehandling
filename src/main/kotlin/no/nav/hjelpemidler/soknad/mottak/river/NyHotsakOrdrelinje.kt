@@ -10,7 +10,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.soknad.mottak.asObject
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.jsonMapper
 import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
 import no.nav.hjelpemidler.soknad.mottak.melding.OrdrelinjeLagretMelding
@@ -21,7 +21,7 @@ private val logger = KotlinLogging.logger {}
 
 class NyHotsakOrdrelinje(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient,
+    private val søknadsbehandlingClient: SøknadsbehandlingClient,
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
@@ -62,7 +62,7 @@ class NyHotsakOrdrelinje(
             logger.info { "Hotsak ordrelinje fra Oebs mottatt med eventId: ${packet.eventId}" }
 
             // Match ordrelinje to Hotsak-table
-            val søknad = søknadForRiverClient.finnSøknadForSak(HotsakSakId(packet.saksnummer))
+            val søknad = søknadsbehandlingClient.finnSøknadForSak(HotsakSakId(packet.saksnummer))
             if (søknad == null) {
                 logger.warn { "Ordrelinje med eventId: ${packet.eventId} og sakId: ${packet.saksnummer} kan ikke matches mot en søknadId" }
                 return
@@ -89,14 +89,14 @@ class NyHotsakOrdrelinje(
             )
 
             // fixme -> kunne vi ikke sjekket dette i API-et og oppdatert status der? Hvorfor gjøre dette i en dialog med API-et?
-            val ordreSisteDøgn = søknadForRiverClient.ordreSisteDøgn(søknadId = søknadId)
+            val ordreSisteDøgn = søknadsbehandlingClient.ordreSisteDøgn(søknadId = søknadId)
             val result = save(ordrelinje)
 
             if (result == 0) {
                 return
             }
 
-            søknadForRiverClient.oppdaterStatus(søknadId, BehovsmeldingStatus.UTSENDING_STARTET)
+            søknadsbehandlingClient.oppdaterStatus(søknadId, BehovsmeldingStatus.UTSENDING_STARTET)
 
             context.publish(
                 ordrelinje.fnrBruker,
@@ -130,7 +130,7 @@ class NyHotsakOrdrelinje(
 
     private suspend fun save(ordrelinje: Ordrelinje): Int =
         runCatching {
-            søknadForRiverClient.lagreOrdrelinje(ordrelinje)
+            søknadsbehandlingClient.lagreOrdrelinje(ordrelinje)
         }.onSuccess {
             if (it == 0) {
                 logger.warn { "Duplikat av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikke blitt lagret" }

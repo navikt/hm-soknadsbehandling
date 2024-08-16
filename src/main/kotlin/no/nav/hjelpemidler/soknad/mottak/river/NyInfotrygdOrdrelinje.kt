@@ -11,7 +11,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.jsonMapper
 import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
 import no.nav.hjelpemidler.soknad.mottak.melding.OrdrelinjeLagretMelding
@@ -22,7 +22,7 @@ private val logger = KotlinLogging.logger {}
 
 class NyInfotrygdOrdrelinje(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient,
+    private val søknadsbehandlingClient: SøknadsbehandlingClient,
     private val infotrygdProxyClient: InfotrygdProxyClient,
 ) : AsyncPacketListener {
     init {
@@ -67,7 +67,7 @@ class NyInfotrygdOrdrelinje(
             logger.info { "Infotrygd-ordrelinje fra OEBS mottatt med eventId: $eventId" }
 
             // Match ordrelinje to Infotrygd-table
-            val søknadIder = søknadForRiverClient.hentSøknadIdFraVedtaksresultat(
+            val søknadIder = søknadsbehandlingClient.hentSøknadIdFraVedtaksresultat(
                 packet.fnrBruker,
                 packet.saksblokkOgSaksnr,
             )
@@ -133,7 +133,7 @@ class NyInfotrygdOrdrelinje(
                 }
             }
 
-            val behovsmeldingType = søknadForRiverClient.behovsmeldingTypeFor(søknadId) ?: BehovsmeldingType.SØKNAD
+            val behovsmeldingType = søknadsbehandlingClient.behovsmeldingTypeFor(søknadId) ?: BehovsmeldingType.SØKNAD
             val ordrelinje = Ordrelinje(
                 søknadId = søknadId,
                 oebsId = packet.oebsId,
@@ -151,7 +151,7 @@ class NyInfotrygdOrdrelinje(
                 data = jsonMapper.convertValue(packet.data),
             )
 
-            val ordreSisteDøgn = søknadForRiverClient.ordreSisteDøgn(søknadId)
+            val ordreSisteDøgn = søknadsbehandlingClient.ordreSisteDøgn(søknadId)
             val result = save(ordrelinje)
 
             if (result == 0) {
@@ -159,7 +159,7 @@ class NyInfotrygdOrdrelinje(
             }
 
             if (!mottokOrdrelinjeFørVedtak) {
-                søknadForRiverClient.oppdaterStatus(søknadId, BehovsmeldingStatus.UTSENDING_STARTET)
+                søknadsbehandlingClient.oppdaterStatus(søknadId, BehovsmeldingStatus.UTSENDING_STARTET)
 
                 if (ordrelinje.hjelpemiddeltype == "Del") {
                     logger.info { "Ordrelinje for 'Del' lagret: ${ordrelinje.søknadId}" }
@@ -185,7 +185,7 @@ class NyInfotrygdOrdrelinje(
 
     private suspend fun save(ordrelinje: Ordrelinje): Int =
         runCatching {
-            søknadForRiverClient.lagreOrdrelinje(ordrelinje)
+            søknadsbehandlingClient.lagreOrdrelinje(ordrelinje)
         }.onSuccess {
             if (it == 0) {
                 logger.warn { "Duplikat av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikke blitt lagret" }

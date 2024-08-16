@@ -12,7 +12,7 @@ import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import no.nav.hjelpemidler.soknad.mottak.test.Json
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test
 
 class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
     private val capturedGrunnlag = slot<Behovsmeldingsgrunnlag.Digital>()
-    private val mock = mockk<SøknadForRiverClient>().apply {
+    private val mock = mockk<SøknadsbehandlingClient>().apply {
         coEvery { lagreBehovsmelding(capture(capturedGrunnlag)) } returns 1
     }
 

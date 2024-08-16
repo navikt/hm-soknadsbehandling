@@ -5,13 +5,13 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 
 private val logger = KotlinLogging.logger {}
 
 class OppgaveSink(
     rapidsConnection: RapidsConnection,
-    private val søknadForRiverClient: SøknadForRiverClient,
+    private val søknadsbehandlingClient: SøknadsbehandlingClient,
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
@@ -32,7 +32,7 @@ class OppgaveSink(
         val søknadId = packet.søknadId
         val oppgaveId = packet.oppgaveId
         try {
-            val rowsUpdated = søknadForRiverClient.oppdaterOppgaveId(søknadId, oppgaveId)
+            val rowsUpdated = søknadsbehandlingClient.oppdaterOppgaveId(søknadId, oppgaveId)
             if (rowsUpdated > 0) {
                 logger.info { "Søknad med søknadId: $søknadId oppdatert med oppgaveId: $oppgaveId" }
             } else {

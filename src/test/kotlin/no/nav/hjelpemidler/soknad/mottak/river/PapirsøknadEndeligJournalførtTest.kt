@@ -8,7 +8,7 @@ import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.InfotrygdSakId
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadForRiverClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import no.nav.hjelpemidler.soknad.mottak.test.Json
@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test
 
 class PapirsøknadEndeligJournalførtTest {
     private val capturedGrunnlag = slot<Behovsmeldingsgrunnlag.Papir>()
-    private val mock = mockk<SøknadForRiverClient> {
+    private val mock = mockk<SøknadsbehandlingClient> {
         coEvery { lagreBehovsmelding(capture(capturedGrunnlag)) } returns 1
     }
     private val metricsMock = mockk<Metrics>(relaxed = true)
