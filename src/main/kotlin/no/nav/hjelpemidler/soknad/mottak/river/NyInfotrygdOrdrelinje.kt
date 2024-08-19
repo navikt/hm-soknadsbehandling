@@ -176,7 +176,7 @@ class NyInfotrygdOrdrelinje(
                     logger.info { "Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId" }
                 }
             } else if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
-                logger.info { "Skippet utsending av sms-varsel for innkommende ordrelinje siden vi mottok ordrelinjen før vedtaket!" }
+                logger.info { "Skippet utsending av SMS-varsel for innkommende ordrelinje siden vi mottok ordrelinjen før vedtaket!" }
             }
         } catch (e: Exception) {
             throw RuntimeException("Håndtering av event $eventId feilet", e)

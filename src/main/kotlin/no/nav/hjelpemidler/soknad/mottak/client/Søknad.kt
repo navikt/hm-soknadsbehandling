@@ -6,6 +6,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import java.time.Instant
 import java.util.UUID
 
+/// todo -> flytt til felles modell
 data class Søknad(
     val søknadId: UUID,
     val søknadOpprettet: Instant,
