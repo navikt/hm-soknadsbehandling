@@ -3,9 +3,9 @@ package no.nav.hjelpemidler.soknad.mottak.melding
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.convertValue
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
+import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
-import no.nav.hjelpemidler.soknad.mottak.client.Søknad
 import no.nav.hjelpemidler.soknad.mottak.jsonMapper
 import java.time.Instant
 import java.util.UUID
@@ -41,7 +41,7 @@ data class BehovsmeldingMottattMelding(
         behovsmeldingGjelder = grunnlag.behovsmeldingGjelder,
     )
 
-    constructor(eventName: String, søknad: Søknad) : this(
+    constructor(eventName: String, søknad: SøknadDto) : this(
         eventName = eventName,
         søknadId = søknad.søknadId,
         fnrBruker = søknad.fnrBruker,

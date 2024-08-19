@@ -16,6 +16,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
+import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
 import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Fagsak
@@ -43,15 +44,15 @@ class SøknadsbehandlingClient(
         }
     }
 
-    suspend fun finnSøknad(søknadId: SøknadId, inkluderData: Boolean = false): Søknad? {
+    suspend fun finnSøknad(søknadId: SøknadId, inkluderData: Boolean = false): SøknadDto? {
         return httpClient
             .get("$baseUrl/soknad/$søknadId") {
                 parameter("inkluderData", inkluderData)
             }
-            .body<Søknad?>()
+            .body<SøknadDto?>()
     }
 
-    suspend fun hentSøknad(søknadId: SøknadId, inkluderData: Boolean = false): Søknad {
+    suspend fun hentSøknad(søknadId: SøknadId, inkluderData: Boolean = false): SøknadDto {
         return checkNotNull(finnSøknad(søknadId, inkluderData)) {
             "Fant ikke søknad med søknadId: $søknadId"
         }
@@ -123,12 +124,12 @@ class SøknadsbehandlingClient(
     /**
      * NB! Fungerer kun for Hotsak.
      */
-    suspend fun finnSøknadForSak(sakId: HotsakSakId, inkluderData: Boolean = false): Søknad? {
+    suspend fun finnSøknadForSak(sakId: HotsakSakId, inkluderData: Boolean = false): SøknadDto? {
         return httpClient
             .get("$baseUrl/sak/$sakId/soknad") {
                 parameter("inkluderData", inkluderData)
             }
-            .body<Søknad?>()
+            .body<SøknadDto?>()
     }
 
     suspend fun finnSakForSøknad(søknadId: UUID): Fagsak? {

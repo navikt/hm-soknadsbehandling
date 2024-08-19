@@ -6,7 +6,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
-import no.nav.hjelpemidler.soknad.mottak.client.Søknad
+import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
 import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
 import no.nav.hjelpemidler.soknad.mottak.melding.BehovsmeldingMottattMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
@@ -57,7 +57,7 @@ class GodkjennSøknad(
         }
     }
 
-    private fun loggTidBruktForGodkjenning(søknad: Søknad) {
+    private fun loggTidBruktForGodkjenning(søknad: SøknadDto) {
         val duration = Duration.between(
             LocalDateTime.ofInstant(søknad.søknadOpprettet, ZoneId.systemDefault()),
             LocalDateTime.now()

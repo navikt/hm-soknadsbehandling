@@ -1,11 +1,10 @@
 package no.nav.hjelpemidler.soknad.mottak.test
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.NullNode
+import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
+import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
-import no.nav.hjelpemidler.soknad.mottak.client.Søknad
 import no.nav.hjelpemidler.soknad.mottak.jsonMapper
 import org.intellij.lang.annotations.Language
 import java.time.Instant
@@ -13,10 +12,10 @@ import java.time.Instant
 fun lagSøknad(
     søknadId: SøknadId = SøknadId.randomUUID(),
     status: BehovsmeldingStatus = BehovsmeldingStatus.VENTER_GODKJENNING,
-    data: JsonNode = NullNode.getInstance(),
-): Søknad {
+    data: Map<String, Any?> = emptyMap(),
+): SøknadDto {
     val now = Instant.now()
-    return Søknad(
+    return SøknadDto(
         søknadId = søknadId,
         søknadOpprettet = now,
         søknadEndret = now,
@@ -39,4 +38,4 @@ fun lagSøknad(
     søknadId: SøknadId = SøknadId.randomUUID(),
     status: BehovsmeldingStatus = BehovsmeldingStatus.VENTER_GODKJENNING,
     @Language("JSON") data: String,
-): Søknad = lagSøknad(søknadId, status, jsonMapper.readTree(data))
+): SøknadDto = lagSøknad(søknadId, status, jsonMapper.readValue<Map<String, Any?>>(data))

@@ -5,11 +5,11 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
+import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
 import no.nav.hjelpemidler.soknad.mottak.client.HarOrdre
-import no.nav.hjelpemidler.soknad.mottak.client.Søknad
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.util.UUID
@@ -29,12 +29,12 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
         return lagret
     }
 
-    suspend fun finnSøknad(søknadId: SøknadId, inkluderData: Boolean = false): Søknad? {
+    suspend fun finnSøknad(søknadId: SøknadId, inkluderData: Boolean = false): SøknadDto? {
         log.info { "Finner søknad, søknadId: $søknadId, inkluderData: $inkluderData" }
         return søknadsbehandlingClient.finnSøknad(søknadId, inkluderData)
     }
 
-    suspend fun hentSøknad(søknadId: SøknadId, inkluderData: Boolean = false): Søknad {
+    suspend fun hentSøknad(søknadId: SøknadId, inkluderData: Boolean = false): SøknadDto {
         log.info { "Henter søknad, søknadId: $søknadId, inkluderData: $inkluderData" }
         return søknadsbehandlingClient.hentSøknad(søknadId, inkluderData)
     }
