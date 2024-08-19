@@ -6,6 +6,7 @@ import io.mockk.mockk
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
+import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
 import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
@@ -20,7 +21,7 @@ import kotlin.test.Test
 class NyHotsakOrdrelinjeTest {
     private val mock = mockk<SøknadsbehandlingClient>()
     private val rapid = TestRapid().apply {
-        NyHotsakOrdrelinje(this, mock, SøknadsbehandlingService(mock))
+        NyHotsakOrdrelinje(this, SøknadsbehandlingService(mock))
     }
 
     @Test
@@ -50,10 +51,6 @@ class NyHotsakOrdrelinjeTest {
         )
 
         coEvery {
-            mock.behovsmeldingTypeFor(søknadId)
-        } returns BehovsmeldingType.SØKNAD
-
-        coEvery {
             mock.ordreSisteDøgn(søknadId)
         } returns HarOrdre(harOrdreAvTypeHjelpemidler = false, harOrdreAvTypeDel = false)
 
@@ -62,7 +59,7 @@ class NyHotsakOrdrelinjeTest {
         } returns 1
 
         coEvery {
-            mock.oppdaterStatus(søknadId, BehovsmeldingStatus.UTSENDING_STARTET)
+            mock.oppdaterStatus(søknadId, Statusendring(BehovsmeldingStatus.UTSENDING_STARTET, null, null))
         } returns 1
 
         rapid.sendTestMessage(message.toString())

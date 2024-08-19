@@ -1,6 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import com.fasterxml.jackson.module.kotlin.convertValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -8,11 +7,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
-import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
-import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
-import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
-import no.nav.hjelpemidler.soknad.mottak.jsonMapper
 import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
 import no.nav.hjelpemidler.soknad.mottak.melding.OrdrelinjeLagretMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
@@ -23,10 +18,9 @@ private val logger = KotlinLogging.logger {}
 
 class NyInfotrygdOrdrelinje(
     rapidsConnection: RapidsConnection,
-    private val søknadsbehandlingClient: SøknadsbehandlingClient,
     private val søknadsbehandlingService: SøknadsbehandlingService,
     private val infotrygdProxyClient: InfotrygdProxyClient,
-) : AsyncPacketListener {
+) : NyOrdrelinje(), AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("eventName", "hm-NyOrdrelinje") }
@@ -34,30 +28,16 @@ class NyInfotrygdOrdrelinje(
         }.register(this)
     }
 
-    private val JsonMessage.eventId get() = uuidValue("eventId")
-    private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
-    private val JsonMessage.oebsId get() = this["data"]["oebsId"].intValue()
-    private val JsonMessage.serviceforespørsel get() = this["data"]["serviceforespørsel"].intValue()
-    private val JsonMessage.ordrenr get() = this["data"]["ordrenr"].intValue()
-    private val JsonMessage.ordrelinje get() = this["data"]["ordrelinje"].intValue()
-    private val JsonMessage.delordrelinje get() = this["data"]["delordrelinje"].intValue()
-    private val JsonMessage.artikkelnr get() = this["data"]["artikkelnr"].textValue()
-    private val JsonMessage.antall get() = this["data"]["antall"].doubleValue()
-    private val JsonMessage.enhet get() = this["data"]["enhet"].textValue()
-    private val JsonMessage.produktgruppe get() = this["data"]["produktgruppe"].textValue()
-    private val JsonMessage.produktgruppenr get() = this["data"]["produktgruppeNr"].textValue()
-    private val JsonMessage.hjelpemiddeltype get() = this["data"]["hjelpemiddeltype"].textValue()
-    private val JsonMessage.data get() = this["data"]
-
     // Kun brukt til Infotrygd-matching for å finne søknadId
     private val JsonMessage.saksblokkOgSaksnr get() = this["data"]["saksblokkOgSaksnr"].textValue()
     private val JsonMessage.vedtaksdato get() = this["data"]["vedtaksdato"].asLocalDate()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val eventId = packet.eventId
-        if (packet.saksblokkOgSaksnr.isEmpty()) {
-            logger.info { "Skipping illegal event saksblokkOgSaksnr='': $eventId" }
-            sikkerlogg.error { "Skippet event med tom saksblokkOgSaksnr: ${packet.toJson()}" }
+        val saksblokkOgSaksnr = packet.saksblokkOgSaksnr
+        if (saksblokkOgSaksnr.isEmpty()) {
+            logger.info { "Hopper over event med ugyldig saksblokkOgSaksnr = '', eventId: $eventId" }
+            sikkerlogg.error { "Hopper over event med ugyldig saksblokkOgSaksnr = '', eventId: $eventId, packet: '${packet.toJson()}'" }
             return
         }
         if (eventId in skipList) {
@@ -69,21 +49,22 @@ class NyInfotrygdOrdrelinje(
             logger.info { "Infotrygd-ordrelinje fra OEBS mottatt med eventId: $eventId" }
 
             // Match ordrelinje to Infotrygd-table
-            val søknadIder = søknadsbehandlingClient.hentSøknadIdFraVedtaksresultat(
-                packet.fnrBruker,
-                packet.saksblokkOgSaksnr,
-            )
-
-            var søknadId = søknadIder.filter { it.vedtaksDato == packet.vedtaksdato }.map { it.søknadId }.let {
-                if (it.count() == 1) {
-                    it.first()
-                } else {
-                    if (it.count() > 1) {
-                        sikkerlogg.warn { "Fant flere søknader med matchende fnr+saksblokkOgSaksnr+vedtaksdato (saksblokkOgSaksnr: ${packet.saksblokkOgSaksnr}, vedtaksdato: ${packet.vedtaksdato}, antallTreff: ${it.count()}, id-er: $it)" }
+            val fnrBruker = packet.fnrBruker
+            val søknadIder = søknadsbehandlingService.hentSøknadIdFraVedtaksresultat(fnrBruker, saksblokkOgSaksnr)
+            val vedtaksdato = packet.vedtaksdato
+            var søknadId = søknadIder
+                .filter { it.vedtaksdato == vedtaksdato }
+                .map { it.søknadId }
+                .let {
+                    if (it.count() == 1) {
+                        it.first()
+                    } else {
+                        if (it.count() > 1) {
+                            sikkerlogg.warn { "Fant flere søknader med matchende fnr+saksblokkOgSaksnr+vedtaksdato (saksblokkOgSaksnr: $saksblokkOgSaksnr, vedtaksdato: $vedtaksdato, antallTreff: ${it.count()}, id-er: $it)" }
+                        }
+                        null
                     }
-                    null
                 }
-            }
 
             var mottokOrdrelinjeFørVedtak = false
             if (søknadId == null) {
@@ -100,28 +81,31 @@ class NyInfotrygdOrdrelinje(
                 mottokOrdrelinjeFørVedtak = true
 
                 // Check if we have one and only one application waiting for its decision
-                søknadId = søknadIder.filter { it.vedtaksDato == null }.map { it.søknadId }.let {
-                    if (it.count() == 1) {
-                        it.first()
-                    } else {
-                        if (it.count() > 1) {
-                            logger.info { "Fant flere søknader på bruker som ikke har fått vedtaksdato enda, kan derfor ikke matche til korrekt søknad uten mer informasjon (antall: ${it.count()})" }
+                søknadId = søknadIder
+                    .filter { it.vedtaksdato == null }
+                    .map { it.søknadId }
+                    .let {
+                        if (it.count() == 1) {
+                            it.first()
+                        } else {
+                            if (it.count() > 1) {
+                                logger.info { "Fant flere søknader på bruker som ikke har fått vedtaksdato enda, kan derfor ikke matche til korrekt søknad uten mer informasjon (antall: ${it.count()})" }
+                            }
+                            null
                         }
-                        null
                     }
-                }
 
                 if (søknadId != null) {
                     // Check if we have a decision that is just not synced yet
                     val harVedtakInfotrygd = infotrygdProxyClient.harVedtakFor(
-                        packet.fnrBruker,
-                        packet.saksblokkOgSaksnr.take(1),
-                        packet.saksblokkOgSaksnr.takeLast(2),
-                        packet.vedtaksdato
+                        fnrBruker,
+                        saksblokkOgSaksnr.take(1),
+                        saksblokkOgSaksnr.takeLast(2),
+                        vedtaksdato
                     )
 
                     if (harVedtakInfotrygd) {
-                        logger.info { "Ordrelinje med eventId: $eventId matchet mot søknad indirekte med sjekk av Infotrygd-databasen (vedtaksdato: ${packet.vedtaksdato}, saksblokkOgSaksnr: ${packet.saksblokkOgSaksnr})" }
+                        logger.info { "Ordrelinje med eventId: $eventId matchet indirekte mot søknad med sjekk av Infotrygd-databasen (vedtaksdato: $vedtaksdato, saksblokkOgSaksnr: $saksblokkOgSaksnr)" }
                     } else {
                         logger.warn { "Fant en søknadId uten vedtaksdato i databasen for ordrelinje med eventId: $eventId, men fant ikke avgjørelsen i Infotrygd-databasen" }
                         // Do not use it if we do not find a match
@@ -130,57 +114,44 @@ class NyInfotrygdOrdrelinje(
                 }
 
                 if (søknadId == null) {
-                    logger.warn { "Ordrelinje med eventId: $eventId kan ikke matches mot en søknadId (vedtaksdato: ${packet.vedtaksdato}, saksblokkOgSaksnr: ${packet.saksblokkOgSaksnr})" }
+                    logger.warn { "Ordrelinje med eventId: $eventId kan ikke matches mot en søknadId (vedtaksdato: $vedtaksdato, saksblokkOgSaksnr: $saksblokkOgSaksnr)" }
                     return
                 }
             }
 
-            val behovsmeldingType = søknadsbehandlingClient.behovsmeldingTypeFor(søknadId) ?: BehovsmeldingType.SØKNAD
-            val ordrelinje = Ordrelinje(
-                søknadId = søknadId,
-                oebsId = packet.oebsId,
-                fnrBruker = packet.fnrBruker,
-                serviceforespørsel = packet.serviceforespørsel,
-                ordrenr = packet.ordrenr,
-                ordrelinje = packet.ordrelinje,
-                delordrelinje = packet.delordrelinje,
-                artikkelnr = packet.artikkelnr,
-                antall = packet.antall,
-                enhet = packet.enhet,
-                produktgruppe = packet.produktgruppe,
-                produktgruppenr = packet.produktgruppenr,
-                hjelpemiddeltype = packet.hjelpemiddeltype,
-                data = jsonMapper.convertValue(packet.data),
-            )
+            val innkommendeOrdrelinje = packet.innkommendeOrdrelinje
+            val ordrelinje = innkommendeOrdrelinje.tilOrdrelinje(søknadId, fnrBruker, packet.data)
 
             val lagret = søknadsbehandlingService.lagreOrdrelinje(ordrelinje)
             if (!lagret) {
                 return
             }
 
-            val ordreSisteDøgn = søknadsbehandlingClient.ordreSisteDøgn(søknadId)
+            val ordreSisteDøgn = søknadsbehandlingService.ordreSisteDøgn(søknadId)
             if (!mottokOrdrelinjeFørVedtak) {
-                søknadsbehandlingClient.oppdaterStatus(søknadId, BehovsmeldingStatus.UTSENDING_STARTET)
+                søknadsbehandlingService.oppdaterStatus(søknadId, BehovsmeldingStatus.UTSENDING_STARTET)
 
-                if (ordrelinje.hjelpemiddeltype == "Del") {
-                    logger.info { "Ordrelinje for 'Del' lagret: ${ordrelinje.søknadId}" }
+                if (ordrelinje.forDel) {
+                    logger.info { "Ordrelinje for 'Del' lagret: $søknadId" }
                     // Vi skal ikke agere ytterligere på disse
                     return
                 }
 
                 if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
-                    context.publish(ordrelinje.fnrBruker, OrdrelinjeLagretMelding(ordrelinje, behovsmeldingType))
+                    val behovsmeldingType = søknadsbehandlingService.hentBehovsmeldingstype(søknadId)
+                    context.publish(fnrBruker, OrdrelinjeLagretMelding(ordrelinje, behovsmeldingType))
                     Prometheus.ordrelinjeVideresendtCounter.inc()
                     logger.info { "Ordrelinje sendt, søknadId: $søknadId" }
-                    sikkerlogg.info { "Ordrelinje sendt, søknadId: $søknadId, fnrBruker: ${ordrelinje.fnrBruker}" }
+                    sikkerlogg.info { "Ordrelinje sendt, søknadId: $søknadId, fnrBruker: $fnrBruker" }
                 } else {
                     logger.info { "Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId" }
                 }
             } else if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
-                logger.info { "Skippet utsending av SMS-varsel for innkommende ordrelinje siden vi mottok ordrelinjen før vedtaket!" }
+                logger.info { "Skippet utsending av SMS-varsel for innkommende ordrelinje siden vi mottok ordrelinjen før vedtaket" }
             }
         } catch (e: Exception) {
-            throw RuntimeException("Håndtering av event $eventId feilet", e)
+            logger.error(e) { "Håndtering av event $eventId feilet" }
+            throw e
         }
     }
 

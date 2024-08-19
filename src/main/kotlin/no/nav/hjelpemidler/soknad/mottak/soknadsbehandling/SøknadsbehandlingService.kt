@@ -8,9 +8,11 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
 import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
+import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
 import no.nav.hjelpemidler.soknad.mottak.client.HarOrdre
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadIdFraVedtaksresultat
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import java.util.UUID
@@ -112,8 +114,23 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
         }
     }
 
+    suspend fun finnSøknadForSak(sakId: HotsakSakId, inkluderData: Boolean = false): SøknadDto? {
+        return søknadsbehandlingClient.finnSøknadForSak(sakId, inkluderData)
+    }
+
+    suspend fun hentSøknadIdFraVedtaksresultat(
+        fnrBruker: String,
+        saksblokkOgSaksnr: String,
+    ): List<SøknadIdFraVedtaksresultat> {
+        return søknadsbehandlingClient.hentSøknadIdFraVedtaksresultat(fnrBruker, saksblokkOgSaksnr)
+    }
+
     suspend fun harOrdreForSøknad(søknadId: UUID): HarOrdre {
         return søknadsbehandlingClient.harOrdreForSøknad(søknadId)
+    }
+
+    suspend fun ordreSisteDøgn(søknadId: UUID): HarOrdre {
+        return søknadsbehandlingClient.ordreSisteDøgn(søknadId)
     }
 
     suspend fun slettSøknad(søknadId: SøknadId): Boolean {

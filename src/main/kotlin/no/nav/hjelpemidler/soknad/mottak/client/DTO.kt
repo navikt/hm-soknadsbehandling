@@ -1,5 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.client
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import java.time.LocalDate
 import java.util.UUID
@@ -12,7 +13,8 @@ class UtgåttSøknad(
 
 data class SøknadIdFraVedtaksresultat(
     val søknadId: UUID,
-    val vedtaksDato: LocalDate?,
+    @JsonAlias("vedtaksDato")
+    val vedtaksdato: LocalDate?,
 )
 
 data class HarOrdre(

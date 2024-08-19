@@ -13,7 +13,6 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
-import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
@@ -136,15 +135,6 @@ class SøknadsbehandlingClient(
         return httpClient
             .get("$baseUrl/soknad/$søknadId/sak")
             .body<Fagsak?>()
-    }
-
-    suspend fun behovsmeldingTypeFor(søknadId: UUID): BehovsmeldingType? {
-        return try {
-            hentSøknad(søknadId).behovsmeldingstype
-        } catch (e: Exception) {
-            logger.error(e) { "Feil ved henting av behovsmeldingstype for søknadId: $søknadId" }
-            null
-        }
     }
 
     suspend fun hentSøknadIdFraVedtaksresultat(
