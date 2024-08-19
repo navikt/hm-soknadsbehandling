@@ -11,6 +11,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.soknad.mottak.client.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
+import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import no.nav.hjelpemidler.soknad.mottak.test.Testdata
 import java.time.Instant
 import java.util.UUID
@@ -19,7 +20,7 @@ import kotlin.test.Test
 class NyHotsakOrdrelinjeTest {
     private val mock = mockk<SøknadsbehandlingClient>()
     private val rapid = TestRapid().apply {
-        NyHotsakOrdrelinje(this, mock)
+        NyHotsakOrdrelinje(this, mock, SøknadsbehandlingService(mock))
     }
 
     @Test

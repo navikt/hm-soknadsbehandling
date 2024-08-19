@@ -16,6 +16,7 @@ import no.nav.hjelpemidler.soknad.mottak.jsonMapper
 import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
 import no.nav.hjelpemidler.soknad.mottak.melding.OrdrelinjeLagretMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
+import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import java.util.UUID
 
 private val logger = KotlinLogging.logger {}
@@ -23,6 +24,7 @@ private val logger = KotlinLogging.logger {}
 class NyInfotrygdOrdrelinje(
     rapidsConnection: RapidsConnection,
     private val søknadsbehandlingClient: SøknadsbehandlingClient,
+    private val søknadsbehandlingService: SøknadsbehandlingService,
     private val infotrygdProxyClient: InfotrygdProxyClient,
 ) : AsyncPacketListener {
     init {
@@ -151,13 +153,12 @@ class NyInfotrygdOrdrelinje(
                 data = jsonMapper.convertValue(packet.data),
             )
 
-            val ordreSisteDøgn = søknadsbehandlingClient.ordreSisteDøgn(søknadId)
-            val result = save(ordrelinje)
-
-            if (result == 0) {
+            val lagret = søknadsbehandlingService.lagreOrdrelinje(ordrelinje)
+            if (!lagret) {
                 return
             }
 
+            val ordreSisteDøgn = søknadsbehandlingClient.ordreSisteDøgn(søknadId)
             if (!mottokOrdrelinjeFørVedtak) {
                 søknadsbehandlingClient.oppdaterStatus(søknadId, BehovsmeldingStatus.UTSENDING_STARTET)
 
@@ -182,20 +183,6 @@ class NyInfotrygdOrdrelinje(
             throw RuntimeException("Håndtering av event $eventId feilet", e)
         }
     }
-
-    private suspend fun save(ordrelinje: Ordrelinje): Int =
-        runCatching {
-            søknadsbehandlingClient.lagreOrdrelinje(ordrelinje)
-        }.onSuccess {
-            if (it == 0) {
-                logger.warn { "Duplikat av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} har ikke blitt lagret" }
-            } else {
-                logger.info { "Lagret ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
-                Prometheus.ordrelinjeLagretCounter.inc()
-            }
-        }.onFailure {
-            logger.error(it) { "Feil under lagring av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}" }
-        }.getOrThrow()
 
     private val skipList = listOf(
         "93cd36de-feab-4a29-8aa3-4ef976d203ef",

@@ -87,8 +87,8 @@ fun main() {
             JournalpostSink(this, søknadsbehandlingClient)
             OppgaveSink(this, søknadsbehandlingClient)
 
-            NyHotsakOrdrelinje(this, søknadsbehandlingClient)
-            NyInfotrygdOrdrelinje(this, søknadsbehandlingClient, infotrygdProxyClient)
+            NyHotsakOrdrelinje(this, søknadsbehandlingClient, søknadsbehandlingService)
+            NyInfotrygdOrdrelinje(this, søknadsbehandlingClient, søknadsbehandlingService, infotrygdProxyClient)
 
             SlettSøknad(this, søknadsbehandlingService)
 

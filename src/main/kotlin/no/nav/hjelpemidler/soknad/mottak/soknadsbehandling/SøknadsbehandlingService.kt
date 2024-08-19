@@ -7,6 +7,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
 import no.nav.hjelpemidler.soknad.mottak.client.HarOrdre
@@ -93,6 +94,22 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
             log.warn { "Vedtaksresultat ble ikke lagret, søknadId: $søknadId" }
         }
         return lagret
+    }
+
+    suspend fun lagreOrdrelinje(ordrelinje: Ordrelinje): Boolean {
+        val søknadId = ordrelinje.søknadId
+        try {
+            val lagret = søknadsbehandlingClient.lagreOrdrelinje(ordrelinje) > 0
+            if (lagret) {
+                log.info { "Lagret ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}, søknadId: $søknadId" }
+            } else {
+                log.warn { "Duplikat av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} ble ikke lagret, søknadId: $søknadId" }
+            }
+            return lagret
+        } catch (e: Exception) {
+            log.error(e) { "Feil under lagring av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}, søknadId: $søknadId" }
+            throw e
+        }
     }
 
     suspend fun harOrdreForSøknad(søknadId: UUID): HarOrdre {
