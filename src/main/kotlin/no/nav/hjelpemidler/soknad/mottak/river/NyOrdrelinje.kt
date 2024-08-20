@@ -34,7 +34,10 @@ abstract class NyOrdrelinje {
         @JsonAnySetter
         val andre = mutableMapOf<String, Any?>()
 
-        fun tilOrdrelinje(søknadId: SøknadId, fnrBruker: String, data: Map<String, Any?>) = Ordrelinje(
+        /**
+         * Transformer ordrelinje fra OEBS til ordrelinje for lagring i hm-soknadsbehandling-db
+         */
+        fun tilOrdrelinje(søknadId: SøknadId, fnrBruker: String, data: Map<String, Any?>): Ordrelinje = Ordrelinje(
             søknadId = søknadId,
             oebsId = oebsId,
             fnrBruker = fnrBruker,
