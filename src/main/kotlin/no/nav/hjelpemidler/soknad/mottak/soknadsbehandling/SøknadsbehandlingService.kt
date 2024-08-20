@@ -100,16 +100,20 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
 
     suspend fun lagreOrdrelinje(ordrelinje: Ordrelinje): Boolean {
         val søknadId = ordrelinje.søknadId
+        val serviceforespørsel = ordrelinje.serviceforespørsel
+        val ordrenr = ordrelinje.ordrenr
+        val ordrelinje1 = ordrelinje.ordrelinje
+        val delordrelinje = ordrelinje.delordrelinje
         try {
             val lagret = søknadsbehandlingClient.lagreOrdrelinje(ordrelinje) > 0
             if (lagret) {
-                log.info { "Lagret ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}, søknadId: $søknadId" }
+                log.info { "Lagret ordrelinje for SF: $serviceforespørsel, ordrenr: $ordrenr og ordrelinje/delordrelinje: $ordrelinje1/$delordrelinje, søknadId: $søknadId" }
             } else {
-                log.warn { "Duplikat av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje} ble ikke lagret, søknadId: $søknadId" }
+                log.warn { "Duplikat av ordrelinje for SF: $serviceforespørsel, ordrenr: $ordrenr og ordrelinje/delordrelinje: $ordrelinje1/$delordrelinje ble ikke lagret, søknadId: $søknadId" }
             }
             return lagret
         } catch (e: Exception) {
-            log.error(e) { "Feil under lagring av ordrelinje for SF: ${ordrelinje.serviceforespørsel}, ordrenr: ${ordrelinje.ordrenr} og ordrelinje/delordrelinje: ${ordrelinje.ordrelinje}/${ordrelinje.delordrelinje}, søknadId: $søknadId" }
+            log.error(e) { "Feil under lagring av ordrelinje for SF: $serviceforespørsel, ordrenr: $ordrenr og ordrelinje/delordrelinje: $ordrelinje1/$delordrelinje, søknadId: $søknadId" }
             throw e
         }
     }
