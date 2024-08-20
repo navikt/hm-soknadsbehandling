@@ -1,5 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.client
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -32,12 +33,13 @@ class InfotrygdProxyClient(
         }
     }
 
-    suspend fun harVedtakFor(fnr: String, saksblokk: String, saksnr: String, vedtaksDato: LocalDate): Boolean {
+    suspend fun harVedtakFor(fnr: String, saksblokk: String, saksnr: String, vedtaksdato: LocalDate): Boolean {
         data class Request(
             val fnr: String,
             val saksblokk: String,
             val saksnr: String,
-            val vedtaksDato: LocalDate,
+            @JsonProperty("vedtaksDato")
+            val vedtaksdato: LocalDate,
         )
 
         data class Response(
@@ -47,7 +49,7 @@ class InfotrygdProxyClient(
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.post("$baseUrl/har-vedtak-for") {
-                    setBody(Request(fnr, saksblokk, saksnr, vedtaksDato))
+                    setBody(Request(fnr, saksblokk, saksnr, vedtaksdato))
                 }.body<Response>().resultat
             }.onFailure {
                 logger.error(it) { it.message }
