@@ -18,7 +18,7 @@ import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
-private val skipList = listOf<String>("767", "784", "854")
+private val skipList = listOf<String>("793", "767", "784", "854")
 
 class DelbestillingClient(
     private val baseUrl: String,
