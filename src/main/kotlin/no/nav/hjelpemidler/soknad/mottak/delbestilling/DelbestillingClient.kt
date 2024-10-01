@@ -18,6 +18,8 @@ import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
+private val skipList = listOf<String>("767", "784", "854")
+
 class DelbestillingClient(
     private val baseUrl: String,
     private val tokenSetProvider: TokenSetProvider,
@@ -32,6 +34,10 @@ class DelbestillingClient(
     }
 
     suspend fun oppdaterStatus(delbestillingId: String, status: Status, ordrenummer: String) {
+        if (delbestillingId in skipList) {
+            logger.info("Hopper over å oppdatere status for $delbestillingId")
+            return
+        }
         return withContext(Dispatchers.IO) {
             try {
                 httpClient.put("$baseUrl/delbestilling/status/v2/$delbestillingId") {
