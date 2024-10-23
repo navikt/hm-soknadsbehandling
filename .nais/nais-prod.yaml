@@ -64,7 +64,7 @@ spec:
     - name: KAFKA_CONSUMER_GROUP_ID
       value: hm-soknadsbehandling-v1
     - name: KAFKA_RESET_POLICY
-      value: earliest
+      value: EARLIEST
     - name: KAFKA_RAPID_TOPIC
       value: teamdigihot.hm-soknadsbehandling-v1
     - name: OPPSLAG_API_BASEURL
