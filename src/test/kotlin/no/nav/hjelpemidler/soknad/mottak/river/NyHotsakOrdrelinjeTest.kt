@@ -40,7 +40,6 @@ class NyHotsakOrdrelinjeTest {
             fnrInnsender = null,
             fnrBruker = "",
             navnBruker = "",
-            // kommunenavn = null, fixme
             journalpostId = null,
             oppgaveId = null,
             digital = true,

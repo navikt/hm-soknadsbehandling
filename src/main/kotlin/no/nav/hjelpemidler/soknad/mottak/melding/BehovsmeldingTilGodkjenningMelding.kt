@@ -11,7 +11,6 @@ data class BehovsmeldingTilGodkjenningMelding(
     @JsonProperty("soknadId")
     override val søknadId: SøknadId,
     val fnrBruker: String,
-    val kommunenavn: String?,
 ) : TilknyttetSøknad, Melding {
     val opprettet: Instant = Instant.now()
     override val eventId: UUID = UUID.randomUUID()
@@ -28,6 +27,5 @@ data class BehovsmeldingTilGodkjenningMelding(
     constructor(grunnlag: Behovsmeldingsgrunnlag.Digital) : this(
         søknadId = grunnlag.søknadId,
         fnrBruker = grunnlag.fnrBruker,
-        kommunenavn = "", // grunnlag.kommunenavn fixme
     )
 }

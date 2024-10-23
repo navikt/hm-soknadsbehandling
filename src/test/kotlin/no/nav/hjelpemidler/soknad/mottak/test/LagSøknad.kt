@@ -23,7 +23,6 @@ fun lagSøknad(
         fnrInnsender = "12345678910",
         fnrBruker = "01987654321",
         navnBruker = "fornavn etternavn",
-        // kommunenavn = "kommunenavn", fixme
         journalpostId = null,
         oppgaveId = null,
         digital = true,
