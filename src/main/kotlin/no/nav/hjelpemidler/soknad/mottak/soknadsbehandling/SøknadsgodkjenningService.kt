@@ -1,11 +1,11 @@
 package no.nav.hjelpemidler.soknad.mottak.soknadsbehandling
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
-import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
@@ -27,7 +27,7 @@ class SøknadsgodkjenningService(
                 )
 
                 if (antallOppdatert > 0) {
-                    val søknadErUtgåttMessage = JsonMessage("{}", MessageProblems("")).also {
+                    val søknadErUtgåttMessage = JsonMessage("{}", MessageProblems(""), Prometheus.registry).also {
                         it["eventId"] = UUID.randomUUID()
                         it["eventName"] = "hm-GodkjenningsfristErUtløpt"
                         it["opprettet"] = LocalDateTime.now()
@@ -36,7 +36,7 @@ class SøknadsgodkjenningService(
                     }.toJson()
 
                     rapidsConnection.publish(søknad.fnrBruker!!, søknadErUtgåttMessage)
-                    Prometheus.godkjenningsfristErUtløptCounter.inc()
+                    Prometheus.godkjenningsfristErUtløptCounter.increment()
                 }
             }
         }.awaitAll()

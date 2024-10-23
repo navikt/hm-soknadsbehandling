@@ -1,11 +1,11 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers.River
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.helse.rapids_rivers.MessageProblems
-import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
 
 class RiverRequiredKeyMissingException(msg: String) : Exception(msg)

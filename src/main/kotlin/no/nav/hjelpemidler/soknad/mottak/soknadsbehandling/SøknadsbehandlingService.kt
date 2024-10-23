@@ -73,8 +73,8 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
         if (lagret) {
             log.info { "Sakstilknytning ble lagret, søknadId: $søknadId, sakId: ${sakstilknytning.sakId}" }
             when (sakstilknytning) {
-                is Sakstilknytning.Infotrygd -> Prometheus.sakstilknytningInfotrygdLagretCounter.inc()
-                is Sakstilknytning.Hotsak -> Prometheus.sakstilknytningHotsakLagretCounter.inc()
+                is Sakstilknytning.Infotrygd -> Prometheus.sakstilknytningInfotrygdLagretCounter.increment()
+                is Sakstilknytning.Hotsak -> Prometheus.sakstilknytningHotsakLagretCounter.increment()
             }
         } else {
             log.warn { "Sakstilknytning ble ikke lagret, søknadId: $søknadId, sakId: ${sakstilknytning.sakId}" }
@@ -89,8 +89,8 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
         if (lagret) {
             log.info { "Vedtaksresultat ble lagret, søknadId: $søknadId" }
             when (vedtaksresultat) {
-                is Vedtaksresultat.Infotrygd -> Prometheus.vedtaksresultatInfotrygdLagretCounter.inc()
-                is Vedtaksresultat.Hotsak -> Prometheus.vedtaksresultatHotsakLagretCounter.inc()
+                is Vedtaksresultat.Infotrygd -> Prometheus.vedtaksresultatInfotrygdLagretCounter.increment()
+                is Vedtaksresultat.Hotsak -> Prometheus.vedtaksresultatHotsakLagretCounter.increment()
             }
         } else {
             log.warn { "Vedtaksresultat ble ikke lagret, søknadId: $søknadId" }

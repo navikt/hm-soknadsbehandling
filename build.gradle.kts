@@ -25,7 +25,7 @@ dependencies {
 
     // DigiHoT
     implementation(libs.hm.behovsmeldingsmodell)
-    implementation(libs.hm.http) {
+    implementation(libs.hotlibs.http) {
         exclude("io.ktor", "ktor-client-cio")
     }
 
@@ -42,6 +42,7 @@ dependencies {
 
     // Test
     testImplementation(libs.bundles.ktor.server.test)
+    testImplementation(libs.tbdLibs.rapidsAndRivers.test)
     testImplementation(libs.handlebars)
     testImplementation(libs.jackson.dataformat.yaml)
 }

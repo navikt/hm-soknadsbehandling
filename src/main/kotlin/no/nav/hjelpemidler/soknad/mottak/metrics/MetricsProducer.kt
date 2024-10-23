@@ -3,8 +3,8 @@ package no.nav.hjelpemidler.soknad.mottak.metrics
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.helse.rapids_rivers.MessageContext
 import java.time.LocalDateTime
 import java.util.UUID
 

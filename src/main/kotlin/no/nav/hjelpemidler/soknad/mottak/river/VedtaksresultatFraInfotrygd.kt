@@ -1,11 +1,11 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers.River
+import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
-import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
 import no.nav.hjelpemidler.soknad.mottak.melding.OrdrelinjeLagretMelding
@@ -80,7 +80,7 @@ class VedtaksresultatFraInfotrygd(
 
             val behovsmeldingType = søknadsbehandlingService.hentBehovsmeldingstype(søknadId)
             context.publish(fnrBruker, OrdrelinjeLagretMelding(søknadId, fnrBruker, behovsmeldingType))
-            Prometheus.ordrelinjeVideresendtCounter.inc()
+            Prometheus.ordrelinjeVideresendtCounter.increment()
             logger.info { "Ordrelinje sendt ved vedtak, søknadId: $søknadId" }
         }
     }

@@ -2,7 +2,7 @@ package no.nav.hjelpemidler.soknad.mottak.river
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonAnySetter
-import no.nav.helse.rapids_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
 import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.soknad.mottak.asObject

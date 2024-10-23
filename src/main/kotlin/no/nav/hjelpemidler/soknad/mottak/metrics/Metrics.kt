@@ -1,5 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.metrics
 
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.influxdb.client.InfluxDBClientFactory
 import com.influxdb.client.domain.WritePrecision
 import com.influxdb.client.write.Point
@@ -7,7 +8,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.hjelpemidler.configuration.InfluxDBEnvironmentVariable
 import no.nav.hjelpemidler.configuration.NaisEnvironmentVariable
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient

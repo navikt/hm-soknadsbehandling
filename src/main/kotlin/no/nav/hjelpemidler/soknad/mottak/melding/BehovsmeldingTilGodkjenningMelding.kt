@@ -28,6 +28,6 @@ data class BehovsmeldingTilGodkjenningMelding(
     constructor(grunnlag: Behovsmeldingsgrunnlag.Digital) : this(
         søknadId = grunnlag.søknadId,
         fnrBruker = grunnlag.fnrBruker,
-        kommunenavn = grunnlag.kommunenavn
+        kommunenavn = "", // grunnlag.kommunenavn fixme
     )
 }

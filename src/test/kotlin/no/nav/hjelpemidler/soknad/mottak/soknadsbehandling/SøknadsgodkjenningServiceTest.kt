@@ -1,10 +1,10 @@
 package no.nav.hjelpemidler.soknad.mottak.soknadsbehandling
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.slot
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient

@@ -1,5 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
@@ -9,7 +10,6 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient

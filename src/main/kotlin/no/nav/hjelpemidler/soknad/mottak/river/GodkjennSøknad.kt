@@ -1,10 +1,10 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers.River
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
 import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
@@ -47,7 +47,7 @@ class GodkjennSøknad(
                     fnrBruker,
                     BehovsmeldingMottattMelding("hm-søknadGodkjentAvBrukerMottatt", oppdatertSøknad)
                 )
-                Prometheus.søknadGodkjentAvBrukerCounter.inc()
+                Prometheus.søknadGodkjentAvBrukerCounter.increment()
                 log.info { "Søknad er godkjent av bruker, søknadId: $søknadId" }
                 sikkerlogg.info { "Søknad er godkjent av bruker, søknadId: $søknadId, fnrBruker: $fnrBruker" }
             }

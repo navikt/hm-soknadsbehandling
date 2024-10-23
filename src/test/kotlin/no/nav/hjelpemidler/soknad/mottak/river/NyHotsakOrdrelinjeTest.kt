@@ -1,9 +1,9 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
@@ -40,7 +40,7 @@ class NyHotsakOrdrelinjeTest {
             fnrInnsender = null,
             fnrBruker = "",
             navnBruker = "",
-            kommunenavn = null,
+            // kommunenavn = null, fixme
             journalpostId = null,
             oppgaveId = null,
             digital = true,

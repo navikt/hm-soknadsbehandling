@@ -1,10 +1,10 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers.River
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
@@ -86,7 +86,7 @@ class NyHotsakOrdrelinje(
             val ordreSisteDøgn = søknadsbehandlingService.ordreSisteDøgn(søknadId)
             if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
                 context.publish(fnrBruker, OrdrelinjeLagretMelding(ordrelinje, søknad.behovsmeldingstype))
-                Prometheus.ordrelinjeVideresendtCounter.inc()
+                Prometheus.ordrelinjeVideresendtCounter.increment()
                 logger.info { "Ordrelinje sendt, søknadId: $søknadId" }
                 sikkerlogg.info { "Ordrelinje sendt, søknadId: $søknadId, fnrBruker: $fnrBruker" }
             } else {
