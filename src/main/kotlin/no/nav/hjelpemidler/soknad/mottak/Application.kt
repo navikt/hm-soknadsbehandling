@@ -22,6 +22,7 @@ import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadAutomatiskJournalf�
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalførtEtterTilbakeføring
 import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSøknad
+import no.nav.hjelpemidler.soknad.mottak.river.HotsakHenlagt
 import no.nav.hjelpemidler.soknad.mottak.river.HotsakOpprettet
 import no.nav.hjelpemidler.soknad.mottak.river.JournalpostSink
 import no.nav.hjelpemidler.soknad.mottak.river.NyHotsakOrdrelinje
@@ -83,6 +84,7 @@ fun main() {
             GodkjennSøknad(this, søknadsbehandlingService)
 
             HotsakOpprettet(this, søknadsbehandlingService)
+            HotsakHenlagt(this, søknadsbehandlingService)
 
             JournalpostSink(this, søknadsbehandlingClient)
             OppgaveSink(this, søknadsbehandlingClient)
