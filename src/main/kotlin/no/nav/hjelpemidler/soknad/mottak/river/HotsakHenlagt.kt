@@ -8,6 +8,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
+import no.nav.hjelpemidler.soknad.mottak.melding.VedtaksresultatLagretMelding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 
 private val log = KotlinLogging.logger {}
@@ -40,10 +41,26 @@ class HotsakHenlagt(
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId
         val sakId = packet.sakId
-        log.info { "Sak henlagt i Hotsak, sakId: $sakId, søknadId: $søknadId" }
+        val fnrBruker = packet.fnrBruker
+        val henleggelsesdato = packet.henleggelsesdato
+        val henleggelsesårsak = packet.henleggelsesårsak
+        log.info { "Sak henlagt i Hotsak, sakId: $sakId, søknadId: $søknadId, henleggelsesdato: $henleggelsesdato, henleggelsesårsak: $henleggelsesårsak" }
+        val vedtaksresultat = "HB"
         søknadsbehandlingService.lagreVedtaksresultat(
             søknadId,
-            Vedtaksresultat.Hotsak("HB", packet.henleggelsesdato.toLocalDate())
+            Vedtaksresultat.Hotsak(vedtaksresultat, henleggelsesdato.toLocalDate())
+        )
+        context.publish(
+            fnrBruker,
+            VedtaksresultatLagretMelding(
+                søknadId = søknadId,
+                fnrBruker = fnrBruker,
+                vedtaksdato = henleggelsesdato,
+                vedtaksresultat = vedtaksresultat,
+                eksternVarslingDeaktivert = true,
+                søknadstype = null,
+                eventName = "hm-VedtaksresultatFraHotsakLagret"
+            ),
         )
     }
 }
