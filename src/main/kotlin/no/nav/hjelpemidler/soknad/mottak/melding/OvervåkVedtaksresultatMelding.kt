@@ -1,13 +1,13 @@
 package no.nav.hjelpemidler.soknad.mottak.melding
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.InfotrygdSakId
 import java.util.UUID
 
 data class OvervåkVedtaksresultatMelding(
-    override val søknadId: SøknadId,
+    override val søknadId: BehovsmeldingId,
     val fnrBruker: String,
     @JsonProperty("trygdekontorNr")
     val trygdekontornummer: String,
@@ -18,7 +18,7 @@ data class OvervåkVedtaksresultatMelding(
     override val eventId: UUID = UUID.randomUUID()
     override val eventName: String = "hm-InfotrygdAddToPollVedtakList"
 
-    constructor(søknadId: SøknadId, fnrBruker: String, fagsakId: InfotrygdSakId) : this(
+    constructor(søknadId: BehovsmeldingId, fnrBruker: String, fagsakId: InfotrygdSakId) : this(
         søknadId = søknadId,
         fnrBruker = fnrBruker,
         trygdekontornummer = fagsakId.trygdekontornummer,

@@ -3,7 +3,7 @@ package no.nav.hjelpemidler.soknad.mottak.river
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
-import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.soknad.mottak.asObject
 
@@ -37,7 +37,7 @@ abstract class NyOrdrelinje {
         /**
          * Transformer ordrelinje fra OEBS til ordrelinje for lagring i hm-soknadsbehandling-db
          */
-        fun tilOrdrelinje(søknadId: SøknadId, fnrBruker: String, data: Map<String, Any?>): Ordrelinje = Ordrelinje(
+        fun tilOrdrelinje(søknadId: BehovsmeldingId, fnrBruker: String, data: Map<String, Any?>): Ordrelinje = Ordrelinje(
             søknadId = søknadId,
             oebsId = oebsId,
             fnrBruker = fnrBruker,

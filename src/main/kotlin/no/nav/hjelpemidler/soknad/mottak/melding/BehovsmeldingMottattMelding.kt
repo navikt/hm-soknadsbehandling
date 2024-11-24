@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.convertValue
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
-import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
 import no.nav.hjelpemidler.soknad.mottak.jsonMapper
 import java.time.Instant
@@ -13,7 +13,7 @@ import java.util.UUID
 data class BehovsmeldingMottattMelding(
     override val eventName: String,
     @JsonProperty("soknadId")
-    override val søknadId: SøknadId,
+    override val søknadId: BehovsmeldingId,
     val fnrBruker: String,
     val fnrInnsender: String?,
     @JsonProperty("soknad")

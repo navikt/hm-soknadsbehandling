@@ -1,12 +1,12 @@
 package no.nav.hjelpemidler.soknad.mottak.melding
 
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
-import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
 import java.util.UUID
 
 data class SøknadUnderBehandlingMelding(
-    override val søknadId: SøknadId,
+    override val søknadId: BehovsmeldingId,
     val fnrBruker: String,
     val behovsmeldingType: BehovsmeldingType,
 ) : TilknyttetSøknad, Melding {
