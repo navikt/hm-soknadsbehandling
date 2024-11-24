@@ -6,6 +6,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.RapidApplication
+import no.nav.hjelpemidler.configuration.Environment
+import no.nav.hjelpemidler.domain.person.TILLAT_SYNTETISKE_FØDSELSNUMRE
 import no.nav.hjelpemidler.http.openid.azureADClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
@@ -41,6 +43,9 @@ import kotlin.time.Duration.Companion.seconds
 private val logger = KotlinLogging.logger {}
 
 fun main() {
+
+    TILLAT_SYNTETISKE_FØDSELSNUMRE = !Environment.current.isProd
+
     val azureADClient = azureADClient(Apache.create()) {
         cache(leeway = 10.seconds)
     }
