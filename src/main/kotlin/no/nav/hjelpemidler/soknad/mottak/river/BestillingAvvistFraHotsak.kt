@@ -7,7 +7,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
-import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
 import no.nav.hjelpemidler.soknad.mottak.asObject
 import no.nav.hjelpemidler.soknad.mottak.melding.Melding
@@ -58,7 +58,7 @@ class BestillingAvvistFraHotsak(
 }
 
 data class BestillingAvvistLagretMelding(
-    override val søknadId: SøknadId,
+    override val søknadId: BehovsmeldingId,
     val fnrBruker: String,
     val valgteÅrsaker: Set<String>,
     val begrunnelse: String,

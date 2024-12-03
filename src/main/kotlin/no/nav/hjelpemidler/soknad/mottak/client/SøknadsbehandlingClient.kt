@@ -16,7 +16,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
-import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Fagsak
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
@@ -43,7 +43,7 @@ class SøknadsbehandlingClient(
         }
     }
 
-    suspend fun finnSøknad(søknadId: SøknadId, inkluderData: Boolean = false): SøknadDto? {
+    suspend fun finnSøknad(søknadId: BehovsmeldingId, inkluderData: Boolean = false): SøknadDto? {
         return httpClient
             .get("$baseUrl/soknad/$søknadId") {
                 parameter("inkluderData", inkluderData)
@@ -51,7 +51,7 @@ class SøknadsbehandlingClient(
             .body<SøknadDto?>()
     }
 
-    suspend fun hentSøknad(søknadId: SøknadId, inkluderData: Boolean = false): SøknadDto {
+    suspend fun hentSøknad(søknadId: BehovsmeldingId, inkluderData: Boolean = false): SøknadDto {
         return checkNotNull(finnSøknad(søknadId, inkluderData)) {
             "Fant ikke søknad med søknadId: $søknadId"
         }
@@ -105,12 +105,12 @@ class SøknadsbehandlingClient(
             .body<Int>()
     }
 
-    suspend fun oppdaterStatus(søknadId: SøknadId, status: BehovsmeldingStatus): Int {
+    suspend fun oppdaterStatus(søknadId: BehovsmeldingId, status: BehovsmeldingStatus): Int {
         return oppdaterStatus(søknadId, Statusendring(status, null, null))
     }
 
     suspend fun oppdaterStatus(
-        søknadId: SøknadId,
+        søknadId: BehovsmeldingId,
         statusendring: Statusendring,
     ): Int {
         return httpClient

@@ -2,14 +2,14 @@ package no.nav.hjelpemidler.soknad.mottak.melding
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
-import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
 import java.time.Instant
 import java.util.UUID
 
 data class BehovsmeldingTilGodkjenningMelding(
     @JsonProperty("soknadId")
-    override val søknadId: SøknadId,
+    override val søknadId: BehovsmeldingId,
     val fnrBruker: String,
 ) : TilknyttetSøknad, Melding {
     val opprettet: Instant = Instant.now()

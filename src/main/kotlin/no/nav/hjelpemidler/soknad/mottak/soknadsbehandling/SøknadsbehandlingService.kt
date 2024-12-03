@@ -1,12 +1,12 @@
 package no.nav.hjelpemidler.soknad.mottak.soknadsbehandling
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
-import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadId
 import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
@@ -32,17 +32,17 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
         return lagret
     }
 
-    suspend fun finnSøknad(søknadId: SøknadId, inkluderData: Boolean = false): SøknadDto? {
+    suspend fun finnSøknad(søknadId: BehovsmeldingId, inkluderData: Boolean = false): SøknadDto? {
         log.info { "Finner søknad, søknadId: $søknadId, inkluderData: $inkluderData" }
         return søknadsbehandlingClient.finnSøknad(søknadId, inkluderData)
     }
 
-    suspend fun hentSøknad(søknadId: SøknadId, inkluderData: Boolean = false): SøknadDto {
+    suspend fun hentSøknad(søknadId: BehovsmeldingId, inkluderData: Boolean = false): SøknadDto {
         log.info { "Henter søknad, søknadId: $søknadId, inkluderData: $inkluderData" }
         return søknadsbehandlingClient.hentSøknad(søknadId, inkluderData)
     }
 
-    suspend fun hentBehovsmeldingstype(søknadId: SøknadId): BehovsmeldingType {
+    suspend fun hentBehovsmeldingstype(søknadId: BehovsmeldingId): BehovsmeldingType {
         return try {
             hentSøknad(søknadId).behovsmeldingstype
         } catch (e: Exception) {
@@ -51,7 +51,7 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
         }
     }
 
-    suspend fun oppdaterStatus(søknadId: SøknadId, statusendring: Statusendring): Boolean {
+    suspend fun oppdaterStatus(søknadId: BehovsmeldingId, statusendring: Statusendring): Boolean {
         val status = statusendring.status
         log.info { "Oppdaterer status på søknad, søknadId: $søknadId, status: $status" }
         val result = søknadsbehandlingClient.oppdaterStatus(søknadId, statusendring)
@@ -137,7 +137,7 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
         return søknadsbehandlingClient.ordreSisteDøgn(søknadId)
     }
 
-    suspend fun slettSøknad(søknadId: SøknadId): Boolean {
+    suspend fun slettSøknad(søknadId: BehovsmeldingId): Boolean {
         log.info { "Sletter søknad, søknadId: $søknadId" }
         val result = søknadsbehandlingClient.oppdaterStatus(søknadId, BehovsmeldingStatus.SLETTET)
         val slettet = result > 0
