@@ -7,14 +7,14 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
+import no.nav.hjelpemidler.logging.secureLog
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
-import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
 import no.nav.hjelpemidler.soknad.mottak.melding.OrdrelinjeLagretMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import java.util.UUID
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class NyInfotrygdOrdrelinje(
     rapidsConnection: RapidsConnection,
@@ -36,17 +36,17 @@ class NyInfotrygdOrdrelinje(
         val eventId = packet.eventId
         val saksblokkOgSaksnr = packet.saksblokkOgSaksnr
         if (saksblokkOgSaksnr.isEmpty()) {
-            logger.info { "Hopper over event med ugyldig saksblokkOgSaksnr = '', eventId: $eventId" }
-            sikkerlogg.error { "Hopper over event med ugyldig saksblokkOgSaksnr = '', eventId: $eventId, packet: '${packet.toJson()}'" }
+            log.info { "Hopper over event med ugyldig saksblokkOgSaksnr = '', eventId: $eventId" }
+            secureLog.error { "Hopper over event med ugyldig saksblokkOgSaksnr = '', eventId: $eventId, packet: '${packet.toJson()}'" }
             return
         }
         if (eventId in skipList) {
-            logger.info { "Hopper over event i skipList: $eventId" }
-            sikkerlogg.error { "Skippet event: ${packet.toJson()}" }
+            log.info { "Hopper over event i skipList: $eventId" }
+            secureLog.error { "Skippet event: ${packet.toJson()}" }
             return
         }
         try {
-            logger.info { "Infotrygd-ordrelinje fra OEBS mottatt med eventId: $eventId" }
+            log.info { "Infotrygd-ordrelinje fra OEBS mottatt med eventId: $eventId" }
 
             // Match ordrelinje to Infotrygd-table
             val fnrBruker = packet.fnrBruker
@@ -60,7 +60,7 @@ class NyInfotrygdOrdrelinje(
                         it.first()
                     } else {
                         if (it.count() > 1) {
-                            sikkerlogg.warn { "Fant flere søknader med matchende fnr+saksblokkOgSaksnr+vedtaksdato (saksblokkOgSaksnr: $saksblokkOgSaksnr, vedtaksdato: $vedtaksdato, antallTreff: ${it.count()}, id-er: $it)" }
+                            secureLog.warn { "Fant flere søknader med matchende fnr+saksblokkOgSaksnr+vedtaksdato (saksblokkOgSaksnr: $saksblokkOgSaksnr, vedtaksdato: $vedtaksdato, antallTreff: ${it.count()}, id-er: $it)" }
                         }
                         null
                     }
@@ -89,7 +89,7 @@ class NyInfotrygdOrdrelinje(
                             it.first()
                         } else {
                             if (it.count() > 1) {
-                                logger.info { "Fant flere søknader på bruker som ikke har fått vedtaksdato enda, kan derfor ikke matche til korrekt søknad uten mer informasjon (antall: ${it.count()})" }
+                                log.info { "Fant flere søknader på bruker som ikke har fått vedtaksdato enda, kan derfor ikke matche til korrekt søknad uten mer informasjon (antall: ${it.count()})" }
                             }
                             null
                         }
@@ -105,16 +105,16 @@ class NyInfotrygdOrdrelinje(
                     )
 
                     if (harVedtakInfotrygd) {
-                        logger.info { "Ordrelinje med eventId: $eventId matchet indirekte mot søknad med sjekk av Infotrygd-databasen (vedtaksdato: $vedtaksdato, saksblokkOgSaksnr: $saksblokkOgSaksnr)" }
+                        log.info { "Ordrelinje med eventId: $eventId matchet indirekte mot søknad med sjekk av Infotrygd-databasen (vedtaksdato: $vedtaksdato, saksblokkOgSaksnr: $saksblokkOgSaksnr)" }
                     } else {
-                        logger.warn { "Fant en søknadId uten vedtaksdato i databasen for ordrelinje med eventId: $eventId, men fant ikke avgjørelsen i Infotrygd-databasen" }
+                        log.warn { "Fant en søknadId uten vedtaksdato i databasen for ordrelinje med eventId: $eventId, men fant ikke avgjørelsen i Infotrygd-databasen" }
                         // Do not use it if we do not find a match
                         søknadId = null
                     }
                 }
 
                 if (søknadId == null) {
-                    logger.warn { "Ordrelinje med eventId: $eventId kan ikke matches mot en søknadId (vedtaksdato: $vedtaksdato, saksblokkOgSaksnr: $saksblokkOgSaksnr)" }
+                    log.warn { "Ordrelinje med eventId: $eventId kan ikke matches mot en søknadId (vedtaksdato: $vedtaksdato, saksblokkOgSaksnr: $saksblokkOgSaksnr)" }
                     return
                 }
             }
@@ -132,7 +132,7 @@ class NyInfotrygdOrdrelinje(
                 søknadsbehandlingService.oppdaterStatus(søknadId, BehovsmeldingStatus.UTSENDING_STARTET)
 
                 if (ordrelinje.forDel) {
-                    logger.info { "Ordrelinje for 'Del' lagret: $søknadId" }
+                    log.info { "Ordrelinje for 'Del' lagret: $søknadId" }
                     // Vi skal ikke agere ytterligere på disse
                     return
                 }
@@ -141,16 +141,16 @@ class NyInfotrygdOrdrelinje(
                     val behovsmeldingType = søknadsbehandlingService.hentBehovsmeldingstype(søknadId)
                     context.publish(fnrBruker, OrdrelinjeLagretMelding(ordrelinje, behovsmeldingType))
                     Prometheus.ordrelinjeVideresendtCounter.increment()
-                    logger.info { "Ordrelinje sendt, søknadId: $søknadId" }
-                    sikkerlogg.info { "Ordrelinje sendt, søknadId: $søknadId, fnrBruker: $fnrBruker" }
+                    log.info { "Ordrelinje sendt, søknadId: $søknadId" }
+                    secureLog.info { "Ordrelinje sendt, søknadId: $søknadId, fnrBruker: $fnrBruker" }
                 } else {
-                    logger.info { "Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId" }
+                    log.info { "Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId" }
                 }
             } else if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
-                logger.info { "Skippet utsending av SMS-varsel for innkommende ordrelinje siden vi mottok ordrelinjen før vedtaket" }
+                log.info { "Skippet utsending av SMS-varsel for innkommende ordrelinje siden vi mottok ordrelinjen før vedtaket" }
             }
         } catch (e: Exception) {
-            logger.error(e) { "Håndtering av event $eventId feilet" }
+            log.error(e) { "Håndtering av event $eventId feilet" }
             throw e
         }
     }

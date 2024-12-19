@@ -40,7 +40,7 @@ import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.time.Duration.Companion.seconds
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 fun main() {
 
@@ -115,9 +115,9 @@ private fun startSøknadUtgåttScheduling(søknadsgodkjenningService: Søknadsgo
     timer.scheduleAtFixedRate(60000, 1000 * 60 * 60) {
         runBlocking(Dispatchers.IO) {
             launch {
-                logger.info { "Markerer utgåtte søknader..." }
+                log.info { "Markerer utgåtte søknader..." }
                 val antallUtgåtte = søknadsgodkjenningService.slettUtgåtteSøknader()
-                logger.info { "Antall utgåtte søknader: $antallUtgåtte" }
+                log.info { "Antall utgåtte søknader: $antallUtgåtte" }
             }
         }
     }

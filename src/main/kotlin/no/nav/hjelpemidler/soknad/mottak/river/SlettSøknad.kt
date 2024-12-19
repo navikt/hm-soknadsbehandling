@@ -7,7 +7,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
-import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
+import no.nav.hjelpemidler.logging.secureLog
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import java.time.LocalDateTime
@@ -43,7 +43,7 @@ class SlettSøknad(
                 context.publish(fnrBruker, message)
                 Prometheus.søknadSlettetAvBrukerCounter.increment()
                 log.info { "Søknad er slettet av bruker: $søknadId" }
-                sikkerlogg.info { "Søknad er slettet med søknadId: $søknadId, fnr: $fnrBruker" }
+                secureLog.info { "Søknad er slettet med søknadId: $søknadId, fnr: $fnrBruker" }
             }
         } catch (e: Exception) {
             log.error(e) { "Håndtering av brukers sletting av søknadId: $søknadId feilet" }

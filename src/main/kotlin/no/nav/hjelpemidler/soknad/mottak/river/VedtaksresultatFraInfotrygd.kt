@@ -14,7 +14,7 @@ import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class VedtaksresultatFraInfotrygd(
     rapidsConnection: RapidsConnection,
@@ -81,7 +81,7 @@ class VedtaksresultatFraInfotrygd(
             val behovsmeldingType = søknadsbehandlingService.hentBehovsmeldingstype(søknadId)
             context.publish(fnrBruker, OrdrelinjeLagretMelding(søknadId, fnrBruker, behovsmeldingType))
             Prometheus.ordrelinjeVideresendtCounter.increment()
-            logger.info { "Ordrelinje sendt ved vedtak, søknadId: $søknadId" }
+            log.info { "Ordrelinje sendt ved vedtak, søknadId: $søknadId" }
         }
     }
 }

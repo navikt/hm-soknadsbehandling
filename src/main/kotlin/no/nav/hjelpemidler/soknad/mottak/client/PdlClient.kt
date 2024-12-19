@@ -18,7 +18,7 @@ import no.nav.hjelpemidler.http.openid.TokenSetProvider
 import no.nav.hjelpemidler.http.openid.openID
 import no.nav.hjelpemidler.soknad.mottak.httpClient
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class PdlClient(
     private val baseUrl: String,
@@ -44,7 +44,7 @@ class PdlClient(
                     error("Feil ved henting av personinformasjon fra PDL, errors: '${it.get("errors")}'")
                 }
             }.onFailure {
-                logger.error(it) { "Feil ved kall til PDL" }
+                log.error(it) { "Feil ved kall til PDL" }
                 throw it
             }.getOrThrow()
         }

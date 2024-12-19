@@ -7,7 +7,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class OppgaveSink(
     rapidsConnection: RapidsConnection,
@@ -34,14 +34,14 @@ class OppgaveSink(
         try {
             val rowsUpdated = søknadsbehandlingClient.oppdaterOppgaveId(søknadId, oppgaveId)
             if (rowsUpdated > 0) {
-                logger.info { "Søknad med søknadId: $søknadId oppdatert med oppgaveId: $oppgaveId" }
+                log.info { "Søknad med søknadId: $søknadId oppdatert med oppgaveId: $oppgaveId" }
             } else {
-                logger.error {
+                log.error {
                     "Kunne ikke oppdatere søknadId: $søknadId med oppgaveId: $oppgaveId. Kontroller at søknadId eksisterer og ikke allerede har registrert en oppgaveId."
                 }
             }
         } catch (e: Exception) {
-            logger.error(e) { "Håndtering av ny oppgaveId: $oppgaveId for søknadId: $søknadId feilet" }
+            log.error(e) { "Håndtering av ny oppgaveId: $oppgaveId for søknadId: $søknadId feilet" }
             throw e
         }
     }

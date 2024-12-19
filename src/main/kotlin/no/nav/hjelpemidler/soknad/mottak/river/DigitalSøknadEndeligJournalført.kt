@@ -8,13 +8,13 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.InfotrygdSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
-import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
+import no.nav.hjelpemidler.logging.secureLog
 import no.nav.hjelpemidler.soknad.mottak.melding.OvervåkVedtaksresultatMelding
 import no.nav.hjelpemidler.soknad.mottak.melding.SøknadUnderBehandlingMelding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import java.util.UUID
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class DigitalSøknadEndeligJournalført(
     rapidsConnection: RapidsConnection,
@@ -42,9 +42,9 @@ class DigitalSøknadEndeligJournalført(
 
         // fixme -> vi kan vel fjerne dette nå eller?
         if (packet.søknadId == UUID.fromString("1a404d1a-4cd9-4eb9-89f9-fa964230b8fe")) {
-            logger.info { "Tar søknadId: ${packet.søknadId} ut av køen og logger til sikkerlogg her" }
+            log.info { "Tar søknadId: ${packet.søknadId} ut av køen og logger til sikkerlogg her" }
             val rawJson = packet.toJson()
-            sikkerlogg.debug { "JSON for søknad som ble skippet, søknadId: ${packet.søknadId}, json: $rawJson" }
+            secureLog.debug { "JSON for søknad som ble skippet, søknadId: ${packet.søknadId}, json: $rawJson" }
             return
         }
 
@@ -59,7 +59,7 @@ class DigitalSøknadEndeligJournalført(
 
         // Melding til Ditt NAV
         context.publish(fnrBruker, SøknadUnderBehandlingMelding(søknadId, fnrBruker, behovsmeldingType))
-        logger.info {
+        log.info {
             val type = behovsmeldingType.toString().lowercase()
             "Endelig journalført digital $type mottatt, den er lagret og det er gitt beskjed til hm-infotrygd-poller og hm-ditt-nav for søknadId: $søknadId"
         }

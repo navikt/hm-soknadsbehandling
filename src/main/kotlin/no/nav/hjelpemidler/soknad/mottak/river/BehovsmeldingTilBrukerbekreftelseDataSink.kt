@@ -8,15 +8,15 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
+import no.nav.hjelpemidler.logging.secureLog
 import no.nav.hjelpemidler.serialization.jackson.jsonMapper
-import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
 import no.nav.hjelpemidler.soknad.mottak.melding.BehovsmeldingTilGodkjenningMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import java.util.UUID
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 /**
  * Plukker opp behovsmeldinger som må bekreftes av bruker (i hm-dinehjelpemidler på Mitt NAV) før de kan sendes videre i flyten.
@@ -46,7 +46,7 @@ class BehovsmeldingTilBrukerbekreftelseDataSink(
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         if (packet.eventId in skipList) {
-            logger.info { "Hopper over event i skipList: ${packet.eventId}" }
+            log.info { "Hopper over event i skipList: ${packet.eventId}" }
             return
         }
 
@@ -56,7 +56,7 @@ class BehovsmeldingTilBrukerbekreftelseDataSink(
         try {
             val søknad = søknadsbehandlingService.finnSøknad(søknadId)
             if (søknad != null) {
-                logger.warn { "Søknaden er allerede lagret i databasen: $søknadId" }
+                log.warn { "Søknaden er allerede lagret i databasen: $søknadId" }
                 return
             }
 
@@ -74,17 +74,17 @@ class BehovsmeldingTilBrukerbekreftelseDataSink(
                 }
             )
 
-            logger.info { "Behovsmelding til godkjenning mottatt, søknadId: $søknadId (gjelder: '${grunnlag.behovsmeldingGjelder}')" }
+            log.info { "Behovsmelding til godkjenning mottatt, søknadId: $søknadId (gjelder: '${grunnlag.behovsmeldingGjelder}')" }
 
             søknadsbehandlingService.lagreBehovsmelding(grunnlag)
 
             context.publish(fnrBruker, BehovsmeldingTilGodkjenningMelding(grunnlag))
             Prometheus.søknadTilGodkjenningCounter.increment()
-            logger.info { "Behovsmelding klar til godkjenning, søknadId: $søknadId" }
-            sikkerlogg.info { "Behovsmelding klar til godkjenning, søknadId: $søknadId, fnrBruker: $fnrBruker" }
+            log.info { "Behovsmelding klar til godkjenning, søknadId: $søknadId" }
+            secureLog.info { "Behovsmelding klar til godkjenning, søknadId: $søknadId, fnrBruker: $fnrBruker" }
             metrics.digitalSøknad(fnrBruker, søknadId)
         } catch (e: Exception) {
-            logger.error(e) { "Håndtering av eventId: ${packet.eventId}, søknadId: $søknadId feilet" }
+            log.error(e) { "Håndtering av eventId: ${packet.eventId}, søknadId: $søknadId feilet" }
             throw e
         }
     }

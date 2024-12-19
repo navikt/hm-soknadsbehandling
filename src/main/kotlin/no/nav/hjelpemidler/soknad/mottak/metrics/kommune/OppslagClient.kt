@@ -15,7 +15,7 @@ import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.httpClient
 import java.time.LocalDateTime
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 interface OppslagClient {
     suspend fun hentAlleKommuner(): Map<String, KommuneDto>
@@ -33,12 +33,12 @@ class OppslagClientImpl(
 
     override suspend fun hentAlleKommuner(): Map<String, KommuneDto> {
         val kommunenrUrl = "$oppslagUrl/geografi/kommunenr"
-        logger.info { "Henter alle kommuner med url: $kommunenrUrl" }
+        log.info { "Henter alle kommuner med url: $kommunenrUrl" }
         return withContext(Dispatchers.IO) {
             runCatching {
                 httpClient.get(kommunenrUrl).body<Map<String, KommuneDto>>()
             }.onFailure {
-                logger.error(it) { "Henting av kommuner feilet" }
+                log.error(it) { "Henting av kommuner feilet" }
             }
         }.getOrThrow()
     }

@@ -11,7 +11,7 @@ import no.nav.hjelpemidler.serialization.jackson.jsonMapper
 import no.nav.hjelpemidler.soknad.mottak.river.AsyncPacketListener
 import java.time.LocalDate
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class DelbestillingOrdrelinjeStatus(
     rapidsConnection: RapidsConnection,
@@ -40,7 +40,7 @@ class DelbestillingOrdrelinjeStatus(
                     men hm-delbestilling-api vet det utifra om den kjenner igjen ordrenummeret.
                     Så vi sender alt til hm-delbestilling-api, så må den ignorere det som ikke er relatert til delbestillinger.
                  */
-                logger.info { "Mottok skipningsbekreftelse for ordrenummer: $ordrenummer på hmsnr: $hmsnr" }
+                log.info { "Mottok skipningsbekreftelse for ordrenummer: $ordrenummer på hmsnr: $hmsnr" }
                 delbestillingClient.oppdaterDellinjeStatus(
                     ordrenummer,
                     Status.SKIPNINGSBEKREFTET,
@@ -48,11 +48,11 @@ class DelbestillingOrdrelinjeStatus(
                     datoOppdatert
                 )
             } else {
-                logger.info { "Ignorerer skipningsbekreftelse for ordrenummer: $ordrenummer med hjelpemiddeltype: $hjelpemiddeltype" }
+                log.info { "Ignorerer skipningsbekreftelse for ordrenummer: $ordrenummer med hjelpemiddeltype: $hjelpemiddeltype" }
             }
 
         } catch (e: Exception) {
-            logger.error(e) { "Håndtering av hm-uvalidert-ordrelinje event feilet" }
+            log.error(e) { "Håndtering av hm-uvalidert-ordrelinje event feilet" }
             throw e
         }
     }

@@ -18,7 +18,7 @@ import no.nav.hjelpemidler.http.openid.openID
 import no.nav.hjelpemidler.soknad.mottak.httpClient
 import java.time.LocalDate
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class InfotrygdProxyClient(
     private val baseUrl: String,
@@ -52,7 +52,7 @@ class InfotrygdProxyClient(
                     setBody(Request(fnr, saksblokk, saksnr, vedtaksdato))
                 }.body<Response>().resultat
             }.onFailure {
-                logger.error(it) { it.message }
+                log.error(it) { it.message }
             }.getOrDefault(false)
         }
     }

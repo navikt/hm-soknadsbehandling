@@ -16,7 +16,7 @@ import no.nav.hjelpemidler.http.openid.openID
 import no.nav.hjelpemidler.soknad.mottak.httpClient
 import java.time.LocalDate
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class DelbestillingClient(
     private val baseUrl: String,
@@ -38,7 +38,7 @@ class DelbestillingClient(
                     setBody(StatusOppdateringDto(status, ordrenummer))
                 }
             } catch (e: Exception) {
-                logger.error(e) { "Request for å oppdatere status for delbestillingId: $delbestillingId feilet" }
+                log.error(e) { "Request for å oppdatere status for delbestillingId: $delbestillingId feilet" }
                 throw e
             }
         }
@@ -51,7 +51,7 @@ class DelbestillingClient(
                     setBody(DellinjeStatusOppdateringDto(status, hmsnr, datoOppdatert))
                 }
             } catch (e: Exception) {
-                logger.error(e) { "Request for å skipningsbekrefte dellinje feilet, ordrenr: $ordrenummer, hmsnr: $hmsnr." }
+                log.error(e) { "Request for å skipningsbekrefte dellinje feilet, ordrenr: $ordrenummer, hmsnr: $hmsnr." }
                 throw e
             }
         }

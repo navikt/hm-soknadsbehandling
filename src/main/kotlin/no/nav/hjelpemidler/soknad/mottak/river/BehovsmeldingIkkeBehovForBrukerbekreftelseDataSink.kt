@@ -10,15 +10,15 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.Signaturtype
+import no.nav.hjelpemidler.logging.secureLog
 import no.nav.hjelpemidler.serialization.jackson.jsonMapper
-import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
 import no.nav.hjelpemidler.soknad.mottak.melding.BehovsmeldingMottattMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import java.util.UUID
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 /**
  * Plukker opp behovsmeldinger som er sendt inn av formidler og hvor det ikke er videre behov for bekreftelse fra bruker,
@@ -64,7 +64,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         if (packet.eventId in skipList) {
-            logger.info { "Hopper over event i skipList: ${packet.eventId}" }
+            log.info { "Hopper over event i skipList: ${packet.eventId}" }
             return
         }
 
@@ -91,17 +91,17 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
                 }
             )
 
-            logger.info { "Behovsmelding med fullmakt eller uten behov for signatur mottatt, søknadId: $søknadId (gjelder: '${grunnlag.behovsmeldingGjelder}')" }
+            log.info { "Behovsmelding med fullmakt eller uten behov for signatur mottatt, søknadId: $søknadId (gjelder: '${grunnlag.behovsmeldingGjelder}')" }
 
             søknadsbehandlingService.lagreBehovsmelding(grunnlag)
 
             context.publish(fnrBruker, BehovsmeldingMottattMelding("hm-behovsmeldingMottatt", grunnlag))
             Prometheus.søknadMedFullmaktCounter.increment()
-            logger.info { "Behovsmelding sendt, søknadId: $søknadId" }
-            sikkerlogg.info { "Behovsmelding sendt, søknadId: $søknadId, fnrBruker: $fnrBruker" }
+            log.info { "Behovsmelding sendt, søknadId: $søknadId" }
+            secureLog.info { "Behovsmelding sendt, søknadId: $søknadId, fnrBruker: $fnrBruker" }
             metrics.digitalSøknad(fnrBruker, søknadId)
         } catch (e: Exception) {
-            logger.error(e) { "Håndtering av eventId: ${packet.eventId}, søknadId: $søknadId feilet" }
+            log.error(e) { "Håndtering av eventId: ${packet.eventId}, søknadId: $søknadId feilet" }
             throw e
         }
     }

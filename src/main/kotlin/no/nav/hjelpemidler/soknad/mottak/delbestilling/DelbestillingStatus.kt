@@ -11,7 +11,7 @@ import no.nav.hjelpemidler.serialization.jackson.jsonMapper
 import no.nav.hjelpemidler.soknad.mottak.river.AsyncPacketListener
 import no.nav.hjelpemidler.soknad.mottak.river.uuidValue
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class DelbestillingStatus(
     rapidsConnection: RapidsConnection,
@@ -34,9 +34,9 @@ class DelbestillingStatus(
         val status = kvittering.status
         val ordrenummer = kvittering.ordrenummer
 
-        logger.info { "Oppdaterer status for delbestilling med saksnummer: $saksnummer (hmdel_$saksnummer, ordrenummer: $ordrenummer) til status: $status" }
+        log.info { "Oppdaterer status for delbestilling med saksnummer: $saksnummer (hmdel_$saksnummer, ordrenummer: $ordrenummer) til status: $status" }
         delbestillingClient.oppdaterStatus(saksnummer, status, ordrenummer)
-        logger.info { "Status for delbestilling med saksnummer: $saksnummer (hmdel_$saksnummer, ordrenummer: $ordrenummer) oppdatert OK" }
+        log.info { "Status for delbestilling med saksnummer: $saksnummer (hmdel_$saksnummer, ordrenummer: $ordrenummer) oppdatert OK" }
     }
 }
 

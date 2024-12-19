@@ -7,13 +7,13 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
-import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
+import no.nav.hjelpemidler.logging.secureLog
 import no.nav.hjelpemidler.soknad.mottak.melding.OrdrelinjeLagretMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import java.util.UUID
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class NyHotsakOrdrelinje(
     rapidsConnection: RapidsConnection,
@@ -32,27 +32,27 @@ class NyHotsakOrdrelinje(
         val eventId = packet.eventId
         val sakId = packet.sakId
         if (sakId.isEmpty()) {
-            logger.info { "Hopper over event med ugyldig Hotsak-sakId = '', eventId: $eventId" }
-            sikkerlogg.error { "Hopper over event med ugyldig Hotsak-sakId = '', eventId: $eventId, packet: '${packet.toJson()}'" }
+            log.info { "Hopper over event med ugyldig Hotsak-sakId = '', eventId: $eventId" }
+            secureLog.error { "Hopper over event med ugyldig Hotsak-sakId = '', eventId: $eventId, packet: '${packet.toJson()}'" }
             return
         }
         if (eventId in skipList) {
-            logger.info { "Hopper over event i skipList: $eventId" }
-            sikkerlogg.error { "Hopper over event i skipList, packet: ${packet.toJson()}" }
+            log.info { "Hopper over event i skipList: $eventId" }
+            secureLog.error { "Hopper over event i skipList, packet: ${packet.toJson()}" }
             return
         }
         try {
-            logger.info { "Hotsak-ordrelinje fra OEBS mottatt med eventId: $eventId, sakId: $sakId" }
+            log.info { "Hotsak-ordrelinje fra OEBS mottatt med eventId: $eventId, sakId: $sakId" }
 
             // Finn søknad for Hotsak-sak
             val søknad = søknadsbehandlingService.finnSøknadForSak(HotsakSakId(sakId))
             if (søknad == null) {
-                logger.warn { "Ordrelinje med eventId: $eventId og sakId: $sakId kan ikke matches mot en søknadId" }
+                log.warn { "Ordrelinje med eventId: $eventId og sakId: $sakId kan ikke matches mot en søknadId" }
                 return
             }
             val søknadId = søknad.søknadId
 
-            logger.info { "Fant søknadId: $søknadId fra Hotsak-sakId: $sakId" }
+            log.info { "Fant søknadId: $søknadId fra Hotsak-sakId: $sakId" }
 
             val fnrBruker = packet.fnrBruker
             val data = packet.data
@@ -78,7 +78,7 @@ class NyHotsakOrdrelinje(
             )
 
             if (ordrelinje.forDel) {
-                logger.info { "Ordrelinje for 'Del' lagret, søknadId: $søknadId" }
+                log.info { "Ordrelinje for 'Del' lagret, søknadId: $søknadId" }
                 // Vi skal ikke agere ytterligere på disse
                 return
             }
@@ -87,13 +87,13 @@ class NyHotsakOrdrelinje(
             if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
                 context.publish(fnrBruker, OrdrelinjeLagretMelding(ordrelinje, søknad.behovsmeldingstype))
                 Prometheus.ordrelinjeVideresendtCounter.increment()
-                logger.info { "Ordrelinje sendt, søknadId: $søknadId" }
-                sikkerlogg.info { "Ordrelinje sendt, søknadId: $søknadId, fnrBruker: $fnrBruker" }
+                log.info { "Ordrelinje sendt, søknadId: $søknadId" }
+                secureLog.info { "Ordrelinje sendt, søknadId: $søknadId, fnrBruker: $fnrBruker" }
             } else {
-                logger.info { "Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId" }
+                log.info { "Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId" }
             }
         } catch (e: Exception) {
-            logger.error(e) { "Håndtering av eventId: $eventId feilet" }
+            log.error(e) { "Håndtering av eventId: $eventId feilet" }
             throw e
         }
     }

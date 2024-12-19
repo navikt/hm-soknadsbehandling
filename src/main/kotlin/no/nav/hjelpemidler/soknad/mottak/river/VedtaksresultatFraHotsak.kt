@@ -10,7 +10,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
 import no.nav.hjelpemidler.soknad.mottak.melding.VedtaksresultatLagretMelding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class VedtaksresultatFraHotsak(
     rapidsConnection: RapidsConnection,
