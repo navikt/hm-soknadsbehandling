@@ -19,7 +19,7 @@ class DelbestillingStatus(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            precondition { it.requireAny("eventName", listOf("hm-ordrekvittering-delbestilling-mottatt")) }
+            precondition { it.requireValue("eventName", "hm-ordrekvittering-delbestilling-mottatt") }
             validate { it.requireKey("eventId", "opprettet", "kvittering") }
         }.register(this)
     }

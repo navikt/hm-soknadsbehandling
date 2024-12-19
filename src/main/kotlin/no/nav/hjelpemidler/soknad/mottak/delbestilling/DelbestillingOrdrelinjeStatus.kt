@@ -19,7 +19,7 @@ class DelbestillingOrdrelinjeStatus(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            precondition { it.requireAny("eventName", listOf("hm-uvalidert-ordrelinje")) }
+            precondition { it.requireValue("eventName", "hm-uvalidert-ordrelinje") }
             validate { it.requireKey("eventId", "eventCreated", "orderLine") }
         }.register(this)
     }

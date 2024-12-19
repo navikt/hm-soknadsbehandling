@@ -33,8 +33,8 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            precondition { it.requireValue("eventName", "nySoknad") }
             precondition {
+                it.requireValue("eventName", "nySoknad")
                 it.requireAny(
                     "signatur",
                     listOf(
@@ -45,9 +45,11 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
                     ).map(Signaturtype::name)
                 )
             }
-            validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId") }
-            validate { it.forbid("soknadId") }
-            validate { it.interestedIn("behovsmelding") } // vil ikke eksistere for brukerpassbytte
+            validate {
+                it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId")
+                it.forbid("soknadId")
+                it.interestedIn("behovsmelding") // vil ikke eksistere for brukerpassbytte
+            }
         }.register(this)
     }
 

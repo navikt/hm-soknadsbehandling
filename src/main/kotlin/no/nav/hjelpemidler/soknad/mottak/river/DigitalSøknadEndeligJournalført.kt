@@ -23,11 +23,16 @@ class DigitalSøknadEndeligJournalført(
     init {
         River(rapidsConnection).apply {
             precondition { it.requireValue("eventName", "DigitalSoeknadEndeligJournalfoert") }
-            validate { it.requireKey("soknadId", "fodselNrBruker") }
-            validate { it.requireKey("hendelse") }
-            validate { it.requireKey("hendelse.journalingEventSAF") }
-            validate { it.requireKey("hendelse.journalingEventSAF.sak") }
-            validate { it.requireKey("hendelse.journalingEventSAF.sak.fagsakId") }
+            validate {
+                it.requireKey(
+                    "soknadId",
+                    "fodselNrBruker",
+                    "hendelse",
+                    "hendelse.journalingEventSAF",
+                    "hendelse.journalingEventSAF.sak",
+                    "hendelse.journalingEventSAF.sak.fagsakId",
+                )
+            }
         }.register(this)
     }
 

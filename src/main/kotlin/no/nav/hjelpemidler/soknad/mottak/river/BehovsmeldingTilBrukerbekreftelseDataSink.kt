@@ -28,11 +28,15 @@ class BehovsmeldingTilBrukerbekreftelseDataSink(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            precondition { it.requireValue("eventName", "nySoknad") }
-            precondition { it.requireValue("signatur", "BRUKER_BEKREFTER") }
-            validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId") }
-            validate { it.forbid("soknadId") }
-            validate { it.interestedIn("behovsmelding") }
+            precondition {
+                it.requireValue("eventName", "nySoknad")
+                it.requireValue("signatur", "BRUKER_BEKREFTER")
+            }
+            validate {
+                it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId")
+                it.forbid("soknadId")
+                it.interestedIn("behovsmelding")
+            }
         }.register(this)
     }
 
