@@ -23,7 +23,7 @@ class NyInfotrygdOrdrelinje(
 ) : NyOrdrelinje(), AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "hm-NyOrdrelinje") }
+            precondition { it.requireValue("eventName", "hm-NyOrdrelinje") }
             validate { it.requireKey("eventId", "opprettet", "fnrBruker", "data") }
         }.register(this)
     }

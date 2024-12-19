@@ -15,8 +15,8 @@ class OppgaveSink(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate {
-                it.demandAny(
+            precondition {
+                it.requireAny(
                     "eventName",
                     listOf("hm-OppgaveOpprettet", "hm-opprettetJournalføringsoppgaveForTilbakeførtSak")
                 )

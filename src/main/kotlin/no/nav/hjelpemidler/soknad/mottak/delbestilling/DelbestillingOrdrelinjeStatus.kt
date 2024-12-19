@@ -7,7 +7,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.hjelpemidler.soknad.mottak.jsonMapper
+import no.nav.hjelpemidler.serialization.jackson.jsonMapper
 import no.nav.hjelpemidler.soknad.mottak.river.AsyncPacketListener
 import java.time.LocalDate
 
@@ -19,7 +19,7 @@ class DelbestillingOrdrelinjeStatus(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandAny("eventName", listOf("hm-uvalidert-ordrelinje")) }
+            precondition { it.requireAny("eventName", listOf("hm-uvalidert-ordrelinje")) }
             validate { it.requireKey("eventId", "eventCreated", "orderLine") }
         }.register(this)
     }

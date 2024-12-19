@@ -1,8 +1,8 @@
 package no.nav.hjelpemidler.soknad.mottak.melding
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
+import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
 import java.time.Instant
 import java.util.UUID

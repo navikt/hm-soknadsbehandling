@@ -4,7 +4,7 @@ import com.fasterxml.jackson.module.kotlin.convertValue
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
-import no.nav.hjelpemidler.soknad.mottak.jsonMapper
+import no.nav.hjelpemidler.serialization.jackson.jsonMapper
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 
 fun <T : Any> MessageContext.publish(key: String, message: T): Unit =

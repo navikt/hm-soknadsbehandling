@@ -23,7 +23,7 @@ class GodkjennSøknad(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "godkjentAvBruker") }
+            precondition { it.requireValue("eventName", "godkjentAvBruker") }
             validate { it.requireKey("soknadId") }
         }.register(this)
     }

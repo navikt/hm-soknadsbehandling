@@ -25,7 +25,7 @@ class PapirsøknadEndeligJournalført(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "PapirSoeknadEndeligJournalfoert") }
+            precondition { it.requireValue("eventName", "PapirSoeknadEndeligJournalfoert") }
             validate {
                 it.requireKey(
                     "fodselNrBruker",

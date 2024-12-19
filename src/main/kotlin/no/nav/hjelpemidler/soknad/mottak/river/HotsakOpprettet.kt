@@ -17,7 +17,7 @@ class HotsakOpprettet(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "hm-sakOpprettet") }
+            precondition { it.requireValue("eventName", "hm-sakOpprettet") }
             validate { it.requireKey("soknadId", "sakId") }
         }.register(this)
     }

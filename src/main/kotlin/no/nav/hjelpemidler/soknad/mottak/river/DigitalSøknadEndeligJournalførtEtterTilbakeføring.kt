@@ -19,7 +19,7 @@ class DigitalSøknadEndeligJournalførtEtterTilbakeføring(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "DigitalSoeknadEndeligJournalfoertEtterTilbakefoering") }
+            precondition { it.requireValue("eventName", "DigitalSoeknadEndeligJournalfoertEtterTilbakefoering") }
             validate { it.requireKey("soknadId", "fodselNrBruker") }
             validate { it.requireKey("hendelse") }
             validate { it.requireKey("hendelse.journalingEventSAF") }

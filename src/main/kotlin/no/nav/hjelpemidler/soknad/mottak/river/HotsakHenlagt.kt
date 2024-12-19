@@ -19,7 +19,7 @@ class HotsakHenlagt(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "hm-SakHenlagt") }
+            precondition { it.requireValue("eventName", "hm-SakHenlagt") }
             validate {
                 it.requireKey(
                     "søknadId",

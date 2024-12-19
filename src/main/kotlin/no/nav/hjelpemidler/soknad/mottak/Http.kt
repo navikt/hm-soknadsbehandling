@@ -5,6 +5,7 @@ import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.plugins.HttpTimeout
 import no.nav.hjelpemidler.http.jackson
+import no.nav.hjelpemidler.serialization.jackson.jsonMapper
 
 fun httpClient(block: HttpClientConfig<*>.() -> Unit = {}): HttpClient = HttpClient(Apache) {
     expectSuccess = true

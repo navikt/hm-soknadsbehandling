@@ -23,7 +23,7 @@ class VedtaksresultatFraInfotrygd(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "hm-VedtaksResultatFraInfotrygd") }
+            precondition { it.requireValue("eventName", "hm-VedtaksResultatFraInfotrygd") }
             validate { it.requireKey("søknadID", "fnrBruker", "vedtaksResultat", "vedtaksDato", "soknadsType") }
         }.register(this)
     }

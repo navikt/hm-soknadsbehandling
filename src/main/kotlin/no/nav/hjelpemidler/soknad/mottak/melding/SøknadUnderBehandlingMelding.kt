@@ -1,7 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.melding
 
-import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
 import java.util.UUID
 

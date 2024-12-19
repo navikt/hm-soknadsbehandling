@@ -10,7 +10,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.Signaturtype
-import no.nav.hjelpemidler.soknad.mottak.jsonMapper
+import no.nav.hjelpemidler.serialization.jackson.jsonMapper
 import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
 import no.nav.hjelpemidler.soknad.mottak.melding.BehovsmeldingMottattMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
@@ -33,9 +33,9 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "nySoknad") }
-            validate {
-                it.demandAny(
+            precondition { it.requireValue("eventName", "nySoknad") }
+            precondition {
+                it.requireAny(
                     "signatur",
                     listOf(
                         Signaturtype.FULLMAKT,

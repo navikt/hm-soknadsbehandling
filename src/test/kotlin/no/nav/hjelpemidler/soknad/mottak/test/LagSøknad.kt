@@ -1,11 +1,11 @@
 package no.nav.hjelpemidler.soknad.mottak.test
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
-import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
-import no.nav.hjelpemidler.soknad.mottak.jsonMapper
+import no.nav.hjelpemidler.serialization.jackson.jsonMapper
 import org.intellij.lang.annotations.Language
 import java.time.Instant
 

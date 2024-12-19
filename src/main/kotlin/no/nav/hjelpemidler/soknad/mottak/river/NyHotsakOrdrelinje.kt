@@ -21,7 +21,7 @@ class NyHotsakOrdrelinje(
 ) : NyOrdrelinje(), AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "hm-NyOrdrelinje-hotsak") }
+            precondition { it.requireValue("eventName", "hm-NyOrdrelinje-hotsak") }
             validate { it.requireKey("eventId", "opprettet", "fnrBruker", "data") }
         }.register(this)
     }

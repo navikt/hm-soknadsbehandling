@@ -8,7 +8,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
-import no.nav.hjelpemidler.soknad.mottak.jsonMapper
+import no.nav.hjelpemidler.serialization.jackson.jsonMapper
 import no.nav.hjelpemidler.soknad.mottak.logging.sikkerlogg
 import no.nav.hjelpemidler.soknad.mottak.melding.BehovsmeldingTilGodkjenningMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
@@ -28,8 +28,8 @@ class BehovsmeldingTilBrukerbekreftelseDataSink(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "nySoknad") }
-            validate { it.demandValue("signatur", "BRUKER_BEKREFTER") }
+            precondition { it.requireValue("eventName", "nySoknad") }
+            precondition { it.requireValue("signatur", "BRUKER_BEKREFTER") }
             validate { it.requireKey("fodselNrBruker", "fodselNrInnsender", "soknad", "eventId") }
             validate { it.forbid("soknadId") }
             validate { it.interestedIn("behovsmelding") }

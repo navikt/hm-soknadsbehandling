@@ -21,7 +21,7 @@ class SlettSøknad(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "slettetAvBruker") }
+            precondition { it.requireValue("eventName", "slettetAvBruker") }
             validate { it.requireKey("soknadId") }
         }.register(this)
     }

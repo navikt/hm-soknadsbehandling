@@ -17,7 +17,7 @@ class DigitalSøknadAutomatiskJournalført(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "hm-opprettetOgFerdigstiltJournalpost") }
+            precondition { it.requireValue("eventName", "hm-opprettetOgFerdigstiltJournalpost") }
             validate { it.requireKey("soknadId", "sakId", "joarkRef", "fnrBruker") }
         }.register(this)
     }

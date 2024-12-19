@@ -18,7 +18,7 @@ class VedtaksresultatFraHotsak(
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("eventName", "hm-SøknadInnvilget") }
+            precondition { it.requireValue("eventName", "hm-SøknadInnvilget") }
             validate { it.requireKey("søknadId", "fnrBruker", "vedtaksresultat", "opprettet") }
         }.register(this)
     }
