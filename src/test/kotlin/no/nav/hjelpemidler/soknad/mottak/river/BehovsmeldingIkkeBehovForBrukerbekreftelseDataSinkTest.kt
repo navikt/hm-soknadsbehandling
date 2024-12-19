@@ -326,7 +326,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
             """.trimIndent()
         )
 
-        shouldThrow<RiverRequiredKeyMissingException> {
+        shouldThrow<IllegalStateException> {
             rapid.sendTestMessage(forbiddenPacket.toString())
         }
     }
@@ -355,7 +355,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
             """.trimIndent()
         )
 
-        shouldThrow<RiverRequiredKeyMissingException> {
+        shouldThrow<IllegalStateException> {
             rapid.sendTestMessage(forbiddenPacket.toString())
         }
     }

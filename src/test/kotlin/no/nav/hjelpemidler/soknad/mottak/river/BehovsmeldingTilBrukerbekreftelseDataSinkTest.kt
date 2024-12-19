@@ -1,6 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -14,7 +15,6 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import no.nav.hjelpemidler.soknad.mottak.test.Json
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -190,7 +190,7 @@ class BehovsmeldingTilBrukerbekreftelseDataSinkTest {
             """.trimIndent()
         )
 
-        assertThrows(RiverRequiredKeyMissingException::class.java) {
+        shouldThrow<IllegalStateException> {
             rapid.sendTestMessage(forbiddenPacket.toString())
         }
     }
@@ -219,7 +219,7 @@ class BehovsmeldingTilBrukerbekreftelseDataSinkTest {
             """.trimIndent()
         )
 
-        assertThrows(RiverRequiredKeyMissingException::class.java) {
+        shouldThrow<IllegalStateException> {
             rapid.sendTestMessage(forbiddenPacket.toString())
         }
     }

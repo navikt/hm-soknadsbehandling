@@ -163,7 +163,7 @@ class GodkjennSøknadTest {
             }
         """.trimIndent()
 
-        shouldThrow<RiverRequiredKeyMissingException> {
+        shouldThrow<IllegalStateException> {
             rapid.sendTestMessage(invalidPacket)
         }
     }

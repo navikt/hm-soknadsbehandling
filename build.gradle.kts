@@ -39,13 +39,6 @@ dependencies {
         exclude("io.ktor", "ktor-client-cio") // prefer ktor-client-apache
     }
     implementation(libs.graphql.client.jackson)
-
-    // Test
-    testImplementation(libs.bundles.ktor.server.test)
-    testImplementation(libs.tbdLibs.rapidsAndRivers.test)
-    testImplementation(libs.handlebars)
-    testImplementation(libs.jackson.dataformat.yaml)
-    
 }
 
 java {
@@ -54,19 +47,27 @@ java {
     }
 }
 
-tasks {
-    test {
-        useJUnitPlatform()
-        testLogging {
-            events = setOf(TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+@Suppress("UnstableApiUsage")
+testing {
+    suites {
+        val test by getting(JvmTestSuite::class) {
+            useKotlinTest(libs.versions.kotlin.asProvider())
+            dependencies {
+                implementation(libs.handlebars)
+                implementation(libs.jackson.dataformat.yaml)
+                implementation(libs.kotest.assertions.core)
+                implementation(libs.ktor.server.test.host)
+                implementation(libs.mockk)
+                implementation(libs.tbdLibs.rapidsAndRivers.test)
+            }
+            targets.configureEach {
+                testTask {
+                    testLogging {
+                        events = setOf(TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+                    }
+                }
+            }
         }
-    }
-    compileKotlin {
-        dependsOn("spotlessApply")
-        dependsOn("spotlessCheck")
-    }
-    named("buildFatJar") {
-        dependsOn("test")
     }
 }
 
@@ -82,3 +83,5 @@ val graphqlIntrospectSchema by tasks.getting(GraphQLIntrospectSchemaTask::class)
     endpoint.set("https://hm-grunndata-search.intern.dev.nav.no/graphql")
     outputFile.set(file("src/main/resources/hmdb/schema.graphqls"))
 }
+
+tasks.shadowJar { mergeServiceFiles() }
