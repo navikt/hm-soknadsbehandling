@@ -9,7 +9,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
-import no.nav.hjelpemidler.soknad.mottak.asObject
+import no.nav.hjelpemidler.serialization.jackson.value
 import no.nav.hjelpemidler.soknad.mottak.melding.Melding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import java.time.LocalDateTime
@@ -29,7 +29,7 @@ class BestillingAvvistFraHotsak(
     private val JsonMessage.søknadId get() = uuidValue("søknadId")
     private val JsonMessage.fnrBruker get() = this["fodselsnummer"].textValue()
     private val JsonMessage.opprettet get() = this["opprettet"].asLocalDateTime()
-    private val JsonMessage.valgteÅrsaker get() = this["valgte_arsaker"].asObject<Set<String>>()
+    private val JsonMessage.valgteÅrsaker get() = this["valgte_arsaker"].value<Set<String>>()
     private val JsonMessage.begrunnelse get() = this["begrunnelse"].textValue()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {

@@ -5,14 +5,14 @@ import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
-import no.nav.hjelpemidler.soknad.mottak.asObject
+import no.nav.hjelpemidler.serialization.jackson.value
 
 abstract class NyOrdrelinje {
     protected val JsonMessage.eventId get() = uuidValue("eventId")
     protected val JsonMessage.opprettet get() = this["opprettet"].textValue()
     protected val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
-    protected val JsonMessage.data get() = this["data"].asObject<Map<String, Any?>>()
-    protected val JsonMessage.innkommendeOrdrelinje get() = this["data"].asObject<InnkommendeOrdrelinje>()
+    protected val JsonMessage.data get() = this["data"].value<Map<String, Any?>>()
+    protected val JsonMessage.innkommendeOrdrelinje get() = this["data"].value<InnkommendeOrdrelinje>()
 
     /**
      * Ordrelinje fra OEBS via hm-oebs-listener
@@ -35,23 +35,24 @@ abstract class NyOrdrelinje {
         val andre = mutableMapOf<String, Any?>()
 
         /**
-         * Transformer ordrelinje fra OEBS til ordrelinje for lagring i hm-soknadsbehandling-db
+         * Transformer ordrelinje fra OeBS til ordrelinje for lagring i hm-soknadsbehandling-db
          */
-        fun tilOrdrelinje(søknadId: BehovsmeldingId, fnrBruker: String, data: Map<String, Any?>): Ordrelinje = Ordrelinje(
-            søknadId = søknadId,
-            oebsId = oebsId,
-            fnrBruker = fnrBruker,
-            serviceforespørsel = serviceforespørsel,
-            ordrenr = ordrenr,
-            ordrelinje = ordrelinje,
-            delordrelinje = delordrelinje,
-            artikkelnr = artikkelnr,
-            antall = antall,
-            enhet = enhet,
-            produktgruppe = produktgruppe,
-            produktgruppenr = produktgruppenr,
-            hjelpemiddeltype = hjelpemiddeltype,
-            data = data,
-        )
+        fun tilOrdrelinje(søknadId: BehovsmeldingId, fnrBruker: String, data: Map<String, Any?>): Ordrelinje =
+            Ordrelinje(
+                søknadId = søknadId,
+                oebsId = oebsId,
+                fnrBruker = fnrBruker,
+                serviceforespørsel = serviceforespørsel,
+                ordrenr = ordrenr,
+                ordrelinje = ordrelinje,
+                delordrelinje = delordrelinje,
+                artikkelnr = artikkelnr,
+                antall = antall,
+                enhet = enhet,
+                produktgruppe = produktgruppe,
+                produktgruppenr = produktgruppenr,
+                hjelpemiddeltype = hjelpemiddeltype,
+                data = data,
+            )
     }
 }
