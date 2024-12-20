@@ -16,7 +16,6 @@ application {
 }
 
 dependencies {
-    implementation(libs.kotlin.stdlib)
     implementation(libs.kotlin.logging)
     implementation(libs.bundles.jackson)
     implementation(libs.rapidsAndRivers)
@@ -41,11 +40,7 @@ dependencies {
     implementation(libs.graphql.client.jackson)
 }
 
-java {
-    toolchain {
-        languageVersion.set(libs.versions.java.map(JavaLanguageVersion::of))
-    }
-}
+java { toolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
 
 @Suppress("UnstableApiUsage")
 testing {
