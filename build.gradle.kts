@@ -16,20 +16,20 @@ application {
 }
 
 dependencies {
-    implementation(libs.kotlin.logging)
-    implementation(libs.bundles.jackson)
-    implementation(libs.rapidsAndRivers)
-    implementation(libs.influxdb.client.kotlin)
-    runtimeOnly(libs.bundles.logging.runtime)
+    implementation(platform(libs.hotlibs.platform))
 
-    // DigiHoT
-    implementation(libs.hm.behovsmeldingsmodell)
+    // hotlibs
+    implementation(libs.hotlibs.core)
     implementation(libs.hotlibs.http) {
         exclude("io.ktor", "ktor-client-cio")
     }
+    implementation(libs.hotlibs.serialization)
 
-    // Ktor
+    implementation(libs.hm.behovsmeldingsmodell)
+    implementation(libs.influxdb.client.kotlin)
+    implementation(libs.kotlin.logging)
     implementation(libs.ktor.client.apache)
+    implementation(libs.rapidsAndRivers)
 
     // GraphQL Client
     implementation(libs.graphql.ktor.client) {
@@ -49,10 +49,9 @@ testing {
             useKotlinTest(libs.versions.kotlin.asProvider())
             dependencies {
                 implementation(libs.handlebars)
+                implementation(libs.hotlibs.test)
                 implementation(libs.jackson.dataformat.yaml)
-                implementation(libs.kotest.assertions.core)
                 implementation(libs.ktor.server.test.host)
-                implementation(libs.mockk)
                 implementation(libs.tbdLibs.rapidsAndRivers.test)
             }
             targets.configureEach {
