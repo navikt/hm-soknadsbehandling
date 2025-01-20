@@ -42,6 +42,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
                         Signaturtype.FRITAK_FRA_FULLMAKT,
                         Signaturtype.IKKE_INNHENTET_FORDI_BYTTE,
                         Signaturtype.IKKE_INNHENTET_FORDI_BRUKERPASSBYTTE,
+                        Signaturtype.IKKE_INNHENTET_FORDI_KUN_TILBEHØR,
                     ).map(Signaturtype::name)
                 )
             }
