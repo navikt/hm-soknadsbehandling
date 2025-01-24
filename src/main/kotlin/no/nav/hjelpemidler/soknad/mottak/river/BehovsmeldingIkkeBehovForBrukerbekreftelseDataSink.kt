@@ -25,6 +25,7 @@ private val log = KotlinLogging.logger {}
  * og bytter sendt inn fra brukere med brukerpassrolle.
  * For søknader og bestillinger vil dette være pga. at formidler har svart at bruker har signert fullmakt på papir.
  * For bytter er det ikke behov for bekreftelse fra bruker.
+ * For saker med kun enkeltstående tilbehør er det ikke behov for bekreftelse fra bruker.
  */
 class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
     rapidsConnection: RapidsConnection,
