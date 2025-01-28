@@ -9,7 +9,6 @@ import io.ktor.client.request.get
 import io.ktor.http.ContentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import no.nav.hjelpemidler.http.correlationId
 import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.httpClient
@@ -34,12 +33,10 @@ class OppslagClientImpl(
     override suspend fun hentAlleKommuner(): Map<String, KommuneDto> {
         val kommunenrUrl = "$oppslagUrl/geografi/kommunenr"
         log.info { "Henter alle kommuner med url: $kommunenrUrl" }
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                httpClient.get(kommunenrUrl).body<Map<String, KommuneDto>>()
-            }.onFailure {
-                log.error(it) { "Henting av kommuner feilet" }
-            }
+        return runCatching {
+            httpClient.get(kommunenrUrl).body<Map<String, KommuneDto>>()
+        }.onFailure {
+            log.error(it) { "Henting av kommuner feilet" }
         }.getOrThrow()
     }
 }

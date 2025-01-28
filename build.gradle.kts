@@ -16,13 +16,13 @@ application {
 }
 
 dependencies {
-    implementation(platform(libs.hotlibs.platform))
-
     // hotlibs
+    implementation(platform(libs.hotlibs.platform))
     implementation(libs.hotlibs.core)
     implementation(libs.hotlibs.http) {
         exclude("io.ktor", "ktor-client-cio")
     }
+    implementation(libs.hotlibs.metrics)
     implementation(libs.hotlibs.serialization)
 
     implementation(libs.hm.behovsmeldingsmodell)

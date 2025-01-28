@@ -5,6 +5,7 @@ import com.expediagroup.graphql.client.ktor.GraphQLKtorClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
+import io.ktor.client.plugins.HttpRequestRetry
 import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.client.hmdb.HentProdukter
 import no.nav.hjelpemidler.soknad.mottak.client.hmdb.hentprodukter.Product
@@ -14,7 +15,12 @@ object GrunndataClient {
     private val log = KotlinLogging.logger {}
     private val client = GraphQLKtorClient(
         url = URI(Configuration.GRUNNDATA_GRAPHQL_URL).toURL(),
-        httpClient = HttpClient(engineFactory = Apache),
+        httpClient = HttpClient(engineFactory = Apache) {
+            install(HttpRequestRetry) {
+                retryOnExceptionOrServerErrors(5)
+                exponentialDelay()
+            }
+        },
         serializer = GraphQLClientJacksonSerializer()
     )
 
@@ -27,7 +33,7 @@ object GrunndataClient {
             when {
                 response.errors != null -> {
                     log.error { "Feil under henting av data fra hjelpemiddeldatabasen, hmsnrs: $hmsnrs, errors: ${response.errors?.map { it.message }}" }
-                    throw Exception("Feil under henting av data fra hjelpemiddeldatabasen, hmsnrs: $hmsnrs, errors: ${response.errors?.map { it.message }}")
+                    error("Feil under henting av data fra hjelpemiddeldatabasen, hmsnrs: $hmsnrs, errors: ${response.errors?.map { it.message }}")
                 }
 
                 response.data != null -> {

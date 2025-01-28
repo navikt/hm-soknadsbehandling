@@ -16,8 +16,6 @@ object Configuration {
     val PDL_GRAPHQL_URL by EnvironmentVariable
     val PDL_GRAPHQL_SCOPE by EnvironmentVariable
 
-    val POST_DOKUMENTBESKRIVELSE_TO_SLACK by EnvironmentVariable
-
     val SOKNADSBEHANDLING_API_BASEURL by EnvironmentVariable
     val SOKNADSBEHANDLING_API_SCOPE by EnvironmentVariable
 }

@@ -73,8 +73,6 @@ spec:
       value: api://dev-fss.pdl.pdl-api/.default
     - name: PDL_GRAPHQL_URL
       value: https://pdl-api.dev-fss-pub.nais.io/graphql
-    - name: POST_DOKUMENTBESKRIVELSE_TO_SLACK
-      value: "false"
     - name: SOKNADSBEHANDLING_API_BASEURL
       value: http://hm-soknadsbehandling-db.teamdigihot.svc.cluster.local/api
     - name: SOKNADSBEHANDLING_API_SCOPE
