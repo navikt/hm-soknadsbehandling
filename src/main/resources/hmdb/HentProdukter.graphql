@@ -2,5 +2,9 @@ query HentProdukter($hmsnrs: [String!]!) {
   products(hmsnrs: $hmsnrs) {
     hmsArtNr # hmsnr
     isoCategoryTitleShort # isokortnavn
+    isoCategory
+    accessory
+    sparePart
+    main
   }
 }
