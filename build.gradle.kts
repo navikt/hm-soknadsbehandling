@@ -26,7 +26,6 @@ dependencies {
     implementation(libs.hotlibs.serialization)
 
     implementation(libs.hm.behovsmeldingsmodell)
-    implementation(libs.influxdb.client.kotlin)
     implementation(libs.kotlin.logging)
     implementation(libs.ktor.client.apache)
     implementation(libs.rapidsAndRivers)
