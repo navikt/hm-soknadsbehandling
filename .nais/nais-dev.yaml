@@ -45,7 +45,6 @@ spec:
   kafka:
     pool: nav-dev
   envFrom:
-    - secret: hm-influxdb-secret
     - secret: hm-soknadsbehandling
     - secret: hm-slack-hook
   env:
