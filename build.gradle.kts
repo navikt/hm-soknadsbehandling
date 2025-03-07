@@ -22,7 +22,6 @@ dependencies {
     implementation(libs.hotlibs.http) {
         exclude("io.ktor", "ktor-client-cio")
     }
-    implementation(libs.hotlibs.metrics)
     implementation(libs.hotlibs.serialization)
 
     implementation(libs.hm.behovsmeldingsmodell)

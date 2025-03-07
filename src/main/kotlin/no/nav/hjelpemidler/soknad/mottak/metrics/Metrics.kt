@@ -2,7 +2,6 @@ package no.nav.hjelpemidler.soknad.mottak.metrics
 
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.hjelpemidler.metrics.createMetricsProducer
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.metrics.kommune.KommuneDto
 import no.nav.hjelpemidler.soknad.mottak.metrics.kommune.KommuneService
@@ -13,7 +12,6 @@ class Metrics(
     private val pdlClient: PdlClient,
     private val kommuneService: KommuneService = KommuneService(),
 ) {
-    private val metricsProducer = createMetricsProducer()
     private val kafkaMetricsProducer = MetricsProducer(messageContext)
 
     suspend fun digitalSøknad(brukersFnr: String, soknadId: UUID) {
@@ -78,7 +76,6 @@ class Metrics(
 
     private suspend fun writeEvent(measurement: String, fields: Map<String, Any>, tags: Map<String, String>) =
         try {
-            metricsProducer.writeEvent(measurement, fields, tags)
             kafkaMetricsProducer.hendelseOpprettet(measurement, fields, tags)
         } catch (e: Exception) {
             log.warn(e) { "Publisering av metrikk feilet" }
