@@ -6,6 +6,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
+import java.util.UUID
 
 private val log = KotlinLogging.logger {}
 
@@ -25,12 +26,20 @@ class JournalpostSink(
                     )
                 )
             }
-            validate { it.requireKey("soknadId", "joarkRef") }
+            validate {
+                it.requireKey("joarkRef")
+                it.interestedIn(
+                    "søknadId", // todo -> flyttes til requireKey
+                    "soknadId", // todo -> fjernes
+                )
+            }
         }.register(this)
     }
 
-    private val JsonMessage.søknadId get() = uuidValue("soknadId")
-    private val JsonMessage.journalpostId get() = this["joarkRef"].textValue()
+    private val JsonMessage.søknadId
+        get() = (this["søknadId"].textValue() ?: this["soknadId"].textValue()).let(UUID::fromString)
+    private val JsonMessage.journalpostId
+        get() = this["joarkRef"].textValue()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId
