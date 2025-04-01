@@ -27,7 +27,7 @@ class SøknadsgodkjenningService(
                 )
 
                 if (antallOppdatert > 0) {
-                    val søknadErUtgåttMessage = JsonMessage("{}", MessageProblems(""), Prometheus.registry).also {
+                    val søknadErUtgåttMessage = JsonMessage("{}", MessageProblems("")).also {
                         it["eventId"] = UUID.randomUUID()
                         it["eventName"] = "hm-GodkjenningsfristErUtløpt"
                         it["opprettet"] = LocalDateTime.now()

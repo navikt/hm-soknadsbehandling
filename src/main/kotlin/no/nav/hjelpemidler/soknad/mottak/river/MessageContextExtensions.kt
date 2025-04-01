@@ -11,7 +11,7 @@ fun <T : Any> MessageContext.publish(key: String, message: T): Unit =
     publish(key, jsonMessageOf(message).toJson())
 
 private fun jsonMessageOf(value: Any): JsonMessage =
-    JsonMessage("{}", MessageProblems(""), Prometheus.registry).apply {
+    JsonMessage("{}", MessageProblems("")).apply {
         jsonMapper
             .convertValue<Map<String, Any?>>(value)
             .mapNotNull { (key, value) -> if (value == null) null else key to value }

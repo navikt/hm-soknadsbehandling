@@ -33,7 +33,7 @@ class SlettSøknad(
         try {
             if (søknadsbehandlingService.slettSøknad(søknadId)) {
                 val fnrBruker = søknadsbehandlingService.hentSøknad(søknadId).fnrBruker
-                val message = JsonMessage("{}", MessageProblems(""), Prometheus.registry).also {
+                val message = JsonMessage("{}", MessageProblems("")).also {
                     it["@id"] = UUID.randomUUID()
                     it["@event_name"] = "SøknadSlettetAvBruker"
                     it["@opprettet"] = LocalDateTime.now()
