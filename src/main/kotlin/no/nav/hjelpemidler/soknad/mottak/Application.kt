@@ -8,7 +8,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.hjelpemidler.configuration.Environment
 import no.nav.hjelpemidler.domain.person.TILLAT_SYNTETISKE_FØDSELSNUMRE
-import no.nav.hjelpemidler.http.openid.azureADClient
+import no.nav.hjelpemidler.http.openid.entraIDClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
@@ -46,25 +46,25 @@ fun main() {
 
     TILLAT_SYNTETISKE_FØDSELSNUMRE = !Environment.current.isProd
 
-    val azureADClient = azureADClient(Apache.create()) {
+    val entraIDClient = entraIDClient(Apache.create()) {
         cache(leeway = 10.seconds)
     }
 
     val søknadsbehandlingClient = SøknadsbehandlingClient(
         Configuration.SOKNADSBEHANDLING_API_BASEURL,
-        azureADClient.withScope(Configuration.SOKNADSBEHANDLING_API_SCOPE),
+        entraIDClient.withScope(Configuration.SOKNADSBEHANDLING_API_SCOPE),
     )
     val infotrygdProxyClient = InfotrygdProxyClient(
         Configuration.INFOTRYGD_PROXY_API_BASEURL,
-        azureADClient.withScope(Configuration.INFOTRYGD_PROXY_API_SCOPE),
+        entraIDClient.withScope(Configuration.INFOTRYGD_PROXY_API_SCOPE),
     )
     val pdlClient = PdlClient(
         Configuration.PDL_GRAPHQL_URL,
-        azureADClient.withScope(Configuration.PDL_GRAPHQL_SCOPE),
+        entraIDClient.withScope(Configuration.PDL_GRAPHQL_SCOPE),
     )
     val delbestillingClient = DelbestillingClient(
         Configuration.DELBESTILLING_API_BASEURL,
-        azureADClient.withScope(Configuration.DELBESTILLING_API_SCOPE),
+        entraIDClient.withScope(Configuration.DELBESTILLING_API_SCOPE),
     )
 
     val søknadsbehandlingService = SøknadsbehandlingService(søknadsbehandlingClient)
