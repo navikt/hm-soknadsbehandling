@@ -25,7 +25,7 @@ dependencies {
     implementation(libs.hotlibs.serialization)
 
     implementation(libs.hm.behovsmeldingsmodell)
-    implementation(libs.kotlin.logging)
+    implementation(libs.hotlibs.logging)
     implementation(libs.ktor.client.apache)
     implementation(libs.rapidsAndRivers)
 

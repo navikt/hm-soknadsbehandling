@@ -7,7 +7,8 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
-import no.nav.hjelpemidler.logging.secureLog
+import no.nav.hjelpemidler.logging.teamError
+import no.nav.hjelpemidler.logging.teamInfo
 import no.nav.hjelpemidler.soknad.mottak.melding.OrdrelinjeLagretMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
@@ -33,12 +34,12 @@ class NyHotsakOrdrelinje(
         val sakId = packet.sakId
         if (sakId.isEmpty()) {
             log.info { "Hopper over event med ugyldig Hotsak-sakId = '', eventId: $eventId" }
-            secureLog.error { "Hopper over event med ugyldig Hotsak-sakId = '', eventId: $eventId, packet: '${packet.toJson()}'" }
+            log.teamError { "Hopper over event med ugyldig Hotsak-sakId = '', eventId: $eventId, packet: '${packet.toJson()}'" }
             return
         }
         if (eventId in skipList) {
             log.info { "Hopper over event i skipList: $eventId" }
-            secureLog.error { "Hopper over event i skipList, packet: ${packet.toJson()}" }
+            log.teamError { "Hopper over event i skipList, packet: ${packet.toJson()}" }
             return
         }
         try {
@@ -88,7 +89,7 @@ class NyHotsakOrdrelinje(
                 context.publish(fnrBruker, OrdrelinjeLagretMelding(ordrelinje, søknad.behovsmeldingstype))
                 Prometheus.ordrelinjeVideresendtCounter.increment()
                 log.info { "Ordrelinje sendt, søknadId: $søknadId" }
-                secureLog.info { "Ordrelinje sendt, søknadId: $søknadId, fnrBruker: $fnrBruker" }
+                log.teamInfo { "Ordrelinje sendt, søknadId: $søknadId, fnrBruker: $fnrBruker" }
             } else {
                 log.info { "Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId" }
             }

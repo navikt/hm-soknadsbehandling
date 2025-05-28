@@ -26,6 +26,8 @@ spec:
         - application: hm-grunndata-search
         - application: digihot-oppslag
         - application: hm-delbestilling-api
+        - application: logging
+          namespace: nais-system
       external:
         - host: hm-infotrygd-proxy.prod-fss-pub.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
@@ -40,8 +42,6 @@ spec:
     requests:
       cpu: 200m
       memory: 512Mi
-  secureLogs:
-    enabled: true
   kafka:
     pool: nav-prod
   envFrom:

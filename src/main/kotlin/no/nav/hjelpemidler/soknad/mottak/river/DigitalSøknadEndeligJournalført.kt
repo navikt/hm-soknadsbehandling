@@ -8,7 +8,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.InfotrygdSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
-import no.nav.hjelpemidler.logging.secureLog
+import no.nav.hjelpemidler.logging.teamDebug
 import no.nav.hjelpemidler.soknad.mottak.melding.OvervåkVedtaksresultatMelding
 import no.nav.hjelpemidler.soknad.mottak.melding.SøknadUnderBehandlingMelding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
@@ -49,7 +49,7 @@ class DigitalSøknadEndeligJournalført(
         if (packet.søknadId == UUID.fromString("1a404d1a-4cd9-4eb9-89f9-fa964230b8fe")) {
             log.info { "Tar søknadId: ${packet.søknadId} ut av køen og logger til sikkerlogg her" }
             val rawJson = packet.toJson()
-            secureLog.debug { "JSON for søknad som ble skippet, søknadId: ${packet.søknadId}, json: $rawJson" }
+            log.teamDebug { "JSON for søknad som ble skippet, søknadId: ${packet.søknadId}, json: $rawJson" }
             return
         }
 

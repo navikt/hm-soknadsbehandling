@@ -7,7 +7,9 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
-import no.nav.hjelpemidler.logging.secureLog
+import no.nav.hjelpemidler.logging.teamError
+import no.nav.hjelpemidler.logging.teamInfo
+import no.nav.hjelpemidler.logging.teamWarn
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.melding.OrdrelinjeLagretMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
@@ -37,12 +39,12 @@ class NyInfotrygdOrdrelinje(
         val saksblokkOgSaksnr = packet.saksblokkOgSaksnr
         if (saksblokkOgSaksnr.isEmpty()) {
             log.info { "Hopper over event med ugyldig saksblokkOgSaksnr = '', eventId: $eventId" }
-            secureLog.error { "Hopper over event med ugyldig saksblokkOgSaksnr = '', eventId: $eventId, packet: '${packet.toJson()}'" }
+            log.teamError { "Hopper over event med ugyldig saksblokkOgSaksnr = '', eventId: $eventId, packet: '${packet.toJson()}'" }
             return
         }
         if (eventId in skipList) {
             log.info { "Hopper over event i skipList: $eventId" }
-            secureLog.error { "Skippet event: ${packet.toJson()}" }
+            log.teamError { "Skippet event: ${packet.toJson()}" }
             return
         }
         try {
@@ -60,7 +62,7 @@ class NyInfotrygdOrdrelinje(
                         it.first()
                     } else {
                         if (it.count() > 1) {
-                            secureLog.warn { "Fant flere søknader med matchende fnr+saksblokkOgSaksnr+vedtaksdato (saksblokkOgSaksnr: $saksblokkOgSaksnr, vedtaksdato: $vedtaksdato, antallTreff: ${it.count()}, id-er: $it)" }
+                            log.teamWarn { "Fant flere søknader med matchende fnr+saksblokkOgSaksnr+vedtaksdato (saksblokkOgSaksnr: $saksblokkOgSaksnr, vedtaksdato: $vedtaksdato, antallTreff: ${it.count()}, id-er: $it)" }
                         }
                         null
                     }
@@ -142,7 +144,7 @@ class NyInfotrygdOrdrelinje(
                     context.publish(fnrBruker, OrdrelinjeLagretMelding(ordrelinje, behovsmeldingType))
                     Prometheus.ordrelinjeVideresendtCounter.increment()
                     log.info { "Ordrelinje sendt, søknadId: $søknadId" }
-                    secureLog.info { "Ordrelinje sendt, søknadId: $søknadId, fnrBruker: $fnrBruker" }
+                    log.teamInfo { "Ordrelinje sendt, søknadId: $søknadId, fnrBruker: $fnrBruker" }
                 } else {
                     log.info { "Ordrelinje mottatt, men varsel til bruker er allerede sendt ut det siste døgnet: $søknadId" }
                 }

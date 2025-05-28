@@ -8,7 +8,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
-import no.nav.hjelpemidler.logging.secureLog
+import no.nav.hjelpemidler.logging.teamInfo
 import no.nav.hjelpemidler.serialization.jackson.jsonMapper
 import no.nav.hjelpemidler.soknad.mottak.melding.BehovsmeldingTilGodkjenningMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
@@ -85,7 +85,7 @@ class BehovsmeldingTilBrukerbekreftelseDataSink(
             context.publish(fnrBruker, BehovsmeldingTilGodkjenningMelding(grunnlag))
             Prometheus.søknadTilGodkjenningCounter.increment()
             log.info { "Behovsmelding klar til godkjenning, søknadId: $søknadId" }
-            secureLog.info { "Behovsmelding klar til godkjenning, søknadId: $søknadId, fnrBruker: $fnrBruker" }
+            log.teamInfo { "Behovsmelding klar til godkjenning, søknadId: $søknadId, fnrBruker: $fnrBruker" }
             metrics.digitalSøknad(fnrBruker, søknadId)
         } catch (e: Exception) {
             log.error(e) { "Håndtering av eventId: ${packet.eventId}, søknadId: $søknadId feilet" }

@@ -10,7 +10,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.Signaturtype
-import no.nav.hjelpemidler.logging.secureLog
+import no.nav.hjelpemidler.logging.teamInfo
 import no.nav.hjelpemidler.serialization.jackson.jsonMapper
 import no.nav.hjelpemidler.soknad.mottak.melding.BehovsmeldingMottattMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
@@ -103,7 +103,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
             context.publish(fnrBruker, BehovsmeldingMottattMelding("hm-behovsmeldingMottatt", grunnlag))
             Prometheus.søknadMedFullmaktCounter.increment()
             log.info { "Behovsmelding sendt, søknadId: $søknadId" }
-            secureLog.info { "Behovsmelding sendt, søknadId: $søknadId, fnrBruker: $fnrBruker" }
+            log.teamInfo { "Behovsmelding sendt, søknadId: $søknadId, fnrBruker: $fnrBruker" }
             metrics.digitalSøknad(fnrBruker, søknadId)
         } catch (e: Exception) {
             log.error(e) { "Håndtering av eventId: ${packet.eventId}, søknadId: $søknadId feilet" }
