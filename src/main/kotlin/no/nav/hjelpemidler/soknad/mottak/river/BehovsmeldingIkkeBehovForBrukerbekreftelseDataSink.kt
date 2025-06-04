@@ -45,6 +45,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
                         Signaturtype.IKKE_INNHENTET_FORDI_BRUKERPASSBYTTE,
                         Signaturtype.IKKE_INNHENTET_FORDI_KUN_TILBEHØR,
                         Signaturtype.IKKE_INNHENTET_FORDI_KUN_TILBEHØR_V2,
+                        Signaturtype.IKKE_INNHENTET_FORDI_KUN_TILBEHØR_V3,
                     ).map(Signaturtype::name)
                 )
             }
