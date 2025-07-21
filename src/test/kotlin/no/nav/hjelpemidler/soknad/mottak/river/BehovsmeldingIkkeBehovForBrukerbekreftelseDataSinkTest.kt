@@ -60,6 +60,16 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
                       },
                       "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                     }
+                  },
+                  "behovsmelding": {
+                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "type": "SØKNAD",
+                    "bruker": {
+                      "navn": {
+                        "fornavn": "fornavn",
+                        "etternavn": "etternavn"
+                      }
+                    }
                   }
                 }
             """.trimIndent()
@@ -93,6 +103,16 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
                         "etternavn": "etternavn"
                       },
                       "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
+                    }
+                  },
+                  "behovsmelding": {
+                    "type": "BESTILLING",
+                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "bruker": {
+                      "navn": {
+                        "fornavn": "fornavn",
+                        "etternavn": "etternavn"
+                      }
                     }
                   }
                 }
@@ -187,6 +207,16 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
                       },
                       "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                     }
+                  },
+                  "behovsmelding": {
+                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "type": "SØKNAD",
+                    "bruker": {
+                      "navn": {
+                        "fornavn": "fornavn",
+                        "etternavn": "etternavn"
+                      }
+                    }
                   }
                 }
             """.trimIndent()
@@ -216,6 +246,16 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
                         "etternavn": "etternavn"
                       },
                       "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
+                    }
+                  },
+                  "behovsmelding": {
+                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "type": "SØKNAD",
+                    "bruker": {
+                      "navn": {
+                        "fornavn": "fornavn",
+                        "etternavn": "etternavn"
+                      }
                     }
                   }
                 }
@@ -247,6 +287,16 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
                       },
                       "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                     }
+                  },
+                  "behovsmelding": {
+                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "type": "SØKNAD",
+                    "bruker": {
+                      "navn": {
+                        "fornavn": "fornavn",
+                        "etternavn": "etternavn"
+                      }
+                    }
                   }
                 }
             """.trimIndent()
@@ -277,6 +327,16 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
                       },
                       "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                     }
+                  },
+                  "behovsmelding": {
+                    "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8",
+                    "type": "SØKNAD",
+                    "bruker": {
+                        "navn": {
+                            "fornavn": "fornavn",
+                            "etternavn": "etternavn"
+                        }
+                      }
                   }
                 }
             """.trimIndent()

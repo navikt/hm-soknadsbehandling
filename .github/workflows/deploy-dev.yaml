@@ -9,7 +9,7 @@ on:
       - "CODEOWNERS"
     branches:
       - main
-      - kun-tilbehør
+      - bpb-v2
 
 jobs:
   build:
