@@ -1,6 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
@@ -61,11 +60,10 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
     private val JsonMessage.eventId get() = uuidValue("eventId")
     private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
     private val JsonMessage.fnrInnsender get() = this["fodselNrInnsender"].textValue()
-    private val JsonMessage.behovsmeldingBase get() = this["behovsmelding"]
-    private val JsonMessage.behovsmeldingId get() = this.behovsmeldingBase["id"].uuidValue()
-    private val JsonMessage.behovsmeldingType get() = BehovsmeldingType.valueOf(this.behovsmeldingBase["type"].textValue())
     private val JsonMessage.behovsmeldingV1 get() = this["soknad"]
     private val JsonMessage.behovsmeldingV2 get() = this["behovsmelding"]
+    private val JsonMessage.behovsmeldingId get() = this.behovsmeldingV2["id"].uuidValue()
+    private val JsonMessage.behovsmeldingType get() = BehovsmeldingType.valueOf(this.behovsmeldingV2["type"].textValue())
     private val JsonMessage.signatur get() = Signaturtype.valueOf(this["signatur"].textValue())
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
