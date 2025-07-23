@@ -65,6 +65,12 @@ class SøknadsbehandlingClient(
             .body<Int>()
     }
 
+    suspend fun kjørMigreringsbatch(): Int {
+        return httpClient
+            .post("$baseUrl/soknad/migrer-v2")
+            .body<Int>()
+    }
+
     suspend fun oppdaterJournalpostId(søknadId: UUID, journalpostId: String): Int {
         return httpClient
             .put("$baseUrl/soknad/$søknadId/journalpost") {

@@ -9,7 +9,7 @@ on:
       - "CODEOWNERS"
     branches:
       - main
-      - bpb-v2
+      - data-migrering
 
 jobs:
   build:

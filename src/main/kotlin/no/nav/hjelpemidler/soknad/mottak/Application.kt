@@ -37,6 +37,7 @@ import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsgodkjenningService
 import java.util.Timer
+import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.time.Duration.Companion.seconds
 
@@ -118,6 +119,20 @@ private fun startSøknadUtgåttScheduling(søknadsgodkjenningService: Søknadsgo
                 log.info { "Markerer utgåtte søknader..." }
                 val antallUtgåtte = søknadsgodkjenningService.slettUtgåtteSøknader()
                 log.info { "Antall utgåtte søknader: $antallUtgåtte" }
+            }
+        }
+    }
+}
+
+private fun startDataMigrering(client: SøknadsbehandlingClient) {
+    val timer = Timer("data-migrering-task", true)
+
+    timer.schedule(delay = 10_000) {
+        runBlocking(Dispatchers.IO) {
+            launch {
+                log.info { "Kjører datamigreringsbatch." }
+                val antallMigrert = client.kjørMigreringsbatch()
+                log.info { "Antall migrert: $antallMigrert" }
             }
         }
     }
