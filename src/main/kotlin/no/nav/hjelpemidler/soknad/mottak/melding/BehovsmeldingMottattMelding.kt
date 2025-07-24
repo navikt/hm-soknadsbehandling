@@ -2,6 +2,7 @@ package no.nav.hjelpemidler.soknad.mottak.melding
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
@@ -16,6 +17,7 @@ data class BehovsmeldingMottattMelding(
     val fnrInnsender: String?,
     @JsonProperty("soknadGjelder")
     val behovsmeldingGjelder: String?,
+    val behovsmeldingType: BehovsmeldingType
 ) : TilknyttetSøknad, Melding {
     val opprettet: Instant = Instant.now()
     override val eventId: UUID = UUID.randomUUID()
@@ -28,12 +30,13 @@ data class BehovsmeldingMottattMelding(
     @JsonProperty("@event_name")
     private val oldEventName: String = eventName
 
-    constructor(eventName: String, grunnlag: Behovsmeldingsgrunnlag.Digital) : this(
+    constructor(eventName: String, grunnlag: Behovsmeldingsgrunnlag.Digital, behovsmeldingType: BehovsmeldingType) : this(
         eventName = eventName,
         søknadId = grunnlag.søknadId,
         fnrBruker = grunnlag.fnrBruker,
         fnrInnsender = grunnlag.fnrInnsender,
         behovsmeldingGjelder = grunnlag.behovsmeldingGjelder,
+        behovsmeldingType = behovsmeldingType,
     )
 
     constructor(eventName: String, søknad: SøknadDto) : this(
@@ -42,5 +45,6 @@ data class BehovsmeldingMottattMelding(
         fnrBruker = søknad.fnrBruker,
         fnrInnsender = søknad.fnrInnsender,
         behovsmeldingGjelder = søknad.søknadGjelder,
+        behovsmeldingType = søknad.behovsmeldingstype,
     )
 }

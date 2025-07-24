@@ -96,7 +96,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
 
             søknadsbehandlingService.lagreBehovsmelding(grunnlag)
 
-            context.publish(fnrBruker, BehovsmeldingMottattMelding("hm-behovsmeldingMottatt", grunnlag))
+            context.publish(fnrBruker, BehovsmeldingMottattMelding("hm-behovsmeldingMottatt", grunnlag, packet.behovsmeldingType))
             Prometheus.søknadMedFullmaktCounter.increment()
             log.info { "Behovsmelding sendt, søknadId: $behovsmeldingId" }
             log.teamInfo { "Behovsmelding sendt, søknadId: $behovsmeldingId, fnrBruker: $fnrBruker" }
