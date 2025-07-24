@@ -1,12 +1,10 @@
 package no.nav.hjelpemidler.soknad.mottak.melding
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.module.kotlin.convertValue
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
-import no.nav.hjelpemidler.serialization.jackson.jsonMapper
 import java.time.Instant
 import java.util.UUID
 
@@ -16,8 +14,6 @@ data class BehovsmeldingMottattMelding(
     override val søknadId: BehovsmeldingId,
     val fnrBruker: String,
     val fnrInnsender: String?,
-    @JsonProperty("soknad")
-    val behovsmelding: Map<String, Any?>,
     @JsonProperty("soknadGjelder")
     val behovsmeldingGjelder: String?,
 ) : TilknyttetSøknad, Melding {
@@ -37,7 +33,6 @@ data class BehovsmeldingMottattMelding(
         søknadId = grunnlag.søknadId,
         fnrBruker = grunnlag.fnrBruker,
         fnrInnsender = grunnlag.fnrInnsender,
-        behovsmelding = grunnlag.behovsmelding,
         behovsmeldingGjelder = grunnlag.behovsmeldingGjelder,
     )
 
@@ -46,7 +41,6 @@ data class BehovsmeldingMottattMelding(
         søknadId = søknad.søknadId,
         fnrBruker = søknad.fnrBruker,
         fnrInnsender = søknad.fnrInnsender,
-        behovsmelding = jsonMapper.convertValue(søknad.data),
         behovsmeldingGjelder = søknad.søknadGjelder,
     )
 }

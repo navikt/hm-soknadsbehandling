@@ -150,7 +150,6 @@ class GodkjennSøknadTest {
         jsonNode["fnrBruker"].textValue() shouldBe "01987654321"
         jsonNode["eventName"].textValue() shouldBe "hm-søknadGodkjentAvBrukerMottatt"
         jsonNode["opprettet"].textValue() shouldNotBe null
-        jsonNode["soknad"] shouldNotBe null
     }
 
     @Test
