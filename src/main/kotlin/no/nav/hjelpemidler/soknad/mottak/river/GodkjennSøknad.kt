@@ -41,7 +41,7 @@ class GodkjennSøknad(
             } else {
                 loggTidBruktForGodkjenning(søknad)
                 søknadsbehandlingService.oppdaterStatus(søknadId, BehovsmeldingStatus.GODKJENT)
-                val oppdatertSøknad = søknadsbehandlingService.hentSøknad(søknadId, true)
+                val oppdatertSøknad = søknadsbehandlingService.hentSøknad(søknadId)
                 val fnrBruker = oppdatertSøknad.fnrBruker
                 context.publish(
                     fnrBruker,
