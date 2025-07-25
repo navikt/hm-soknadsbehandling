@@ -28,7 +28,7 @@ class GodkjennSøknadTest {
     private val capturedSøknadId = slot<UUID>()
     private val mock = mockk<SøknadsbehandlingClient>().apply {
         coEvery { oppdaterStatus(capture(capturedSøknadId), capture(capturedStatusendring)) } returns 1
-        coEvery { hentSøknad(søknadId, any()) } returns lagSøknad(
+        coEvery { hentSøknad(søknadId) } returns lagSøknad(
             søknadId = søknadId,
             status = BehovsmeldingStatus.VENTER_GODKJENNING,
             data = """
@@ -57,7 +57,7 @@ class GodkjennSøknadTest {
                 }
             """.trimIndent()
         )
-        coEvery { hentSøknad(søknadIdDuplikat, any()) } returns lagSøknad(
+        coEvery { hentSøknad(søknadIdDuplikat) } returns lagSøknad(
             søknadId = søknadIdDuplikat,
             status = BehovsmeldingStatus.GODKJENT,
             data = """

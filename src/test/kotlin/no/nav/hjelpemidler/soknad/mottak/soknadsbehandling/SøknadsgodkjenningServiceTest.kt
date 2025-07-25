@@ -34,7 +34,7 @@ class SøknadsgodkjenningServiceTest {
     )
     private val mock = mockk<SøknadsbehandlingClient>().apply {
         coEvery { oppdaterStatus(søknadId, Statusendring(BehovsmeldingStatus.GODKJENT, null, null)) } returns 1
-        coEvery { hentSøknad(capture(capturedSøknadId), any()) } returns lagSøknad(
+        coEvery { hentSøknad(capture(capturedSøknadId)) } returns lagSøknad(
             søknadId = søknadId,
             status = BehovsmeldingStatus.VENTER_GODKJENNING,
             data = søknad
@@ -60,7 +60,7 @@ class SøknadsgodkjenningServiceTest {
 
         coVerify {
             mock.oppdaterStatus(søknadId, Statusendring(BehovsmeldingStatus.GODKJENT, null, null))
-            mock.hentSøknad(søknadId, false)
+            mock.hentSøknad(søknadId)
         }
     }
 }

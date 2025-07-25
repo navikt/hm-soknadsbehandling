@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test
 class BehovsmeldingTilBrukerbekreftelseDataSinkTest {
     private val capturedGrunnlag = slot<Behovsmeldingsgrunnlag.Digital>()
     private val mock = mockk<SøknadsbehandlingClient>().apply {
-        coEvery { finnSøknad(any(), any()) } returns null
+        coEvery { finnSøknad(any()) } returns null
         coEvery { lagreBehovsmelding(capture(capturedGrunnlag)) } returns 1
     }
 
