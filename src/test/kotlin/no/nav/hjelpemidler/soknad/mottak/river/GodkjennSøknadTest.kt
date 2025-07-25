@@ -31,60 +31,10 @@ class GodkjennSøknadTest {
         coEvery { hentSøknad(søknadId) } returns lagSøknad(
             søknadId = søknadId,
             status = BehovsmeldingStatus.VENTER_GODKJENNING,
-            data = """
-                {
-                  "fnrBruker": "fnrBruker",
-                  "soknadId": "$søknadId",
-                  "datoOpprettet": "2021-02-23T09:46:45.146+00:00",
-                  "soknad": {
-                    "id": "$søknadId",
-                    "date": "2021-02-16",
-                    "bruker": {
-                      "kilde": "PDL",
-                      "adresse": "Trandemveien 29",
-                      "fnummer": "12345678910",
-                      "fornavn": "Sedat",
-                      "poststed": "Hebnes",
-                      "signatur": "BRUKER_BEKREFTER",
-                      "etternavn": "Kronjuvel",
-                      "postnummer": "4235",
-                      "telefonNummer": "12341234"
-                    },
-                    "levering": "postkassa, postkassa, postkassa",
-                    "hjelpemidler": "foo",
-                    "brukersituasjon": "bar"
-                  }
-                }
-            """.trimIndent()
         )
         coEvery { hentSøknad(søknadIdDuplikat) } returns lagSøknad(
             søknadId = søknadIdDuplikat,
             status = BehovsmeldingStatus.GODKJENT,
-            data = """
-                {
-                  "fnrBruker": "fnrBruker",
-                  "soknadId": "$søknadIdDuplikat",
-                  "datoOpprettet": "2021-02-23T09:46:45.146+00:00",
-                  "soknad": {
-                    "id": "$søknadIdDuplikat",
-                    "date": "2021-02-16",
-                    "bruker": {
-                      "kilde": "PDL",
-                      "adresse": "Trandemveien 29",
-                      "fnummer": "12345678910",
-                      "fornavn": "Sedat",
-                      "poststed": "Hebnes",
-                      "signatur": "BRUKER_BEKREFTER",
-                      "etternavn": "Kronjuvel",
-                      "postnummer": "4235",
-                      "telefonNummer": "12341234"
-                    },
-                    "levering": "postkassa, postkassa, postkassa",
-                    "hjelpemidler": "foo",
-                    "brukersituasjon": "bar"
-                  }
-                }
-            """.trimIndent()
         )
     }
 

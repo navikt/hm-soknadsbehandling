@@ -11,33 +11,17 @@ import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSøknad
 import no.nav.hjelpemidler.soknad.mottak.test.Json
 import no.nav.hjelpemidler.soknad.mottak.test.lagSøknad
-import no.nav.hjelpemidler.soknad.mottak.test.readMap
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class SøknadsgodkjenningServiceTest {
     private val capturedSøknadId = slot<UUID>()
     private val søknadId = UUID.randomUUID()
-    private val søknad = readMap(
-        """
-            {
-                "soknad": {
-                    "date": "2020-06-19",
-                    "bruker": {
-                        "fornavn": "fornavn",
-                        "etternavn": "etternavn"
-                    },
-                    "id": "$søknadId"
-                }
-            }
-        """.trimIndent()
-    )
     private val mock = mockk<SøknadsbehandlingClient>().apply {
         coEvery { oppdaterStatus(søknadId, Statusendring(BehovsmeldingStatus.GODKJENT, null, null)) } returns 1
         coEvery { hentSøknad(capture(capturedSøknadId)) } returns lagSøknad(
             søknadId = søknadId,
             status = BehovsmeldingStatus.VENTER_GODKJENNING,
-            data = søknad
         )
     }
 

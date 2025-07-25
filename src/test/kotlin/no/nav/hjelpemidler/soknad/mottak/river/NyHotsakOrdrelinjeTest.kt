@@ -46,7 +46,6 @@ class NyHotsakOrdrelinjeTest {
             behovsmeldingstype = BehovsmeldingType.SØKNAD,
             status = BehovsmeldingStatus.GODKJENT,
             statusEndret = Instant.now(),
-            data = emptyMap(),
         )
 
         coEvery {

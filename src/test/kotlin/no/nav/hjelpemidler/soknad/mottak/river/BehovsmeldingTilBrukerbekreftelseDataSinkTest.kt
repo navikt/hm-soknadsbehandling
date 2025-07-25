@@ -55,6 +55,7 @@ class BehovsmeldingTilBrukerbekreftelseDataSinkTest {
                       "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                     }
                   },
+                  "behovsmelding": {},
                   "kommunenavn": "Oslo"
                 }
             """.trimIndent()
@@ -144,6 +145,7 @@ class BehovsmeldingTilBrukerbekreftelseDataSinkTest {
                       "id": "62f68547-11ae-418c-8ab7-4d2af985bcd8"
                     }
                   },
+                  "behovsmelding": {},
                   "kommunenavn": "Oslo"
                 }
             """.trimIndent()
@@ -185,6 +187,7 @@ class BehovsmeldingTilBrukerbekreftelseDataSinkTest {
                       "id": "62f68547-11ae-418c-8ab7-4d2af985bcd9"
                     }
                   },
+                  "behovsmelding": {},
                   "kommunenavn": "Oslo"
                 }
             """.trimIndent()

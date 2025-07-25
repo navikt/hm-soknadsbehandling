@@ -69,7 +69,7 @@ fun main() {
 
     val søknadsbehandlingService = SøknadsbehandlingService(søknadsbehandlingClient)
 
-    RapidApplication.create(no.nav.hjelpemidler.configuration.Configuration.current)
+    RapidApplication.create(no.nav.hjelpemidler.configuration.Configuration)
         .apply {
             val metrics = Metrics(this, pdlClient)
 
