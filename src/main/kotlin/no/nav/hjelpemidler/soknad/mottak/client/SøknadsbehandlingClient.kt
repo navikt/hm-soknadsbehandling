@@ -43,16 +43,16 @@ class SøknadsbehandlingClient(
         }
     }
 
-    suspend fun finnSøknad(søknadId: BehovsmeldingId, inkluderData: Boolean = false): SøknadDto? {
+    suspend fun finnSøknad(søknadId: BehovsmeldingId): SøknadDto? {
         return httpClient
             .get("$baseUrl/soknad/$søknadId") {
-                parameter("inkluderData", inkluderData)
+                parameter("inkluderData", false)
             }
             .body<SøknadDto?>()
     }
 
-    suspend fun hentSøknad(søknadId: BehovsmeldingId, inkluderData: Boolean = false): SøknadDto {
-        return checkNotNull(finnSøknad(søknadId, inkluderData)) {
+    suspend fun hentSøknad(søknadId: BehovsmeldingId): SøknadDto {
+        return checkNotNull(finnSøknad(søknadId)) {
             "Fant ikke søknad med søknadId: $søknadId"
         }
     }

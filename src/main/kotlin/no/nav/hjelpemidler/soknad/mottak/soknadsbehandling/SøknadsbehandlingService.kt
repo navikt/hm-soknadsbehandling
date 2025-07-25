@@ -32,14 +32,14 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
         return lagret
     }
 
-    suspend fun finnSøknad(søknadId: BehovsmeldingId, inkluderData: Boolean = false): SøknadDto? {
-        log.info { "Finner søknad, søknadId: $søknadId, inkluderData: $inkluderData" }
-        return søknadsbehandlingClient.finnSøknad(søknadId, inkluderData)
+    suspend fun finnSøknad(søknadId: BehovsmeldingId): SøknadDto? {
+        log.info { "Finner søknad, søknadId: $søknadId" }
+        return søknadsbehandlingClient.finnSøknad(søknadId)
     }
 
-    suspend fun hentSøknad(søknadId: BehovsmeldingId, inkluderData: Boolean = false): SøknadDto {
-        log.info { "Henter søknad, søknadId: $søknadId, inkluderData: $inkluderData" }
-        return søknadsbehandlingClient.hentSøknad(søknadId, inkluderData)
+    suspend fun hentSøknad(søknadId: BehovsmeldingId): SøknadDto {
+        log.info { "Henter søknad, søknadId: $søknadId" }
+        return søknadsbehandlingClient.hentSøknad(søknadId)
     }
 
     suspend fun hentBehovsmeldingstype(søknadId: BehovsmeldingId): BehovsmeldingType {
