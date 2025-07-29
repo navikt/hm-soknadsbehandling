@@ -9,6 +9,7 @@ import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.hjelpemidler.configuration.Environment
 import no.nav.hjelpemidler.domain.person.TILLAT_SYNTETISKE_FØDSELSNUMRE
 import no.nav.hjelpemidler.http.openid.entraIDClient
+import no.nav.hjelpemidler.logging.teamInfo
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
@@ -41,8 +42,13 @@ import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.time.Duration.Companion.seconds
 
 private val log = KotlinLogging.logger {}
+private val securelog = KotlinLogging.logger("tjenestekall")
 
 fun main() {
+
+    log.info {"FOOBAR standard log" }
+    log.teamInfo { "FOOBAR TEAM LOGS" }
+    securelog.info { "FOOBAR tjenestekall" }
 
     TILLAT_SYNTETISKE_FØDSELSNUMRE = !Environment.current.isProd
 
