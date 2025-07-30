@@ -49,6 +49,7 @@ fun main() {
     log.info {"FOOBAR standard log" }
     log.teamInfo { "FOOBAR TEAM LOGS" }
     securelog.info { "FOOBAR tjenestekall" }
+    securelog.teamInfo { "FOOBAR tjenestekall TEAM LOGS" }
 
     TILLAT_SYNTETISKE_FØDSELSNUMRE = !Environment.current.isProd
 
