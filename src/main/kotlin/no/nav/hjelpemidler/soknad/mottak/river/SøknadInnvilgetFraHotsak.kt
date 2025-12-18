@@ -12,31 +12,31 @@ import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingSer
 
 private val log = KotlinLogging.logger {}
 
-class VedtaksresultatFraHotsak(
+class SøknadInnvilgetFraHotsak(
     rapidsConnection: RapidsConnection,
     private val søknadsbehandlingService: SøknadsbehandlingService,
 ) : AsyncPacketListener {
     init {
         River(rapidsConnection).apply {
-            precondition { it.requireValue("eventName", "hm-vedtak-fattet") }
-            validate { it.requireKey("søknadId", "fnrBruker", "utfall", "opprettet") }
+            precondition { it.requireValue("eventName", "hm-SøknadInnvilget") }
+            validate { it.requireKey("søknadId", "fnrBruker", "vedtaksresultat", "opprettet") }
         }.register(this)
     }
 
     private val JsonMessage.søknadId get() = uuidValue("søknadId")
     private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
-    private val JsonMessage.utfall get() = this["utfall"].textValue()
+    private val JsonMessage.vedtaksresultat get() = this["vedtaksresultat"].textValue()
     private val JsonMessage.vedtaksdato get() = this["opprettet"].asLocalDateTime()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId
         val fnrBruker = packet.fnrBruker
-        val utfall = packet.utfall
+        val vedtaksresultat = packet.vedtaksresultat
         val vedtaksdato = packet.vedtaksdato
 
         søknadsbehandlingService.lagreVedtaksresultat(
             søknadId,
-            Vedtaksresultat.Hotsak(utfall, vedtaksdato.toLocalDate())
+            Vedtaksresultat.Hotsak(vedtaksresultat, vedtaksdato.toLocalDate())
         )
 
         context.publish(
@@ -45,7 +45,7 @@ class VedtaksresultatFraHotsak(
                 søknadId = søknadId,
                 fnrBruker = fnrBruker,
                 vedtaksdato = vedtaksdato,
-                vedtaksresultat = utfall,
+                vedtaksresultat = vedtaksresultat,
                 eksternVarslingDeaktivert = false,
                 søknadstype = null,
                 eventName = "hm-VedtaksresultatFraHotsakLagret"

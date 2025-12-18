@@ -9,7 +9,6 @@ import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.hjelpemidler.configuration.Environment
 import no.nav.hjelpemidler.domain.person.TILLAT_SYNTETISKE_FØDSELSNUMRE
 import no.nav.hjelpemidler.http.openid.entraIDClient
-import no.nav.hjelpemidler.logging.teamInfo
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
@@ -33,6 +32,7 @@ import no.nav.hjelpemidler.soknad.mottak.river.NyInfotrygdOrdrelinje
 import no.nav.hjelpemidler.soknad.mottak.river.OppgaveSink
 import no.nav.hjelpemidler.soknad.mottak.river.PapirsøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.SlettSøknad
+import no.nav.hjelpemidler.soknad.mottak.river.SøknadInnvilgetFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
@@ -100,6 +100,7 @@ fun main() {
 
             SlettSøknad(this, søknadsbehandlingService)
 
+            SøknadInnvilgetFraHotsak(this, søknadsbehandlingService)
             VedtaksresultatFraHotsak(this, søknadsbehandlingService)
             VedtaksresultatFraInfotrygd(this, søknadsbehandlingService, metrics)
 
