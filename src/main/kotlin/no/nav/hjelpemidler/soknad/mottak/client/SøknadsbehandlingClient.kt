@@ -15,6 +15,7 @@ import io.ktor.http.contentType
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
+import no.nav.hjelpemidler.behovsmeldingsmodell.InnsenderbehovsmeldingMetadataDto
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
 import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
@@ -22,6 +23,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Fagsak
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
+import no.nav.hjelpemidler.behovsmeldingsmodell.v2.Innsenderbehovsmelding
 import no.nav.hjelpemidler.http.correlationId
 import no.nav.hjelpemidler.http.openid.TokenSetProvider
 import no.nav.hjelpemidler.http.openid.openID
@@ -51,9 +53,21 @@ class SøknadsbehandlingClient(
             .body<SøknadDto?>()
     }
 
+    suspend fun finnBehovsmeldingMedMetadata(behovsmeldingId: BehovsmeldingId): InnsenderbehovsmeldingMetadataDto? {
+        return httpClient
+            .get("$baseUrl/behovsmelding/$behovsmeldingId/metadata")
+            .body<InnsenderbehovsmeldingMetadataDto?>()
+    }
+
     suspend fun hentSøknad(søknadId: BehovsmeldingId): SøknadDto {
         return checkNotNull(finnSøknad(søknadId)) {
             "Fant ikke søknad med søknadId: $søknadId"
+        }
+    }
+
+    suspend fun hentBehovsmeldingMedMetadata(behovsmeldingId: BehovsmeldingId): InnsenderbehovsmeldingMetadataDto {
+        return checkNotNull(finnBehovsmeldingMedMetadata(behovsmeldingId)) {
+            "Fant ikke behovsmelding med behovsmeldingId: $behovsmeldingId"
         }
     }
 

@@ -11,11 +11,13 @@ import no.nav.hjelpemidler.domain.person.TILLAT_SYNTETISKE_FØDSELSNUMRE
 import no.nav.hjelpemidler.http.openid.entraIDClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
+import no.nav.hjelpemidler.soknad.mottak.client.SøknadApiClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingClient
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingOrdrelinjeStatus
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingStatus
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
+import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingAvventerPdfDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingTilBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BestillingAvvistFraHotsak
@@ -35,6 +37,7 @@ import no.nav.hjelpemidler.soknad.mottak.river.SlettSøknad
 import no.nav.hjelpemidler.soknad.mottak.river.SøknadInnvilgetFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
+import no.nav.hjelpemidler.soknad.mottak.soknadapi.SøknadApiService
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsgodkjenningService
 import java.util.Timer
@@ -67,8 +70,13 @@ fun main() {
         Configuration.DELBESTILLING_API_BASEURL,
         entraIDClient.withScope(Configuration.DELBESTILLING_API_SCOPE),
     )
+    val søknadApiClient = SøknadApiClient(
+        Configuration.SOKNAD_API_BASEURL,
+        entraIDClient.withScope(Configuration.SOKNAD_API_SCOPE),
+    )
 
     val søknadsbehandlingService = SøknadsbehandlingService(søknadsbehandlingClient)
+    val søknadApiService = SøknadApiService(søknadApiClient)
 
     RapidApplication.create(no.nav.hjelpemidler.configuration.Configuration)
         .apply {
@@ -78,6 +86,7 @@ fun main() {
 
             BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(this, søknadsbehandlingService, metrics)
             BehovsmeldingTilBrukerbekreftelseDataSink(this, søknadsbehandlingService, metrics)
+            BehovsmeldingAvventerPdfDataSink(this, søknadsbehandlingService, )
 
             BestillingAvvistFraHotsak(this, søknadsbehandlingService)
             BestillingFerdigstiltFraHotsak(this, søknadsbehandlingService)

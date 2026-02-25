@@ -5,12 +5,14 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
+import no.nav.hjelpemidler.behovsmeldingsmodell.InnsenderbehovsmeldingMetadataDto
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.behovsmeldingsmodell.SøknadDto
 import no.nav.hjelpemidler.behovsmeldingsmodell.ordre.Ordrelinje
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
+import no.nav.hjelpemidler.behovsmeldingsmodell.v2.Innsenderbehovsmelding
 import no.nav.hjelpemidler.soknad.mottak.client.HarOrdre
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadIdFraVedtaksresultat
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
@@ -40,6 +42,11 @@ class SøknadsbehandlingService(private val søknadsbehandlingClient: Søknadsbe
     suspend fun hentSøknad(søknadId: BehovsmeldingId): SøknadDto {
         log.info { "Henter søknad, søknadId: $søknadId" }
         return søknadsbehandlingClient.hentSøknad(søknadId)
+    }
+
+    suspend fun hentBehovsmeldingMedMetadata(behovsmeldingId: BehovsmeldingId): InnsenderbehovsmeldingMetadataDto {
+        log.info { "Henter behovsmelding med metadata, behovsmeldingId: $behovsmeldingId" }
+        return søknadsbehandlingClient.hentBehovsmeldingMedMetadata(behovsmeldingId)
     }
 
     suspend fun hentBehovsmeldingstype(søknadId: BehovsmeldingId): BehovsmeldingType {

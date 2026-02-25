@@ -26,6 +26,7 @@ spec:
         - application: hm-grunndata-search
         - application: digihot-oppslag
         - application: hm-delbestilling-api
+        - application: hm-soknad-api
         - application: logging
           namespace: nais-system
       external:
@@ -72,6 +73,10 @@ spec:
       value: api://dev-fss.pdl.pdl-api/.default
     - name: PDL_GRAPHQL_URL
       value: https://pdl-api.dev-fss-pub.nais.io/graphql
+    - name: SOKNAD_API_BASEURL
+      value: http://hm-soknad-api.teamdigihot.svc.cluster.local/hm
+    - name: SOKNAD_API_SCOPE
+      value: api://dev-gcp.teamdigihot.hm-soknad-api/.default
     - name: SOKNADSBEHANDLING_API_BASEURL
       value: http://hm-soknadsbehandling-db.teamdigihot.svc.cluster.local/api
     - name: SOKNADSBEHANDLING_API_SCOPE
