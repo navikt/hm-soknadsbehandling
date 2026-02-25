@@ -86,7 +86,7 @@ fun main() {
 
             BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(this, søknadsbehandlingService, metrics)
             BehovsmeldingTilBrukerbekreftelseDataSink(this, søknadsbehandlingService, metrics)
-            BehovsmeldingAvventerPdfDataSink(this, søknadsbehandlingService, )
+            BehovsmeldingAvventerPdfDataSink(this, søknadsbehandlingService, søknadApiService)
 
             BestillingAvvistFraHotsak(this, søknadsbehandlingService)
             BestillingFerdigstiltFraHotsak(this, søknadsbehandlingService)
