@@ -357,6 +357,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
         jsonNode["fnrBruker"].textValue() shouldBe "fnrBruker"
         jsonNode["eventName"].textValue() shouldBe "hm-behovsmeldingMottatt"
         jsonNode["opprettet"].textValue() shouldNotBe null
+        jsonNode["soknadGjelder"].textValue() shouldBe "Søknad om hjelpemidler"
     }
 
     @Test

@@ -15,6 +15,8 @@ data class BehovsmeldingMottattMelding(
     override val søknadId: BehovsmeldingId,
     val fnrBruker: String,
     val fnrInnsender: String?,
+    @JsonProperty("soknadGjelder")
+    val behovsmeldingGjelder: String?,
     val behovsmeldingType: BehovsmeldingType
 ) : TilknyttetSøknad, Melding {
     val opprettet: Instant = Instant.now()
@@ -33,6 +35,7 @@ data class BehovsmeldingMottattMelding(
         søknadId = grunnlag.søknadId,
         fnrBruker = grunnlag.fnrBruker,
         fnrInnsender = grunnlag.fnrInnsender,
+        behovsmeldingGjelder = grunnlag.behovsmeldingGjelder,
         behovsmeldingType = behovsmeldingType,
     )
 
@@ -41,6 +44,7 @@ data class BehovsmeldingMottattMelding(
         søknadId = søknad.søknadId,
         fnrBruker = søknad.fnrBruker,
         fnrInnsender = søknad.fnrInnsender,
+        behovsmeldingGjelder = søknad.søknadGjelder,
         behovsmeldingType = søknad.behovsmeldingstype,
     )
 }

@@ -47,7 +47,7 @@ class BehovsmeldingAvventerPdfDataSink(
 
         try {
             log.info { "Mottok event $eventName for behovsmeldingId $behovsmeldingId" }
-            val (_, innsenderbehovsmelding, fnrInnsender, _) = søknadsbehandlingService.hentBehovsmeldingMedMetadata(
+            val (_, innsenderbehovsmelding, fnrInnsender, behovsmeldingGjelder) = søknadsbehandlingService.hentBehovsmeldingMedMetadata(
                 behovsmeldingId
             )
 
@@ -62,6 +62,7 @@ class BehovsmeldingAvventerPdfDataSink(
                     søknadId = behovsmeldingId,
                     fnrBruker = innsenderbehovsmelding.hjmBrukersFnr.value,
                     fnrInnsender = fnrInnsender.value,
+                    behovsmeldingGjelder = behovsmeldingGjelder,
                     behovsmeldingType = innsenderbehovsmelding.type
                 )
             )
