@@ -27,6 +27,7 @@ spec:
         - application: digihot-oppslag
         - application: hm-delbestilling-api
         - application: hm-soknad-api
+        - application: hm-godkjenningskurs
         - application: logging
           namespace: nais-system
       external:
