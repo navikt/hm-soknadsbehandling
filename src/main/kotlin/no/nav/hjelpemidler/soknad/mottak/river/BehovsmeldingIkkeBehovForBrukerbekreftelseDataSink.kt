@@ -13,6 +13,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.Signaturtype
 import no.nav.hjelpemidler.domain.person.Personnavn
 import no.nav.hjelpemidler.logging.teamInfo
 import no.nav.hjelpemidler.serialization.jackson.jsonMapper
+import no.nav.hjelpemidler.soknad.mottak.godkjenningskurs.GodkjenningskursService
 import no.nav.hjelpemidler.soknad.mottak.melding.BehovsmeldingMottattMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
@@ -31,6 +32,7 @@ private val log = KotlinLogging.logger {}
 class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
     rapidsConnection: RapidsConnection,
     private val søknadsbehandlingService: SøknadsbehandlingService,
+    private val godkjenningskursService: GodkjenningskursService,
     private val metrics: Metrics,
 ) : AsyncPacketListener {
     init {
@@ -95,6 +97,8 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
             log.info { "Behovsmelding med fullmakt eller uten behov for signatur mottatt, søknadId: $behovsmeldingId (gjelder: '${grunnlag.behovsmeldingGjelder}')" }
 
             søknadsbehandlingService.lagreBehovsmelding(grunnlag)
+
+            godkjenningskursService.oppdaterPersoninfo(packet.behovsmeldingV2)
 
             context.publish(fnrBruker, BehovsmeldingMottattMelding("hm-behovsmeldingMottatt", grunnlag, packet.behovsmeldingType))
             Prometheus.søknadMedFullmaktCounter.increment()

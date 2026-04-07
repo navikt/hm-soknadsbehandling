@@ -8,6 +8,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.serialization.jackson.jsonMapper
+import no.nav.hjelpemidler.soknad.mottak.client.DelbestillingClient
 import no.nav.hjelpemidler.soknad.mottak.river.AsyncPacketListener
 import no.nav.hjelpemidler.soknad.mottak.river.uuidValue
 

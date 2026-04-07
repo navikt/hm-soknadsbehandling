@@ -1,4 +1,4 @@
-package no.nav.hjelpemidler.soknad.mottak.delbestilling
+package no.nav.hjelpemidler.soknad.mottak.client
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 import no.nav.hjelpemidler.http.correlationId
 import no.nav.hjelpemidler.http.openid.TokenSetProvider
 import no.nav.hjelpemidler.http.openid.openID
+import no.nav.hjelpemidler.soknad.mottak.delbestilling.Status
 import no.nav.hjelpemidler.soknad.mottak.httpClient
 import java.time.LocalDate
 

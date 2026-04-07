@@ -13,9 +13,11 @@ import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadApiClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
-import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingClient
+import no.nav.hjelpemidler.soknad.mottak.client.DelbestillingClient
+import no.nav.hjelpemidler.soknad.mottak.client.GodkjenningskursClient
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingOrdrelinjeStatus
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingStatus
+import no.nav.hjelpemidler.soknad.mottak.godkjenningskurs.GodkjenningskursService
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingAvventerPdfDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink
@@ -74,9 +76,14 @@ fun main() {
         Configuration.SOKNAD_API_BASEURL,
         entraIDClient.withScope(Configuration.SOKNAD_API_SCOPE),
     )
+    val godkjenningskursClient = GodkjenningskursClient(
+        Configuration.GODKJENNINGSKURS_API_BASEURL,
+        entraIDClient.withScope(Configuration.GODKJENNINGSKURS_API_SCOPE),
+    )
 
     val søknadsbehandlingService = SøknadsbehandlingService(søknadsbehandlingClient)
     val søknadApiService = SøknadApiService(søknadApiClient)
+    val godkjenningskursService = GodkjenningskursService(godkjenningskursClient)
 
     RapidApplication.create(no.nav.hjelpemidler.configuration.Configuration)
         .apply {
@@ -84,8 +91,13 @@ fun main() {
 
             startSøknadUtgåttScheduling(SøknadsgodkjenningService(this, søknadsbehandlingClient))
 
-            BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(this, søknadsbehandlingService, metrics)
-            BehovsmeldingTilBrukerbekreftelseDataSink(this, søknadsbehandlingService, metrics)
+            BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
+                this,
+                søknadsbehandlingService,
+                godkjenningskursService,
+                metrics
+            )
+            BehovsmeldingTilBrukerbekreftelseDataSink(this, søknadsbehandlingService, godkjenningskursService, metrics)
             BehovsmeldingAvventerPdfDataSink(this, søknadsbehandlingService, søknadApiService)
 
             BestillingAvvistFraHotsak(this, søknadsbehandlingService)

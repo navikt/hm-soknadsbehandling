@@ -6,6 +6,9 @@ object Configuration {
     val DELBESTILLING_API_BASEURL by EnvironmentVariable
     val DELBESTILLING_API_SCOPE by EnvironmentVariable
 
+    val GODKJENNINGSKURS_API_BASEURL by EnvironmentVariable
+    val GODKJENNINGSKURS_API_SCOPE by EnvironmentVariable
+
     val GRUNNDATA_GRAPHQL_URL by EnvironmentVariable
 
     val INFOTRYGD_PROXY_API_BASEURL by EnvironmentVariable
