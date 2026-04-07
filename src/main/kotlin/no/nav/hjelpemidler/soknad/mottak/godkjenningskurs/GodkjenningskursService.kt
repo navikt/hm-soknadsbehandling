@@ -15,16 +15,14 @@ class GodkjenningskursService(
     private val client: GodkjenningskursClient
 ) {
 
-    private val JsonNode.fnrInnsender get() = this["fodselNrInnsender"].textValue()
-
-    suspend fun oppdaterPersoninfo(behovsmelding: JsonNode) {
+    suspend fun oppdaterPersoninfo(behovsmelding: JsonNode, fnrInnsender: String) {
 
         log.info { "Oppdaterer personinfo" }
 
         val formidler = behovsmelding["levering"]["hjelpemiddelformidler"]
 
         val personinfo = Personinfo(
-            fnr = Fødselsnummer(behovsmelding.fnrInnsender),
+            fnr = Fødselsnummer(fnrInnsender),
             navn = jsonMapper.convertValue<Personnavn>(formidler["navn"]),
             epost = formidler["epost"].textValue(),
             arbeidssted = formidler["arbeidssted"].textValue(),
