@@ -26,7 +26,6 @@ class GodkjenningskursService(
             navn = jsonMapper.convertValue<Personnavn>(formidler["navn"]),
             epost = formidler["epost"].textValue(),
             arbeidssted = formidler["arbeidssted"].textValue(),
-            kommunenummer = formidler["kommunenummer"].textValue(),
         )
 
         client.oppdaterPersoninfo(personinfo)

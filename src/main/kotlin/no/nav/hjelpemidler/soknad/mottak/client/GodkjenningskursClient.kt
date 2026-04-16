@@ -51,5 +51,4 @@ data class Personinfo(
     val navn: Personnavn,
     val epost: String,
     val arbeidssted: String,
-    val kommunenummer: String,
 )
