@@ -13,6 +13,7 @@ import io.mockk.verify
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
+import no.nav.hjelpemidler.soknad.mottak.godkjenningskurs.GodkjenningskursService
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import no.nav.hjelpemidler.soknad.mottak.test.Json
 import org.junit.jupiter.api.BeforeEach
@@ -26,7 +27,12 @@ class BehovsmeldingTilBrukerbekreftelseDataSinkTest {
     }
 
     private val rapid = TestRapid().apply {
-        BehovsmeldingTilBrukerbekreftelseDataSink(this, SøknadsbehandlingService(mock), mockk(relaxed = true))
+        BehovsmeldingTilBrukerbekreftelseDataSink(
+            this,
+            SøknadsbehandlingService(mock),
+            mockk(relaxed = true),
+            mockk(relaxed = true)
+        )
     }
 
     @BeforeEach

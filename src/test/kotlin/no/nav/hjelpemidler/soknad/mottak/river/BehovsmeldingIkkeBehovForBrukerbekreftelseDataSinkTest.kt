@@ -13,6 +13,7 @@ import io.mockk.verify
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
+import no.nav.hjelpemidler.soknad.mottak.godkjenningskurs.GodkjenningskursService
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import no.nav.hjelpemidler.soknad.mottak.test.Json
@@ -29,6 +30,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
         BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
             this,
             SøknadsbehandlingService(mock),
+            mockk(relaxed = true),
             mockk<Metrics>(relaxed = true)
         )
     }

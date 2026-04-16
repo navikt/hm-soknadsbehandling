@@ -10,6 +10,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.logging.teamInfo
 import no.nav.hjelpemidler.serialization.jackson.jsonMapper
+import no.nav.hjelpemidler.soknad.mottak.godkjenningskurs.GodkjenningskursService
 import no.nav.hjelpemidler.soknad.mottak.melding.BehovsmeldingTilGodkjenningMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
@@ -24,6 +25,7 @@ private val log = KotlinLogging.logger {}
 class BehovsmeldingTilBrukerbekreftelseDataSink(
     rapidsConnection: RapidsConnection,
     private val søknadsbehandlingService: SøknadsbehandlingService,
+    private val godkjenningskursService: GodkjenningskursService,
     private val metrics: Metrics,
 ) : AsyncPacketListener {
     init {
@@ -78,6 +80,8 @@ class BehovsmeldingTilBrukerbekreftelseDataSink(
             log.info { "Behovsmelding til godkjenning mottatt, søknadId: $søknadId (gjelder: '${grunnlag.behovsmeldingGjelder}')" }
 
             søknadsbehandlingService.lagreBehovsmelding(grunnlag)
+
+            godkjenningskursService.oppdaterPersoninfo(packet.behovsmeldingV2, packet.fnrInnsender)
 
             context.publish(fnrBruker, BehovsmeldingTilGodkjenningMelding(grunnlag))
             Prometheus.søknadTilGodkjenningCounter.increment()
