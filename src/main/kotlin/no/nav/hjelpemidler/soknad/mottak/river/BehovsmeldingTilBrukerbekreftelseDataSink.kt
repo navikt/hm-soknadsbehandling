@@ -81,7 +81,7 @@ class BehovsmeldingTilBrukerbekreftelseDataSink(
 
             søknadsbehandlingService.lagreBehovsmelding(grunnlag)
 
-            godkjenningskursService.oppdaterPersoninfo(packet.behovsmeldingV2, packet.fnrInnsender)
+            godkjenningskursService.oppdaterPersoninfo(søknadId, packet.behovsmeldingV2, packet.fnrInnsender)
 
             context.publish(fnrBruker, BehovsmeldingTilGodkjenningMelding(grunnlag))
             Prometheus.søknadTilGodkjenningCounter.increment()
