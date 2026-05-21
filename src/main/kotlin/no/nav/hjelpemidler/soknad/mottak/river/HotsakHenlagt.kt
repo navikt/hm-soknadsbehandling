@@ -13,6 +13,24 @@ import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingSer
 
 private val log = KotlinLogging.logger {}
 
+enum class Henleggelsesårsak {
+    BRUKER_ER_DØD,
+    SØKNAD_TRUKKET,
+    FEILAKTIG_OPPRETTET,
+    ANNET,
+    ;
+
+    val vedtaksresultat: String get() = when (this) {
+        BRUKER_ER_DØD -> "HB"
+        SØKNAD_TRUKKET, FEILAKTIG_OPPRETTET, ANNET -> "HENLAGT"
+    }
+
+    val eksternVarslingDeaktivert: Boolean get() = when (this) {
+        BRUKER_ER_DØD, FEILAKTIG_OPPRETTET -> true
+        SØKNAD_TRUKKET, ANNET -> false
+    }
+}
+
 class HotsakHenlagt(
     rapidsConnection: RapidsConnection,
     private val søknadsbehandlingService: SøknadsbehandlingService,
@@ -36,7 +54,7 @@ class HotsakHenlagt(
     private val JsonMessage.sakId get() = HotsakSakId(this["sakId"].textValue())
     private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
     private val JsonMessage.henleggelsesdato get() = this["henleggelsesdato"].asLocalDateTime()
-    private val JsonMessage.henleggelsesårsak get() = this["henleggelsesårsak"].textValue()
+    private val JsonMessage.henleggelsesårsak get() = enumValueOf<Henleggelsesårsak>(this["henleggelsesårsak"].textValue())
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId
@@ -44,8 +62,9 @@ class HotsakHenlagt(
         val fnrBruker = packet.fnrBruker
         val henleggelsesdato = packet.henleggelsesdato
         val henleggelsesårsak = packet.henleggelsesårsak
+        val vedtaksresultat = henleggelsesårsak.vedtaksresultat
+        val eksternVarslingDeaktivert = henleggelsesårsak.eksternVarslingDeaktivert
         log.info { "Sak henlagt i Hotsak, sakId: $sakId, søknadId: $søknadId, henleggelsesdato: $henleggelsesdato, henleggelsesårsak: $henleggelsesårsak" }
-        val vedtaksresultat = "HB"
         søknadsbehandlingService.lagreVedtaksresultat(
             søknadId,
             Vedtaksresultat.Hotsak(vedtaksresultat, henleggelsesdato.toLocalDate())
@@ -57,7 +76,7 @@ class HotsakHenlagt(
                 fnrBruker = fnrBruker,
                 vedtaksdato = henleggelsesdato,
                 vedtaksresultat = vedtaksresultat,
-                eksternVarslingDeaktivert = true,
+                eksternVarslingDeaktivert = eksternVarslingDeaktivert,
                 søknadstype = null,
                 eventName = "hm-VedtaksresultatFraHotsakLagret"
             ),
