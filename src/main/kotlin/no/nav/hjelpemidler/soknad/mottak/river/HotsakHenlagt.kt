@@ -16,18 +16,19 @@ private val log = KotlinLogging.logger {}
 enum class Henleggelsesårsak {
     BRUKER_ER_DØD,
     SØKNAD_TRUKKET,
-    FEILAKTIG_OPPRETTET,
+    FEIL_HJELPEMIDDEL,
+    FLERE_SØKNADER_SAMME_BEHOV,
     ANNET,
     ;
 
     val vedtaksresultat: String get() = when (this) {
         BRUKER_ER_DØD -> "HB"
-        SØKNAD_TRUKKET, FEILAKTIG_OPPRETTET, ANNET -> "HENLAGT"
+        SØKNAD_TRUKKET, FEIL_HJELPEMIDDEL, FLERE_SØKNADER_SAMME_BEHOV, ANNET -> "HENLAGT"
     }
 
     val eksternVarslingDeaktivert: Boolean get() = when (this) {
-        BRUKER_ER_DØD, FEILAKTIG_OPPRETTET -> true
-        SØKNAD_TRUKKET, ANNET -> false
+        BRUKER_ER_DØD, FEIL_HJELPEMIDDEL, FLERE_SØKNADER_SAMME_BEHOV, ANNET -> true
+        SØKNAD_TRUKKET -> false
     }
 }
 
