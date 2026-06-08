@@ -23,7 +23,10 @@ enum class Henleggelsesårsak {
 
     val vedtaksresultat: String get() = when (this) {
         BRUKER_ER_DØD -> "HB"
-        SØKNAD_TRUKKET, FEIL_HJELPEMIDDEL, FLERE_SØKNADER_SAMME_BEHOV, ANNET -> "HENLAGT"
+        SØKNAD_TRUKKET -> "HENLAGT_SØKNAD_TRUKKET"
+        FEIL_HJELPEMIDDEL -> "HENLAGT_FEIL_HJELPEMIDDEL"
+        FLERE_SØKNADER_SAMME_BEHOV -> "HENLAGT_FLERE_SØKNADER_SAMME_BEHOV"
+        ANNET -> "HENLAGT_ANNET"
     }
 
     val eksternVarslingDeaktivert: Boolean get() = when (this) {
