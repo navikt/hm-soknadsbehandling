@@ -22,7 +22,10 @@ class BestillingAvvistFraHotsak(
     init {
         River(rapidsConnection).apply {
             precondition { it.requireValue("eventName", "hm-BestillingAvvist") }
-            validate { it.requireKey("søknadId", "fodselsnummer", "opprettet", "valgte_arsaker", "begrunnelse") }
+            validate {
+                it.requireKey("søknadId", "fodselsnummer", "opprettet", "valgte_arsaker")
+                it.interestedIn("begrunnelse")
+            }
         }.register(this)
     }
 
