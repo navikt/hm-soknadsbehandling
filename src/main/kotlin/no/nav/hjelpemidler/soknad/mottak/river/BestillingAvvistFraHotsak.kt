@@ -22,7 +22,10 @@ class BestillingAvvistFraHotsak(
     init {
         River(rapidsConnection).apply {
             precondition { it.requireValue("eventName", "hm-BestillingAvvist") }
-            validate { it.requireKey("søknadId", "fodselsnummer", "opprettet", "valgte_arsaker", "begrunnelse") }
+            validate {
+                it.requireKey("søknadId", "fodselsnummer", "opprettet", "valgte_arsaker")
+                it.interestedIn("begrunnelse")
+            }
         }.register(this)
     }
 
@@ -30,7 +33,7 @@ class BestillingAvvistFraHotsak(
     private val JsonMessage.fnrBruker get() = this["fodselsnummer"].textValue()
     private val JsonMessage.opprettet get() = this["opprettet"].asLocalDateTime()
     private val JsonMessage.valgteÅrsaker get() = this["valgte_arsaker"].value<Set<String>>()
-    private val JsonMessage.begrunnelse get() = this["begrunnelse"].textValue()
+    private val JsonMessage.begrunnelse: String? get() = this["begrunnelse"].textValue()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId
@@ -50,7 +53,7 @@ class BestillingAvvistFraHotsak(
                 søknadId = søknadId,
                 fnrBruker = fnrBruker,
                 valgteÅrsaker = valgteÅrsaker,
-                begrunnelse = begrunnelse,
+                begrunnelse = begrunnelse ?: "",
                 opprettet = opprettet,
             ),
         )
