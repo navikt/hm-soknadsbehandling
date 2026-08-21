@@ -1,10 +1,10 @@
 package no.nav.hjelpemidler.soknad.mottak
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
-import com.fasterxml.jackson.module.kotlin.kotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.JsonNode
+import tools.jackson.dataformat.yaml.YAMLMapper
+import tools.jackson.module.kotlin.kotlinModule
+import tools.jackson.module.kotlin.readValue
 import com.github.jknack.handlebars.Handlebars
 import com.github.jknack.handlebars.io.FileTemplateLoader
 import io.kotest.matchers.collections.shouldContainAll
@@ -27,7 +27,8 @@ class ConfigurationTest {
         val manifest = handlebars.compile(location).apply(mapOf("image" to "test"))
         return mapper.readValue<JsonNode>(manifest)
             .at("/spec/env")
-            .map { it["name"].textValue() }
+            .values()
+            .map { it["name"].stringValue() }
             .sorted()
     }
 }

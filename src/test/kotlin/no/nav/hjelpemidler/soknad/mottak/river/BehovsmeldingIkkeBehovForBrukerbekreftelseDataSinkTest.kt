@@ -13,7 +13,6 @@ import io.mockk.verify
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
-import no.nav.hjelpemidler.soknad.mottak.godkjenningskurs.GodkjenningskursService
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import no.nav.hjelpemidler.soknad.mottak.test.Json
@@ -353,6 +352,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSinkTest {
         inspektør.size shouldBeExactly 1
 
         inspektør.key(0) shouldBe "fnrBruker"
+
         val jsonNode = inspektør.message(0)
 
         jsonNode["soknadId"].isNull shouldBe false

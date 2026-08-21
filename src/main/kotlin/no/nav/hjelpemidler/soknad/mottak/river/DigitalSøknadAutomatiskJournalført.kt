@@ -23,9 +23,9 @@ class DigitalSøknadAutomatiskJournalført(
     }
 
     private val JsonMessage.søknadId get() = uuidValue("soknadId")
-    private val JsonMessage.sakId get() = get("sakId").textValue()
-    private val JsonMessage.journalpostId get() = get("joarkRef").textValue()
-    private val JsonMessage.fnrBruker get() = get("fnrBruker").textValue()
+    private val JsonMessage.sakId get() = get("sakId").stringValue()
+    private val JsonMessage.journalpostId get() = get("joarkRef").stringValue()
+    private val JsonMessage.fnrBruker get() = get("fnrBruker").stringValue()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId

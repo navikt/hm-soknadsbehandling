@@ -26,7 +26,7 @@ class OppgaveSink(
     }
 
     private val JsonMessage.søknadId get() = uuidValue("soknadId")
-    private val JsonMessage.oppgaveId get() = this["oppgaveId"].textValue()
+    private val JsonMessage.oppgaveId get() = this["oppgaveId"].stringValue()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId

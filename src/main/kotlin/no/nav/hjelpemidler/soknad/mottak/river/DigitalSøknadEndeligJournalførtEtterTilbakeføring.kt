@@ -34,8 +34,8 @@ class DigitalSøknadEndeligJournalførtEtterTilbakeføring(
     }
 
     private val JsonMessage.søknadId get() = uuidValue("soknadId")
-    private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
-    private val JsonMessage.fagsakId get() = InfotrygdSakId(this["hendelse"]["journalingEventSAF"]["sak"]["fagsakId"].textValue())
+    private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].stringValue()
+    private val JsonMessage.fagsakId get() = InfotrygdSakId(this["hendelse"]["journalingEventSAF"]["sak"]["fagsakId"].stringValue())
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId

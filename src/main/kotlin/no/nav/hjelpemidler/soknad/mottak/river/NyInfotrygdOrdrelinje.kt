@@ -31,7 +31,7 @@ class NyInfotrygdOrdrelinje(
     }
 
     // Kun brukt til Infotrygd-matching for å finne søknadId
-    private val JsonMessage.saksblokkOgSaksnr get() = this["data"]["saksblokkOgSaksnr"].textValue()
+    private val JsonMessage.saksblokkOgSaksnr get() = this["data"]["saksblokkOgSaksnr"].stringValue()
     private val JsonMessage.vedtaksdato get() = this["data"]["vedtaksdato"].asLocalDate()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {

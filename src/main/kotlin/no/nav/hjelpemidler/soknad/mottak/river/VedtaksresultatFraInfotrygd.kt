@@ -29,10 +29,10 @@ class VedtaksresultatFraInfotrygd(
     }
 
     private val JsonMessage.søknadId get() = uuidValue("søknadID")
-    private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
-    private val JsonMessage.vedtaksresultat get() = this["vedtaksResultat"].textValue()
+    private val JsonMessage.fnrBruker get() = this["fnrBruker"].stringValue()
+    private val JsonMessage.vedtaksresultat get() = this["vedtaksResultat"].stringValue()
     private val JsonMessage.vedtaksdato get() = this["vedtaksDato"].asLocalDate()
-    private val JsonMessage.søknadstype get() = this["soknadsType"].textValue()
+    private val JsonMessage.søknadstype get() = this["soknadsType"].stringValue()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId

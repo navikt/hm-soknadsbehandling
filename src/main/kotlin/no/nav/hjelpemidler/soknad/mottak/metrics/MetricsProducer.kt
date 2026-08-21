@@ -1,10 +1,11 @@
 package no.nav.hjelpemidler.soknad.mottak.metrics
 
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
+import tools.jackson.databind.SerializationFeature
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import io.github.oshai.kotlinlogging.KotlinLogging
+import no.nav.hjelpemidler.serialization.jackson.threeTenExtraModule
+import tools.jackson.databind.cfg.DateTimeFeature
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -14,8 +15,8 @@ class MetricsProducer(
     private val messageContext: MessageContext,
 ) {
     private val mapper = jacksonMapperBuilder()
-        .addModule(JavaTimeModule())
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .addModule(threeTenExtraModule)
+        .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
         .build()
 
     fun hendelseOpprettet(

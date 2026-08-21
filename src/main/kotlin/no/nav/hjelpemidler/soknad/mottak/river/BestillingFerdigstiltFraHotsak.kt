@@ -25,7 +25,7 @@ class BestillingFerdigstiltFraHotsak(
     }
 
     private val JsonMessage.søknadId get() = uuidValue("søknadId")
-    private val JsonMessage.fnrBruker get() = this["fodselsnummer"].textValue()
+    private val JsonMessage.fnrBruker get() = this["fodselsnummer"].stringValue()
     private val JsonMessage.opprettet get() = this["opprettet"].asLocalDateTime()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {

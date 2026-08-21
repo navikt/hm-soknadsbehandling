@@ -1,6 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import com.fasterxml.jackson.module.kotlin.convertValue
+import tools.jackson.module.kotlin.convertValue
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
@@ -13,6 +13,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.Signaturtype
 import no.nav.hjelpemidler.domain.person.Personnavn
 import no.nav.hjelpemidler.logging.teamInfo
 import no.nav.hjelpemidler.serialization.jackson.jsonMapper
+
 import no.nav.hjelpemidler.soknad.mottak.godkjenningskurs.GodkjenningskursService
 import no.nav.hjelpemidler.soknad.mottak.melding.BehovsmeldingMottattMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
@@ -60,13 +61,13 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
     }
 
     private val JsonMessage.eventId get() = uuidValue("eventId")
-    private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
-    private val JsonMessage.fnrInnsender get() = this["fodselNrInnsender"].textValue()
+    private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].stringValue()
+    private val JsonMessage.fnrInnsender get() = this["fodselNrInnsender"].stringValue()
     private val JsonMessage.behovsmeldingV1 get() = this["soknad"]
     private val JsonMessage.behovsmeldingV2 get() = this["behovsmelding"]
     private val JsonMessage.behovsmeldingId get() = this.behovsmeldingV2["id"].uuidValue()
-    private val JsonMessage.behovsmeldingType get() = BehovsmeldingType.valueOf(this.behovsmeldingV2["type"].textValue())
-    private val JsonMessage.signatur get() = Signaturtype.valueOf(this["signatur"].textValue())
+    private val JsonMessage.behovsmeldingType get() = BehovsmeldingType.valueOf(this.behovsmeldingV2["type"].stringValue())
+    private val JsonMessage.signatur get() = Signaturtype.valueOf(this["signatur"].stringValue())
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         if (packet.eventId in skipList) {

@@ -1,6 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import com.fasterxml.jackson.module.kotlin.convertValue
+import tools.jackson.module.kotlin.convertValue
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems

@@ -30,10 +30,10 @@ class BestillingAvvistFraHotsak(
     }
 
     private val JsonMessage.søknadId get() = uuidValue("søknadId")
-    private val JsonMessage.fnrBruker get() = this["fodselsnummer"].textValue()
+    private val JsonMessage.fnrBruker get() = this["fodselsnummer"].stringValue()
     private val JsonMessage.opprettet get() = this["opprettet"].asLocalDateTime()
     private val JsonMessage.valgteÅrsaker get() = this["valgte_arsaker"].value<Set<String>>()
-    private val JsonMessage.begrunnelse: String? get() = this["begrunnelse"].textValue()
+    private val JsonMessage.begrunnelse: String? get() = this["begrunnelse"].stringValue()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId

@@ -1,6 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.client
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -16,7 +15,9 @@ import kotlinx.coroutines.withContext
 import no.nav.hjelpemidler.http.correlationId
 import no.nav.hjelpemidler.http.openid.TokenSetProvider
 import no.nav.hjelpemidler.http.openid.openID
+import no.nav.hjelpemidler.serialization.jackson.stringValueOrNull
 import no.nav.hjelpemidler.soknad.mottak.httpClient
+import tools.jackson.databind.JsonNode
 
 private val log = KotlinLogging.logger {}
 
@@ -49,7 +50,7 @@ class PdlClient(
             }.getOrThrow()
         }
         return jsonNode["data"].get("hentPerson")?.get("bostedsadresse")?.firstOrNull()?.get("vegadresse")
-            ?.get("kommunenummer")?.textValue()
+            ?.get("kommunenummer")?.stringValueOrNull()
     }
 }
 

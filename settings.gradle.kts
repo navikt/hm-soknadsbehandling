@@ -12,7 +12,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
-            from("no.nav.hjelpemidler:katalog:26.018.135750")
+            from("no.nav.hjelpemidler:katalog:26.232.134127")
         }
     }
 }

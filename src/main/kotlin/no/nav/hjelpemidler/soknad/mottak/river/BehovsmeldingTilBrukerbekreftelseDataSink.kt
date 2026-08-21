@@ -1,6 +1,6 @@
 package no.nav.hjelpemidler.soknad.mottak.river
 
-import com.fasterxml.jackson.module.kotlin.convertValue
+import tools.jackson.module.kotlin.convertValue
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
@@ -44,9 +44,9 @@ class BehovsmeldingTilBrukerbekreftelseDataSink(
     private val JsonMessage.eventId get() = uuidValue("eventId")
     private val JsonMessage.søknadId get() = this["soknad"]["soknad"]["id"].uuidValue()
     private val JsonMessage.søknad get() = this["soknad"]
-    private val JsonMessage.fnrInnsender get() = this["fodselNrInnsender"].textValue()
-    private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
-    private val JsonMessage.navnBruker get() = this["soknad"]["soknad"]["bruker"]["fornavn"].textValue() + " " + this["soknad"]["soknad"]["bruker"]["etternavn"].textValue()
+    private val JsonMessage.fnrInnsender get() = this["fodselNrInnsender"].stringValue()
+    private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].stringValue()
+    private val JsonMessage.navnBruker get() = this["soknad"]["soknad"]["bruker"]["fornavn"].stringValue() + " " + this["soknad"]["soknad"]["bruker"]["etternavn"].stringValue()
     private val JsonMessage.behovsmeldingV2 get() = this["behovsmelding"]
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {

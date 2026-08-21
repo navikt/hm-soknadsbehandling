@@ -28,7 +28,7 @@ class NyHotsakOrdrelinjeTest {
     fun `Behandler ny ordrelinje`() {
         val message = Testdata.testmeldingerFraOebs.first()
         val søknadId = UUID.randomUUID()
-        val sakId = message.at("/data/saksnummer").textValue().let(::HotsakSakId)
+        val sakId = message.at("/data/saksnummer").stringValue().let(::HotsakSakId)
 
         coEvery {
             mock.finnSøknadForSak(sakId)
@@ -64,7 +64,7 @@ class NyHotsakOrdrelinjeTest {
 
         val inspektør = rapid.inspektør
 
-        inspektør.key(0) shouldBe message.at("/fnrBruker").textValue()
+        inspektør.key(0) shouldBe message.at("/fnrBruker").stringValue()
 
         val message1 = inspektør.message(0)
         message1.at("/eventName").textValue() shouldBe "hm-OrdrelinjeMottatt"

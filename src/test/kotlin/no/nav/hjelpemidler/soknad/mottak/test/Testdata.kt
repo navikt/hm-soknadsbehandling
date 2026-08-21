@@ -1,7 +1,7 @@
 package no.nav.hjelpemidler.soknad.mottak.test
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.readValue
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.readValue
 import no.nav.hjelpemidler.serialization.jackson.jsonMapper
 import no.nav.hjelpemidler.serialization.jackson.readResourceAsValue
 import org.intellij.lang.annotations.Language

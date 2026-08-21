@@ -9,8 +9,8 @@ import no.nav.hjelpemidler.serialization.jackson.value
 
 abstract class NyOrdrelinje {
     protected val JsonMessage.eventId get() = uuidValue("eventId")
-    protected val JsonMessage.opprettet get() = this["opprettet"].textValue()
-    protected val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
+    protected val JsonMessage.opprettet get() = this["opprettet"].stringValue()
+    protected val JsonMessage.fnrBruker get() = this["fnrBruker"].stringValue()
     protected val JsonMessage.data get() = this["data"].value<Map<String, Any?>>()
     protected val JsonMessage.innkommendeOrdrelinje get() = this["data"].value<InnkommendeOrdrelinje>()
 

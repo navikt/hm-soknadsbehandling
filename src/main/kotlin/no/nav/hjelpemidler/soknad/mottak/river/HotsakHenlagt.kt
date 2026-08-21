@@ -57,10 +57,10 @@ class HotsakHenlagt(
     }
 
     private val JsonMessage.søknadId get() = uuidValue("søknadId")
-    private val JsonMessage.sakId get() = HotsakSakId(this["sakId"].textValue())
-    private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
+    private val JsonMessage.sakId get() = HotsakSakId(this["sakId"].stringValue())
+    private val JsonMessage.fnrBruker get() = this["fnrBruker"].stringValue()
     private val JsonMessage.henleggelsesdato get() = this["henleggelsesdato"].asLocalDateTime()
-    private val JsonMessage.henleggelsesårsak get() = enumValueOf<Henleggelsesårsak>(this["henleggelsesårsak"].textValue())
+    private val JsonMessage.henleggelsesårsak get() = enumValueOf<Henleggelsesårsak>(this["henleggelsesårsak"].stringValue())
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId

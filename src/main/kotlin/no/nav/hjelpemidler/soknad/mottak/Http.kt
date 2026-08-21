@@ -2,12 +2,12 @@ package no.nav.hjelpemidler.soknad.mottak
 
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.apache5.Apache5
 import io.ktor.client.plugins.HttpTimeout
 import no.nav.hjelpemidler.http.jackson
 import no.nav.hjelpemidler.serialization.jackson.jsonMapper
 
-fun httpClient(block: HttpClientConfig<*>.() -> Unit = {}): HttpClient = HttpClient(Apache) {
+fun httpClient(block: HttpClientConfig<*>.() -> Unit = {}): HttpClient = HttpClient(Apache5) {
     expectSuccess = true
     jackson(jsonMapper)
     install(HttpTimeout)

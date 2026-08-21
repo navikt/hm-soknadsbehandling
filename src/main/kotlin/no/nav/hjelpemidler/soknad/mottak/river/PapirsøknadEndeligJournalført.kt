@@ -44,10 +44,10 @@ class PapirsøknadEndeligJournalført(
     }
 
     private val JsonMessage.eventId get() = uuidValue("eventId")
-    private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].textValue()
-    private val JsonMessage.journalpostId get() = this["hendelse"]["journalingEventSAF"]["journalpostId"].textValue()
-    private val JsonMessage.fagsakId get() = InfotrygdSakId(this["hendelse"]["journalingEventSAF"]["sak"]["fagsakId"].textValue())
-    private val JsonMessage.navnBruker get() = this["hendelse"]["journalingEventSAF"]["avsenderMottaker"]["navn"].textValue()
+    private val JsonMessage.fnrBruker get() = this["fodselNrBruker"].stringValue()
+    private val JsonMessage.journalpostId get() = this["hendelse"]["journalingEventSAF"]["journalpostId"].stringValue()
+    private val JsonMessage.fagsakId get() = InfotrygdSakId(this["hendelse"]["journalingEventSAF"]["sak"]["fagsakId"].stringValue())
+    private val JsonMessage.navnBruker get() = this["hendelse"]["journalingEventSAF"]["avsenderMottaker"]["navn"].stringValue()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         if (packet.eventId in skipList) {

@@ -1,20 +1,19 @@
 package no.nav.hjelpemidler.soknad.mottak
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.client.engine.apache.Apache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.hjelpemidler.configuration.Environment
 import no.nav.hjelpemidler.domain.person.TILLAT_SYNTETISKE_FØDSELSNUMRE
-import no.nav.hjelpemidler.http.openid.entraIDClient
+import no.nav.hjelpemidler.http.openid.TexasClient
+import no.nav.hjelpemidler.soknad.mottak.client.DelbestillingClient
+import no.nav.hjelpemidler.soknad.mottak.client.GodkjenningskursClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
 import no.nav.hjelpemidler.soknad.mottak.client.PdlClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadApiClient
 import no.nav.hjelpemidler.soknad.mottak.client.SøknadsbehandlingClient
-import no.nav.hjelpemidler.soknad.mottak.client.DelbestillingClient
-import no.nav.hjelpemidler.soknad.mottak.client.GodkjenningskursClient
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingOrdrelinjeStatus
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.DelbestillingStatus
 import no.nav.hjelpemidler.soknad.mottak.godkjenningskurs.GodkjenningskursService
@@ -44,7 +43,6 @@ import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingSer
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsgodkjenningService
 import java.util.Timer
 import kotlin.concurrent.scheduleAtFixedRate
-import kotlin.time.Duration.Companion.seconds
 
 private val log = KotlinLogging.logger {}
 
@@ -52,33 +50,30 @@ fun main() {
 
     TILLAT_SYNTETISKE_FØDSELSNUMRE = !Environment.current.isProd
 
-    val entraIDClient = entraIDClient(Apache.create()) {
-        cache(leeway = 10.seconds)
-    }
-
+    val texasClient = TexasClient()
     val søknadsbehandlingClient = SøknadsbehandlingClient(
         Configuration.SOKNADSBEHANDLING_API_BASEURL,
-        entraIDClient.withScope(Configuration.SOKNADSBEHANDLING_API_SCOPE),
+        texasClient.entraIdApplication(Configuration.SOKNADSBEHANDLING_API_SCOPE),
     )
     val infotrygdProxyClient = InfotrygdProxyClient(
         Configuration.INFOTRYGD_PROXY_API_BASEURL,
-        entraIDClient.withScope(Configuration.INFOTRYGD_PROXY_API_SCOPE),
+        texasClient.entraIdApplication(Configuration.INFOTRYGD_PROXY_API_SCOPE),
     )
     val pdlClient = PdlClient(
         Configuration.PDL_GRAPHQL_URL,
-        entraIDClient.withScope(Configuration.PDL_GRAPHQL_SCOPE),
+        texasClient.entraIdApplication(Configuration.PDL_GRAPHQL_SCOPE),
     )
     val delbestillingClient = DelbestillingClient(
         Configuration.DELBESTILLING_API_BASEURL,
-        entraIDClient.withScope(Configuration.DELBESTILLING_API_SCOPE),
+        texasClient.entraIdApplication(Configuration.DELBESTILLING_API_SCOPE),
     )
     val søknadApiClient = SøknadApiClient(
         Configuration.SOKNAD_API_BASEURL,
-        entraIDClient.withScope(Configuration.SOKNAD_API_SCOPE),
+        texasClient.entraIdApplication(Configuration.SOKNAD_API_SCOPE),
     )
     val godkjenningskursClient = GodkjenningskursClient(
         Configuration.GODKJENNINGSKURS_API_BASEURL,
-        entraIDClient.withScope(Configuration.GODKJENNINGSKURS_API_SCOPE),
+        texasClient.entraIdApplication(Configuration.GODKJENNINGSKURS_API_SCOPE),
     )
 
     val søknadsbehandlingService = SøknadsbehandlingService(søknadsbehandlingClient)

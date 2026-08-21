@@ -23,7 +23,7 @@ class HotsakOpprettet(
     }
 
     private val JsonMessage.søknadId get() = uuidValue("soknadId")
-    private val JsonMessage.sakId get() = HotsakSakId(this["sakId"].textValue())
+    private val JsonMessage.sakId get() = HotsakSakId(this["sakId"].stringValue())
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId

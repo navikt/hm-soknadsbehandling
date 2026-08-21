@@ -4,7 +4,7 @@ import com.expediagroup.graphql.client.jackson.GraphQLClientJacksonSerializer
 import com.expediagroup.graphql.client.ktor.GraphQLKtorClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.apache5.Apache5
 import io.ktor.client.plugins.HttpRequestRetry
 import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.client.hmdb.HentProdukter
@@ -15,7 +15,7 @@ object GrunndataClient {
     private val log = KotlinLogging.logger {}
     private val client = GraphQLKtorClient(
         url = URI(Configuration.GRUNNDATA_GRAPHQL_URL).toURL(),
-        httpClient = HttpClient(engineFactory = Apache) {
+        httpClient = HttpClient(engineFactory = Apache5) {
             install(HttpRequestRetry) {
                 retryOnExceptionOrServerErrors(5)
                 exponentialDelay()

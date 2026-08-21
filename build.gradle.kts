@@ -23,10 +23,11 @@ dependencies {
         exclude("io.ktor", "ktor-client-cio")
     }
     implementation(libs.hotlibs.serialization)
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2") // Brukes av tester pga R&R
 
     implementation(libs.hotlibs.behovsmelding)
     implementation(libs.hotlibs.logging)
-    implementation(libs.ktor.client.apache)
+    implementation(libs.ktor.client.apache5)
     implementation(libs.rapidsAndRivers)
 
     // GraphQL Client

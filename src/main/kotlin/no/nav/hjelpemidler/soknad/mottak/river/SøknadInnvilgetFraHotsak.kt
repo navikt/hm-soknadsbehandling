@@ -24,8 +24,8 @@ class SøknadInnvilgetFraHotsak(
     }
 
     private val JsonMessage.søknadId get() = uuidValue("søknadId")
-    private val JsonMessage.fnrBruker get() = this["fnrBruker"].textValue()
-    private val JsonMessage.vedtaksresultat get() = this["vedtaksresultat"].textValue()
+    private val JsonMessage.fnrBruker get() = this["fnrBruker"].stringValue()
+    private val JsonMessage.vedtaksresultat get() = this["vedtaksresultat"].stringValue()
     private val JsonMessage.vedtaksdato get() = this["opprettet"].asLocalDateTime()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
