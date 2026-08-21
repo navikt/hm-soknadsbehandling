@@ -1,6 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.metrics
 
-import tools.jackson.databind.SerializationFeature
 import tools.jackson.module.kotlin.jacksonMapperBuilder
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import io.github.oshai.kotlinlogging.KotlinLogging

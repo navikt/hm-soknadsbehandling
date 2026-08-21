@@ -27,7 +27,7 @@ class NyHotsakOrdrelinje(
         }.register(this)
     }
 
-    private val JsonMessage.sakId get() = this["data"]["saksnummer"].stringValue()
+    private val JsonMessage.sakId get() = this["data"]["saksnummer"].asString("")
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val eventId = packet.eventId

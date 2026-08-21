@@ -6,6 +6,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micrometer.core.instrument.util.StringUtils
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.logging.teamError
 import no.nav.hjelpemidler.logging.teamInfo
@@ -31,7 +32,7 @@ class NyInfotrygdOrdrelinje(
     }
 
     // Kun brukt til Infotrygd-matching for å finne søknadId
-    private val JsonMessage.saksblokkOgSaksnr get() = this["data"]["saksblokkOgSaksnr"].stringValue()
+    private val JsonMessage.saksblokkOgSaksnr get() = this["data"]["saksblokkOgSaksnr"].asString("")
     private val JsonMessage.vedtaksdato get() = this["data"]["vedtaksdato"].asLocalDate()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {

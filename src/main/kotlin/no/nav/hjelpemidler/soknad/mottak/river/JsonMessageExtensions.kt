@@ -6,4 +6,4 @@ import java.util.UUID
 
 fun JsonMessage.uuidValue(key: String): UUID = get(key).uuidValue()
 
-fun JsonNode.uuidValue(): UUID = textValue().let(UUID::fromString)
+fun JsonNode.uuidValue(): UUID = stringValue().let(UUID::fromString)
