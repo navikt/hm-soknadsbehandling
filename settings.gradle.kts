@@ -1,20 +1,16 @@
-dependencyResolutionManagement {
-    @Suppress("UnstableApiUsage")
+import no.nav.hjelpemidler.gradle.addGitHubMavenRepository
+
+pluginManagement {
     repositories {
-        mavenCentral()
-        maven("https://maven.pkg.github.com/navikt/*") {
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-        maven("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
-    }
-    versionCatalogs {
-        create("libs") {
-            from("no.nav.hjelpemidler:katalog:26.232.134127")
-        }
+        gradlePluginPortal()
+        maven("https://navikt.github.io/hotlibs-gradle")
     }
 }
+
+plugins {
+    id("no.nav.hjelpemidler.hotlibs") version "1.0"
+}
+
+addGitHubMavenRepository("navikt/rapids-and-rivers")
 
 rootProject.name = "hm-soknadsbehandling"

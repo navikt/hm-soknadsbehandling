@@ -12,7 +12,7 @@ group = "no.nav.hjelpemidler.soknad.mottak"
 
 application {
     applicationName = "hm-soknadsbehandling"
-    mainClass.set("no.nav.hjelpemidler.soknad.mottak.ApplicationKt")
+    mainClass = "no.nav.hjelpemidler.soknad.mottak.ApplicationKt"
 }
 
 dependencies {
@@ -39,12 +39,16 @@ dependencies {
     implementation(libs.graphql.client.jackson)
 }
 
-java { toolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
 
-@Suppress("UnstableApiUsage")
 testing {
     suites {
-        val test by getting(JvmTestSuite::class) {
+        @Suppress("UnstableApiUsage")
+        val test = named<JvmTestSuite>("test") {
             useKotlinTest(libs.versions.kotlin.asProvider())
             dependencies {
                 implementation(libs.handlebars)
@@ -72,7 +76,7 @@ graphql {
     }
 }
 
-val graphqlIntrospectSchema by tasks.getting(GraphQLIntrospectSchemaTask::class) {
+val graphqlIntrospectSchema = tasks.named<GraphQLIntrospectSchemaTask>("graphqlIntrospectSchema") {
     endpoint.set("https://hm-grunndata-search.intern.dev.nav.no/graphql")
     outputFile.set(file("src/main/resources/hmdb/schema.graphqls"))
 }
