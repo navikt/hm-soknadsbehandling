@@ -23,7 +23,7 @@ dependencies {
         exclude("io.ktor", "ktor-client-cio")
     }
     implementation(libs.hotlibs.serialization)
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2") // Brukes av tester pga R&R
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.9") // Brukes av tester pga R&R
 
     implementation(libs.hotlibs.behovsmelding)
     implementation(libs.hotlibs.logging)
