@@ -8,11 +8,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.InfotrygdSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
-import no.nav.hjelpemidler.logging.teamDebug
 import no.nav.hjelpemidler.soknad.mottak.melding.OvervåkVedtaksresultatMelding
 import no.nav.hjelpemidler.soknad.mottak.melding.SøknadUnderBehandlingMelding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
-import java.util.UUID
 
 private val log = KotlinLogging.logger {}
 
@@ -44,14 +42,6 @@ class DigitalSøknadEndeligJournalført(
         val søknadId = packet.søknadId
         val fnrBruker = packet.fnrBruker
         val fagsakId = packet.fagsakId
-
-        // fixme -> vi kan vel fjerne dette nå eller?
-        if (packet.søknadId == UUID.fromString("1a404d1a-4cd9-4eb9-89f9-fa964230b8fe")) {
-            log.info { "Tar søknadId: ${packet.søknadId} ut av køen og logger til sikkerlogg her" }
-            val rawJson = packet.toJson()
-            log.teamDebug { "JSON for søknad som ble skippet, søknadId: ${packet.søknadId}, json: $rawJson" }
-            return
-        }
 
         // fixme -> burde ikke de neste to operasjonene skje i samme transaksjon i backend?
         søknadsbehandlingService.oppdaterStatus(søknadId, BehovsmeldingStatus.ENDELIG_JOURNALFØRT)
