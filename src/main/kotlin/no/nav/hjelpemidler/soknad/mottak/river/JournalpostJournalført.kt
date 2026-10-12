@@ -47,7 +47,7 @@ class JournalpostJournalført(
     private val JsonMessage.sakId: HotsakSakId get() = this["sakId"].stringValue().let(::HotsakSakId)
     private val JsonMessage.fnrBruker: Fødselsnummer get() = this["fnrBruker"].fødselsnummerValue()
     private val JsonMessage.navnBruker: String? get() = this["navnBruker"].stringValueOrNull()
-    private val JsonMessage.søknadGjelder: String? get() = this["søknadGjelder"].stringValueOrNull()
+    private val JsonMessage.hoveddokumentTittel: String? get() = this["hoveddokumentTittel"].stringValueOrNull()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val journalpostId = packet.journalpostId
@@ -64,7 +64,7 @@ class JournalpostJournalført(
                     journalpostId = journalpostId,
                     sakstilknytning = Sakstilknytning.Hotsak(sakId = packet.sakId, status = status),
                     kanal = null, // fixme
-                    søknadGjelder = packet.søknadGjelder,
+                    søknadGjelder = packet.hoveddokumentTittel,
                 )
             )
             if (!lagret) {
