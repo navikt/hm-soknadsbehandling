@@ -2,6 +2,7 @@ package no.nav.hjelpemidler.soknad.mottak.godkjenningskurs
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
+import no.nav.hjelpemidler.configuration.Environment
 import no.nav.hjelpemidler.domain.person.Fødselsnummer
 import no.nav.hjelpemidler.domain.person.Personnavn
 import no.nav.hjelpemidler.serialization.jackson.jsonMapper
@@ -34,7 +35,14 @@ class GodkjenningskursService(
             arbeidssted = formidler["arbeidssted"].stringValue(),
         )
 
-        client.oppdaterPersoninfo(personinfo)
+        try {
+            client.oppdaterPersoninfo(personinfo)
+        } catch (e: Exception) {
+            log.error(e) { "Personinfo ble ikke oppdatert, behovsmeldingId: $behovsmeldingId" }
+            if (!Environment.current.isDev) {
+                throw e
+            }
+        }
 
         log.info { "Personinfo oppdatert" }
     }
