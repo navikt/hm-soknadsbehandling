@@ -36,7 +36,6 @@ import no.nav.hjelpemidler.soknad.mottak.river.NyInfotrygdOrdrelinje
 import no.nav.hjelpemidler.soknad.mottak.river.OppgaveSink
 import no.nav.hjelpemidler.soknad.mottak.river.PapirsøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.SlettSøknad
-import no.nav.hjelpemidler.soknad.mottak.river.SøknadInnvilgetFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.VedtaksresultatFraInfotrygd
 import no.nav.hjelpemidler.soknad.mottak.soknadapi.SøknadApiService
@@ -121,7 +120,6 @@ fun main() {
 
             SlettSøknad(this, søknadsbehandlingService)
 
-            SøknadInnvilgetFraHotsak(this, søknadsbehandlingService)
             VedtaksresultatFraHotsak(this, søknadsbehandlingService)
             VedtaksresultatFraInfotrygd(this, søknadsbehandlingService, metrics)
 
