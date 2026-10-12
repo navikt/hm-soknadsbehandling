@@ -37,13 +37,12 @@ class GodkjenningskursService(
 
         try {
             client.oppdaterPersoninfo(personinfo)
+            log.info { "Personinfo oppdatert, behovsmeldingId: $behovsmeldingId" }
         } catch (e: Exception) {
             log.error(e) { "Personinfo ble ikke oppdatert, behovsmeldingId: $behovsmeldingId" }
             if (!Environment.current.isDev) {
                 throw e
             }
         }
-
-        log.info { "Personinfo oppdatert" }
     }
 }
