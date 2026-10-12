@@ -13,7 +13,7 @@ import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingSer
 import java.time.LocalDateTime
 import java.util.UUID
 
-class BestillingFerdigstiltFraHotsak(
+class BestillingGodkjentFraHotsak(
     rapidsConnection: RapidsConnection,
     private val søknadsbehandlingService: SøknadsbehandlingService,
 ) : AsyncPacketListener {

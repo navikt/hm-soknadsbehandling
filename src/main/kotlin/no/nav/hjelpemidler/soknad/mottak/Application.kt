@@ -22,13 +22,14 @@ import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingAvventerPdfDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BehovsmeldingTilBrukerbekreftelseDataSink
 import no.nav.hjelpemidler.soknad.mottak.river.BestillingAvvistFraHotsak
-import no.nav.hjelpemidler.soknad.mottak.river.BestillingFerdigstiltFraHotsak
+import no.nav.hjelpemidler.soknad.mottak.river.BestillingGodkjentFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadAutomatiskJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalførtEtterTilbakeføring
 import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSøknad
 import no.nav.hjelpemidler.soknad.mottak.river.HotsakHenlagt
 import no.nav.hjelpemidler.soknad.mottak.river.HotsakOpprettet
+import no.nav.hjelpemidler.soknad.mottak.river.JournalpostJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.JournalpostSink
 import no.nav.hjelpemidler.soknad.mottak.river.NyHotsakOrdrelinje
 import no.nav.hjelpemidler.soknad.mottak.river.NyInfotrygdOrdrelinje
@@ -96,7 +97,7 @@ fun main() {
             BehovsmeldingAvventerPdfDataSink(this, søknadsbehandlingService, søknadApiService)
 
             BestillingAvvistFraHotsak(this, søknadsbehandlingService)
-            BestillingFerdigstiltFraHotsak(this, søknadsbehandlingService)
+            BestillingGodkjentFraHotsak(this, søknadsbehandlingService)
 
             DigitalSøknadAutomatiskJournalført(this, søknadsbehandlingService)
             DigitalSøknadEndeligJournalført(this, søknadsbehandlingService)
@@ -107,6 +108,10 @@ fun main() {
 
             HotsakOpprettet(this, søknadsbehandlingService)
             HotsakHenlagt(this, søknadsbehandlingService)
+
+            if (Environment.current.isDev) {
+                JournalpostJournalført(this, søknadsbehandlingService)
+            }
 
             JournalpostSink(this, søknadsbehandlingClient)
             OppgaveSink(this, søknadsbehandlingClient)

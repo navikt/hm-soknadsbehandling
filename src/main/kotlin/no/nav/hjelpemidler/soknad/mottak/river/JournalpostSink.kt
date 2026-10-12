@@ -12,6 +12,12 @@ import java.util.UUID
 
 private val log = KotlinLogging.logger {}
 
+/**
+ * Håndterer følgende hendelser (alle fra `hm-joark-sink`):
+ * 1. Journalpost opprettet for digital behovsmelding -> Journalføring og behandling i Gosys / Infotrygd (`hm-SøknadArkivert`)
+ * 2. Journalpost opprettet for digital behovsmelding -> Journalføring (automatisk) og behandling i Hotsak (`hm-opprettetOgFerdigstiltJournalpost`)
+ * 3. Kopi av journalpost opprettet etter overføring fra Hotsak til Gosys -> Journalføring og behandling av kopi i Gosys / Infotrygd (`hm-opprettetMottattJournalpost`)
+ */
 class JournalpostSink(
     rapidsConnection: RapidsConnection,
     private val søknadsbehandlingClient: SøknadsbehandlingClient,
@@ -24,7 +30,7 @@ class JournalpostSink(
                     listOf(
                         "hm-SøknadArkivert",
                         "hm-opprettetOgFerdigstiltJournalpost",
-                        "hm-opprettetMottattJournalpost"
+                        "hm-opprettetMottattJournalpost",
                     )
                 )
             }
