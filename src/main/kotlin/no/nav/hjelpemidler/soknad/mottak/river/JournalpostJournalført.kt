@@ -33,9 +33,9 @@ class JournalpostJournalført(
                     "fnrBruker",
                 )
                 it.interestedIn(
+                    "hoveddokumentTittel",
                     "søknadId",
                     "navnBruker",
-                    "søknadGjelder",
                 )
             }
         }.register(this)
