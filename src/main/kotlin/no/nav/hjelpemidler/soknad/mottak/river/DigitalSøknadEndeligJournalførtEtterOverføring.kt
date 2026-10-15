@@ -13,7 +13,10 @@ import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingSer
 
 private val log = KotlinLogging.logger {}
 
-class DigitalSøknadEndeligJournalførtEtterTilbakeføring(
+/**
+ * Journalpost for søknad har blitt endelig journalført i Gosys etter overføring fra Hotsak til Gosys.
+ */
+class DigitalSøknadEndeligJournalførtEtterOverføring(
     rapidsConnection: RapidsConnection,
     private val søknadsbehandlingService: SøknadsbehandlingService,
 ) : AsyncPacketListener {

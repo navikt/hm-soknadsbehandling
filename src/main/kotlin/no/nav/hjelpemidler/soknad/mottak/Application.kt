@@ -25,7 +25,7 @@ import no.nav.hjelpemidler.soknad.mottak.river.BestillingAvvistFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.BestillingGodkjentFraHotsak
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadAutomatiskJournalført
 import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalført
-import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalførtEtterTilbakeføring
+import no.nav.hjelpemidler.soknad.mottak.river.DigitalSøknadEndeligJournalførtEtterOverføring
 import no.nav.hjelpemidler.soknad.mottak.river.GodkjennSøknad
 import no.nav.hjelpemidler.soknad.mottak.river.HotsakHenlagt
 import no.nav.hjelpemidler.soknad.mottak.river.HotsakOpprettet
@@ -100,7 +100,7 @@ fun main() {
 
             DigitalSøknadAutomatiskJournalført(this, søknadsbehandlingService)
             DigitalSøknadEndeligJournalført(this, søknadsbehandlingService)
-            DigitalSøknadEndeligJournalførtEtterTilbakeføring(this, søknadsbehandlingService)
+            DigitalSøknadEndeligJournalførtEtterOverføring(this, søknadsbehandlingService)
             PapirsøknadEndeligJournalført(this, søknadsbehandlingService, metrics)
 
             GodkjennSøknad(this, søknadsbehandlingService)
