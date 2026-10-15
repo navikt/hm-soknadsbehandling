@@ -2,13 +2,15 @@ package no.nav.hjelpemidler.soknad.mottak.river
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
-import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
+import no.nav.hjelpemidler.serialization.jackson.instantValue
 import no.nav.hjelpemidler.soknad.mottak.melding.VedtaksresultatLagretMelding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
+import no.nav.hjelpemidler.time.toLocalDate
+import no.nav.hjelpemidler.time.toLocalDateTime
 
 private val log = KotlinLogging.logger {}
 
@@ -26,7 +28,7 @@ class VedtaksresultatFraHotsak(
     private val JsonMessage.søknadId get() = uuidValue("søknadId")
     private val JsonMessage.fnrBruker get() = this["fnrBruker"].stringValue()
     private val JsonMessage.utfall get() = this["utfall"].stringValue()
-    private val JsonMessage.vedtaksdato get() = this["opprettet"].asLocalDateTime()
+    private val JsonMessage.vedtaksdato get() = this["opprettet"].instantValue() // fixme -> dette er egentlig ikke vedtaksdato slik det er lagret i hotsak
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId
@@ -44,7 +46,7 @@ class VedtaksresultatFraHotsak(
             VedtaksresultatLagretMelding(
                 søknadId = søknadId,
                 fnrBruker = fnrBruker,
-                vedtaksdato = vedtaksdato,
+                vedtaksdato = vedtaksdato.toLocalDateTime(),
                 vedtaksresultat = utfall,
                 eksternVarslingDeaktivert = false,
                 søknadstype = null,

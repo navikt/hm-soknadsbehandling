@@ -2,16 +2,17 @@ package no.nav.hjelpemidler.soknad.mottak.river
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
-import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Statusendring
 import no.nav.hjelpemidler.behovsmeldingsmodell.TilknyttetSøknad
+import no.nav.hjelpemidler.serialization.jackson.instantValue
 import no.nav.hjelpemidler.serialization.jackson.value
 import no.nav.hjelpemidler.soknad.mottak.melding.Melding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
+import no.nav.hjelpemidler.time.toLocalDateTime
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -31,7 +32,7 @@ class BestillingAvvistFraHotsak(
 
     private val JsonMessage.søknadId get() = uuidValue("søknadId")
     private val JsonMessage.fnrBruker get() = this["fodselsnummer"].stringValue()
-    private val JsonMessage.opprettet get() = this["opprettet"].asLocalDateTime()
+    private val JsonMessage.opprettet get() = this["opprettet"].instantValue()
     private val JsonMessage.valgteÅrsaker get() = this["valgte_arsaker"].value<Set<String>>()
     private val JsonMessage.begrunnelse: String? get() = this["begrunnelse"].stringValue()
 
@@ -54,7 +55,7 @@ class BestillingAvvistFraHotsak(
                 fnrBruker = fnrBruker,
                 valgteÅrsaker = valgteÅrsaker,
                 begrunnelse = begrunnelse ?: "",
-                opprettet = opprettet,
+                opprettet = opprettet.toLocalDateTime(),
             ),
         )
     }
