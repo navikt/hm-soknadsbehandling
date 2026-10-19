@@ -13,6 +13,7 @@ import no.nav.hjelpemidler.soknad.mottak.melding.VedtaksresultatLagretMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
 import no.nav.hjelpemidler.soknad.mottak.metrics.Prometheus
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
+import java.time.LocalDate
 
 private val log = KotlinLogging.logger {}
 
@@ -55,19 +56,26 @@ class VedtaksresultatFraInfotrygd(
         */
         val mottokOrdrelinjeFørVedtak = søknadsbehandlingService.harOrdreForSøknad(søknadId)
 
-        // Lagre vedtaksstatus og send beskjed til Ditt NAV
-        context.publish(
-            fnrBruker,
-            VedtaksresultatLagretMelding(
-                søknadId = søknadId,
-                fnrBruker = fnrBruker,
-                vedtaksdato = vedtaksdato.atStartOfDay(),
-                vedtaksresultat = vedtaksresultat,
-                eksternVarslingDeaktivert = mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler,
-                søknadstype = packet.søknadstype,
-                eventName = "hm-VedtaksresultatLagret",
-            ),
-        )
+        // Send beskjed til Ditt Nav hvis vedtaksdatoen ikke er eldre enn 7 dager. Dette for å unngå at vi sender
+        // beskjed om vedtak som er veldig gamle.
+        val syvDagerSiden = LocalDate.now().minusDays(7)
+        val skalVarsle = vedtaksdato >= syvDagerSiden
+        if (skalVarsle) {
+            context.publish(
+                fnrBruker,
+                VedtaksresultatLagretMelding(
+                    søknadId = søknadId,
+                    fnrBruker = fnrBruker,
+                    vedtaksdato = vedtaksdato.atStartOfDay(),
+                    vedtaksresultat = vedtaksresultat,
+                    eksternVarslingDeaktivert = mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler,
+                    søknadstype = packet.søknadstype,
+                    eventName = "hm-VedtaksresultatLagret",
+                ),
+            )
+        } else {
+            log.info { "Sender ikke varsel til Ditt Nav om vedtak fra Infotrygd fordi vedtaksdatoen er eldre enn syv dager (søknadId=$søknadId, vedtaksdato=$vedtaksdato)" }
+        }
 
         // Hvis vi allerede har ordrelinjer i databasen for denne søknaden: send utsending startet.
         if (mottokOrdrelinjeFørVedtak.harOrdreAvTypeHjelpemidler || mottokOrdrelinjeFørVedtak.harOrdreAvTypeDel) {
@@ -78,10 +86,14 @@ class VedtaksresultatFraInfotrygd(
                 return
             }
 
-            val behovsmeldingType = søknadsbehandlingService.hentBehovsmeldingstype(søknadId)
-            context.publish(fnrBruker, OrdrelinjeLagretMelding(søknadId, fnrBruker, behovsmeldingType))
-            Prometheus.ordrelinjeVideresendtCounter.increment()
-            log.info { "Ordrelinje sendt ved vedtak, søknadId: $søknadId" }
+            if (skalVarsle) {
+                val behovsmeldingType = søknadsbehandlingService.hentBehovsmeldingstype(søknadId)
+                context.publish(fnrBruker, OrdrelinjeLagretMelding(søknadId, fnrBruker, behovsmeldingType))
+                Prometheus.ordrelinjeVideresendtCounter.increment()
+                log.info { "Ordrelinje sendt ved vedtak, søknadId: $søknadId" }
+            } else {
+                log.info { "Sender ikke varsel til Ditt Nav om at utsendinger har startet fordi vedtaket som utløste dette har en vedtaksdato fra Infotrygd som er eldre enn syv dager (søknadId=$søknadId, vedtaksdato=$vedtaksdato)" }
+            }
         }
     }
 }
