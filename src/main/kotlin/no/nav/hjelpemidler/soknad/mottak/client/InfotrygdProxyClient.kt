@@ -13,19 +13,17 @@ import io.ktor.http.contentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.hjelpemidler.http.correlationId
-import no.nav.hjelpemidler.http.openid.TokenSetProvider
-import no.nav.hjelpemidler.http.openid.openID
+import no.nav.hjelpemidler.http.openid.entraId
+import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.httpClient
+import java.io.Closeable
 import java.time.LocalDate
 
 private val log = KotlinLogging.logger {}
 
-class InfotrygdProxyClient(
-    private val baseUrl: String,
-    private val tokenSetProvider: TokenSetProvider,
-) {
+class InfotrygdProxyClient(private val baseUrl: String = Configuration.INFOTRYGD_PROXY_API_BASEURL) : Closeable {
     private val httpClient: HttpClient = httpClient {
-        openID(tokenSetProvider)
+        entraId(Configuration.INFOTRYGD_PROXY_API_SCOPE)
         defaultRequest {
             accept(ContentType.Application.Json)
             contentType(ContentType.Application.Json)
@@ -56,4 +54,6 @@ class InfotrygdProxyClient(
             }.getOrDefault(false)
         }
     }
+
+    override fun close() = httpClient.close()
 }

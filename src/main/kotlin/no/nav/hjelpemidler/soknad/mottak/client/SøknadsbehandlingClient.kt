@@ -23,21 +23,18 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Fagsak
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
-import no.nav.hjelpemidler.behovsmeldingsmodell.v2.Innsenderbehovsmelding
 import no.nav.hjelpemidler.http.correlationId
-import no.nav.hjelpemidler.http.openid.TokenSetProvider
-import no.nav.hjelpemidler.http.openid.openID
+import no.nav.hjelpemidler.http.openid.entraId
+import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.httpClient
+import java.io.Closeable
 import java.util.UUID
 
 private val log = KotlinLogging.logger {}
 
-class SøknadsbehandlingClient(
-    private val baseUrl: String,
-    private val tokenSetProvider: TokenSetProvider,
-) {
+class SøknadsbehandlingClient(private val baseUrl: String = Configuration.SOKNADSBEHANDLING_API_BASEURL) : Closeable {
     private val httpClient: HttpClient = httpClient {
-        openID(tokenSetProvider)
+        entraId(Configuration.SOKNADSBEHANDLING_API_SCOPE)
         defaultRequest {
             accept(ContentType.Application.Json)
             contentType(ContentType.Application.Json)
@@ -184,4 +181,6 @@ class SøknadsbehandlingClient(
             .get("$baseUrl/soknad/ordre/har-ordre/$søknadId")
             .body<HarOrdre>()
     }
+
+    override fun close() = httpClient.close()
 }

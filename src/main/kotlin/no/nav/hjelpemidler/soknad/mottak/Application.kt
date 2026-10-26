@@ -7,7 +7,6 @@ import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.hjelpemidler.configuration.Environment
 import no.nav.hjelpemidler.domain.person.TILLAT_SYNTETISKE_FØDSELSNUMRE
-import no.nav.hjelpemidler.http.openid.TexasClient
 import no.nav.hjelpemidler.soknad.mottak.client.DelbestillingClient
 import no.nav.hjelpemidler.soknad.mottak.client.GodkjenningskursClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
@@ -50,31 +49,12 @@ fun main() {
 
     TILLAT_SYNTETISKE_FØDSELSNUMRE = !Environment.current.isProd
 
-    val texasClient = TexasClient()
-    val søknadsbehandlingClient = SøknadsbehandlingClient(
-        Configuration.SOKNADSBEHANDLING_API_BASEURL,
-        texasClient.entraIdApplication(Configuration.SOKNADSBEHANDLING_API_SCOPE),
-    )
-    val infotrygdProxyClient = InfotrygdProxyClient(
-        Configuration.INFOTRYGD_PROXY_API_BASEURL,
-        texasClient.entraIdApplication(Configuration.INFOTRYGD_PROXY_API_SCOPE),
-    )
-    val pdlClient = PdlClient(
-        Configuration.PDL_GRAPHQL_URL,
-        texasClient.entraIdApplication(Configuration.PDL_GRAPHQL_SCOPE),
-    )
-    val delbestillingClient = DelbestillingClient(
-        Configuration.DELBESTILLING_API_BASEURL,
-        texasClient.entraIdApplication(Configuration.DELBESTILLING_API_SCOPE),
-    )
-    val søknadApiClient = SøknadApiClient(
-        Configuration.SOKNAD_API_BASEURL,
-        texasClient.entraIdApplication(Configuration.SOKNAD_API_SCOPE),
-    )
-    val godkjenningskursClient = GodkjenningskursClient(
-        Configuration.GODKJENNINGSKURS_API_BASEURL,
-        texasClient.entraIdApplication(Configuration.GODKJENNINGSKURS_API_SCOPE),
-    )
+    val søknadsbehandlingClient = SøknadsbehandlingClient()
+    val infotrygdProxyClient = InfotrygdProxyClient()
+    val pdlClient = PdlClient()
+    val delbestillingClient = DelbestillingClient()
+    val søknadApiClient = SøknadApiClient()
+    val godkjenningskursClient = GodkjenningskursClient()
 
     val søknadsbehandlingService = SøknadsbehandlingService(søknadsbehandlingClient)
     val søknadApiService = SøknadApiService(søknadApiClient)

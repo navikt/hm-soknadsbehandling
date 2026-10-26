@@ -13,18 +13,16 @@ import kotlinx.coroutines.withContext
 import no.nav.hjelpemidler.domain.person.Fødselsnummer
 import no.nav.hjelpemidler.domain.person.Personnavn
 import no.nav.hjelpemidler.http.correlationId
-import no.nav.hjelpemidler.http.openid.TokenSetProvider
-import no.nav.hjelpemidler.http.openid.openID
+import no.nav.hjelpemidler.http.openid.entraId
+import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.httpClient
+import java.io.Closeable
 
 private val log = KotlinLogging.logger {}
 
-class GodkjenningskursClient(
-    private val baseUrl: String,
-    private val tokenSetProvider: TokenSetProvider,
-) {
+class GodkjenningskursClient(private val baseUrl: String = Configuration.GODKJENNINGSKURS_API_BASEURL) : Closeable {
     private val httpClient: HttpClient = httpClient {
-        openID(tokenSetProvider)
+        entraId(Configuration.GODKJENNINGSKURS_API_SCOPE)
         defaultRequest {
             accept(ContentType.Application.Json)
             contentType(ContentType.Application.Json)
@@ -44,6 +42,8 @@ class GodkjenningskursClient(
             }
         }
     }
+
+    override fun close() = httpClient.close()
 }
 
 data class Personinfo(

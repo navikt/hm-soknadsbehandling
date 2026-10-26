@@ -11,20 +11,18 @@ import io.ktor.http.contentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.hjelpemidler.http.correlationId
-import no.nav.hjelpemidler.http.openid.TokenSetProvider
-import no.nav.hjelpemidler.http.openid.openID
+import no.nav.hjelpemidler.http.openid.entraId
+import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.delbestilling.Status
 import no.nav.hjelpemidler.soknad.mottak.httpClient
+import java.io.Closeable
 import java.time.LocalDate
 
 private val log = KotlinLogging.logger {}
 
-class DelbestillingClient(
-    private val baseUrl: String,
-    private val tokenSetProvider: TokenSetProvider,
-) {
+class DelbestillingClient(private val baseUrl: String = Configuration.DELBESTILLING_API_BASEURL) : Closeable {
     private val httpClient: HttpClient = httpClient {
-        openID(tokenSetProvider)
+        entraId(Configuration.DELBESTILLING_API_SCOPE)
         defaultRequest {
             accept(ContentType.Application.Json)
             contentType(ContentType.Application.Json)
@@ -57,6 +55,8 @@ class DelbestillingClient(
             }
         }
     }
+
+    override fun close() = httpClient.close()
 }
 
 private data class StatusOppdateringDto(

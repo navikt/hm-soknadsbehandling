@@ -13,20 +13,18 @@ import io.ktor.http.contentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.nav.hjelpemidler.http.correlationId
-import no.nav.hjelpemidler.http.openid.TokenSetProvider
-import no.nav.hjelpemidler.http.openid.openID
+import no.nav.hjelpemidler.http.openid.entraId
 import no.nav.hjelpemidler.serialization.jackson.stringValueOrNull
+import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.httpClient
+import org.intellij.lang.annotations.Language
 import tools.jackson.databind.JsonNode
 
 private val log = KotlinLogging.logger {}
 
-class PdlClient(
-    private val baseUrl: String,
-    private val tokenSetProvider: TokenSetProvider,
-) {
+class PdlClient(private val baseUrl: String = Configuration.PDL_GRAPHQL_URL) {
     private val httpClient: HttpClient = httpClient {
-        openID(tokenSetProvider)
+        entraId(Configuration.PDL_GRAPHQL_SCOPE)
         defaultRequest {
             accept(ContentType.Application.Json)
             contentType(ContentType.Application.Json)
@@ -56,11 +54,12 @@ class PdlClient(
 
 data class KommunenrQuery(val query: String, val variables: Map<String, String>)
 
+@Language("GraphQL")
 private val hentKommunenrQuery =
-    """
-        query(${'$'}ident: ID!) {
-            hentPerson(ident: ${'$'}ident) {
-                bostedsadresse(historikk: false ) {
+    $$"""
+        query($ident: ID!) {
+            hentPerson(ident: $ident) {
+                bostedsadresse(historikk: false) {
                     vegadresse {
                         kommunenummer
                     }

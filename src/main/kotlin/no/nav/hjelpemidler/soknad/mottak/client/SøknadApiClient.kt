@@ -10,16 +10,14 @@ import io.ktor.http.contentType
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingId
 import no.nav.hjelpemidler.behovsmeldingsmodell.v2.Innsenderbehovsmelding
 import no.nav.hjelpemidler.http.correlationId
-import no.nav.hjelpemidler.http.openid.TokenSetProvider
-import no.nav.hjelpemidler.http.openid.openID
+import no.nav.hjelpemidler.http.openid.entraId
+import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.httpClient
+import java.io.Closeable
 
-class SøknadApiClient(
-    private val baseUrl: String,
-    private val tokenSetProvider: TokenSetProvider,
-) {
+class SøknadApiClient(private val baseUrl: String = Configuration.SOKNAD_API_BASEURL) : Closeable {
     private val httpClient: HttpClient = httpClient {
-        openID(tokenSetProvider)
+        entraId(Configuration.SOKNAD_API_SCOPE)
         defaultRequest {
             accept(ContentType.Application.Json)
             contentType(ContentType.Application.Json)
@@ -33,4 +31,6 @@ class SøknadApiClient(
                 setBody(behovsmelding)
             }
     }
+
+    override fun close() = httpClient.close()
 }

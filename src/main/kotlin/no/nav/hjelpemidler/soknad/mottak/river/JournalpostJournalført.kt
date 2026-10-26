@@ -65,7 +65,7 @@ class JournalpostJournalført(
                     fnrBruker = packet.fnrBruker.toString(),
                     navnBruker = navnBruker,
                     journalpostId = journalpostId,
-                    sakstilknytning = Sakstilknytning.Hotsak(sakId = packet.sakId, status = status),
+                    sakstilknytning = Sakstilknytning.Hotsak(sakId = packet.sakId),
                     kanal = null, // fixme
                     søknadGjelder = packet.hoveddokumentTittel,
                 )
