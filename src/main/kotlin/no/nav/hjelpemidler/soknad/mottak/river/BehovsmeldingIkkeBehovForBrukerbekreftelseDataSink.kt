@@ -9,9 +9,12 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.Signaturtype
+import no.nav.hjelpemidler.collections.mapToSet
 import no.nav.hjelpemidler.domain.person.Personnavn
 import no.nav.hjelpemidler.logging.teamInfo
+import no.nav.hjelpemidler.serialization.jackson.enumValue
 import no.nav.hjelpemidler.serialization.jackson.jsonMapper
+import no.nav.hjelpemidler.serialization.jackson.uuidValue
 import no.nav.hjelpemidler.soknad.mottak.godkjenningskurs.GodkjenningskursService
 import no.nav.hjelpemidler.soknad.mottak.melding.BehovsmeldingMottattMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
@@ -65,8 +68,8 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
     private val JsonMessage.behovsmeldingV1 get() = this["soknad"]
     private val JsonMessage.behovsmeldingV2 get() = this["behovsmelding"]
     private val JsonMessage.behovsmeldingId get() = this.behovsmeldingV2["id"].uuidValue()
-    private val JsonMessage.behovsmeldingType get() = BehovsmeldingType.valueOf(this.behovsmeldingV2["type"].stringValue())
-    private val JsonMessage.signatur get() = Signaturtype.valueOf(this["signatur"].stringValue())
+    private val JsonMessage.behovsmeldingType get() = this.behovsmeldingV2["type"].enumValue<BehovsmeldingType>()
+    private val JsonMessage.signatur get() = this["signatur"].enumValue<Signaturtype>()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         if (packet.eventId in skipList) {
@@ -112,7 +115,7 @@ class BehovsmeldingIkkeBehovForBrukerbekreftelseDataSink(
 
     private val skipList = listOf(
         "01fc4654-bba8-43b3-807b-8487ab21cea3",
-    ).map(UUID::fromString)
+    ).mapToSet(UUID::fromString)
 }
 
 private fun Signaturtype.tilStatus(): BehovsmeldingStatus = when (this) {

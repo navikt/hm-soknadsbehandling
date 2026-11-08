@@ -6,13 +6,17 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
 import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
+import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingType
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
+import no.nav.hjelpemidler.configuration.Environment
 import no.nav.hjelpemidler.domain.person.Fødselsnummer
 import no.nav.hjelpemidler.serialization.jackson.fødselsnummerValue
 import no.nav.hjelpemidler.serialization.jackson.stringValueOrNull
+import no.nav.hjelpemidler.serialization.jackson.uuidValue
 import no.nav.hjelpemidler.serialization.jackson.uuidValueOrNull
+import no.nav.hjelpemidler.soknad.mottak.melding.SøknadUnderBehandlingMelding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 import java.util.UUID
 
@@ -34,6 +38,7 @@ class JournalpostJournalført(
                     "journalpostId",
                     "sakId",
                     "fnrBruker",
+                    "isKnyttTilSak",
                 )
                 it.interestedIn(
                     "hoveddokumentTittel",
@@ -47,14 +52,16 @@ class JournalpostJournalført(
     private val JsonMessage.eventId: UUID get() = this["eventId"].uuidValue()
     private val JsonMessage.journalpostId: String get() = this["journalpostId"].stringValue()
     private val JsonMessage.søknadId: UUID? get() = this["søknadId"].uuidValueOrNull()
-    private val JsonMessage.sakId: HotsakSakId get() = this["sakId"].stringValue().let(::HotsakSakId)
+    private val JsonMessage.sakId: HotsakSakId get() = hotsakSakIdValue("sakId")
     private val JsonMessage.fnrBruker: Fødselsnummer get() = this["fnrBruker"].fødselsnummerValue()
     private val JsonMessage.navnBruker: String? get() = this["navnBruker"].stringValueOrNull()
     private val JsonMessage.hoveddokumentTittel: String? get() = this["hoveddokumentTittel"].stringValueOrNull()
+    private val JsonMessage.isKnyttTilSak: Boolean get() = this["isKnyttTilSak"].booleanValue()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val journalpostId = packet.journalpostId
         val søknadId = packet.søknadId ?: return
+        val fnrBruker = packet.fnrBruker.toString()
         val navnBruker = packet.navnBruker ?: return
         try {
             val status = BehovsmeldingStatus.ENDELIG_JOURNALFØRT
@@ -62,7 +69,7 @@ class JournalpostJournalført(
                 Behovsmeldingsgrunnlag.Journalpost(
                     søknadId = søknadId,
                     status = status,
-                    fnrBruker = packet.fnrBruker.toString(),
+                    fnrBruker = fnrBruker,
                     navnBruker = navnBruker,
                     journalpostId = journalpostId,
                     sakstilknytning = Sakstilknytning.Hotsak(sakId = packet.sakId),
@@ -75,8 +82,10 @@ class JournalpostJournalført(
                 return
             }
 
-            // todo -> Send melding til Ditt NAV
-            // context.publish(fnrBruker, SøknadUnderBehandlingMelding(søknadId, fnrBruker, BehovsmeldingType.SØKNAD))
+            // todo -> også i produksjon etter test
+            if (!packet.isKnyttTilSak && Environment.current.isDev) {
+                context.publish(fnrBruker, SøknadUnderBehandlingMelding(søknadId, fnrBruker, BehovsmeldingType.SØKNAD))
+            }
 
             // todo -> metrics
         } catch (e: Exception) {
@@ -85,5 +94,5 @@ class JournalpostJournalført(
         }
     }
 
-    private val skipList = listOf<UUID>()
+    private val skipList = setOf<UUID>()
 }

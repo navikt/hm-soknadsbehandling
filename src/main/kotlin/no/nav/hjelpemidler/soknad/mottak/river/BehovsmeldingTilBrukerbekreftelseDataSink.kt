@@ -9,6 +9,7 @@ import no.nav.hjelpemidler.behovsmeldingsmodell.BehovsmeldingStatus
 import no.nav.hjelpemidler.behovsmeldingsmodell.Behovsmeldingsgrunnlag
 import no.nav.hjelpemidler.logging.teamInfo
 import no.nav.hjelpemidler.serialization.jackson.jsonMapper
+import no.nav.hjelpemidler.serialization.jackson.uuidValue
 import no.nav.hjelpemidler.soknad.mottak.godkjenningskurs.GodkjenningskursService
 import no.nav.hjelpemidler.soknad.mottak.melding.BehovsmeldingTilGodkjenningMelding
 import no.nav.hjelpemidler.soknad.mottak.metrics.Metrics
@@ -93,5 +94,5 @@ class BehovsmeldingTilBrukerbekreftelseDataSink(
         }
     }
 
-    private val skipList = listOf<UUID>()
+    private val skipList = setOf<UUID>()
 }

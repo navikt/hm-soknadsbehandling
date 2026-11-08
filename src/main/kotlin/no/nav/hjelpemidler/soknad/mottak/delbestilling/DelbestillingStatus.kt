@@ -1,6 +1,5 @@
 package no.nav.hjelpemidler.soknad.mottak.delbestilling
 
-import tools.jackson.module.kotlin.convertValue
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
@@ -11,6 +10,7 @@ import no.nav.hjelpemidler.serialization.jackson.jsonMapper
 import no.nav.hjelpemidler.soknad.mottak.client.DelbestillingClient
 import no.nav.hjelpemidler.soknad.mottak.river.AsyncPacketListener
 import no.nav.hjelpemidler.soknad.mottak.river.uuidValue
+import tools.jackson.module.kotlin.convertValue
 
 private val log = KotlinLogging.logger {}
 

@@ -5,7 +5,6 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Sakstilknytning
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 
@@ -23,7 +22,7 @@ class HotsakOpprettet(
     }
 
     private val JsonMessage.søknadId get() = uuidValue("soknadId")
-    private val JsonMessage.sakId get() = HotsakSakId(this["sakId"].stringValue())
+    private val JsonMessage.sakId get() = hotsakSakIdValue("sakId")
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId

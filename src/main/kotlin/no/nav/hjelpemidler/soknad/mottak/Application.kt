@@ -46,7 +46,6 @@ import kotlin.concurrent.scheduleAtFixedRate
 private val log = KotlinLogging.logger {}
 
 fun main() {
-
     TILLAT_SYNTETISKE_FØDSELSNUMRE = !Environment.current.isProd
 
     val søknadsbehandlingClient = SøknadsbehandlingClient()
@@ -88,9 +87,7 @@ fun main() {
             HotsakOpprettet(this, søknadsbehandlingService)
             HotsakHenlagt(this, søknadsbehandlingService)
 
-            if (Environment.current.isDev) {
-                JournalpostJournalført(this, søknadsbehandlingService)
-            }
+            JournalpostJournalført(this, søknadsbehandlingService)
 
             JournalpostSink(this, søknadsbehandlingClient)
             OppgaveSink(this, søknadsbehandlingClient)

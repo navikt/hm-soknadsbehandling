@@ -2,12 +2,12 @@ package no.nav.hjelpemidler.soknad.mottak.river
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
-import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.github.oshai.kotlinlogging.KotlinLogging
-import no.nav.hjelpemidler.behovsmeldingsmodell.sak.HotsakSakId
 import no.nav.hjelpemidler.behovsmeldingsmodell.sak.Vedtaksresultat
+import no.nav.hjelpemidler.serialization.jackson.enumValue
+import no.nav.hjelpemidler.serialization.jackson.localDateTimeValue
 import no.nav.hjelpemidler.soknad.mottak.melding.VedtaksresultatLagretMelding
 import no.nav.hjelpemidler.soknad.mottak.soknadsbehandling.SøknadsbehandlingService
 
@@ -57,10 +57,10 @@ class HotsakHenlagt(
     }
 
     private val JsonMessage.søknadId get() = uuidValue("søknadId")
-    private val JsonMessage.sakId get() = HotsakSakId(this["sakId"].stringValue())
+    private val JsonMessage.sakId get() = hotsakSakIdValue("sakId")
     private val JsonMessage.fnrBruker get() = this["fnrBruker"].stringValue()
-    private val JsonMessage.henleggelsesdato get() = this["henleggelsesdato"].asLocalDateTime()
-    private val JsonMessage.henleggelsesårsak get() = enumValueOf<Henleggelsesårsak>(this["henleggelsesårsak"].stringValue())
+    private val JsonMessage.henleggelsesdato get() = this["henleggelsesdato"].localDateTimeValue()
+    private val JsonMessage.henleggelsesårsak get() = this["henleggelsesårsak"].enumValue<Henleggelsesårsak>()
 
     override suspend fun onPacketAsync(packet: JsonMessage, context: MessageContext) {
         val søknadId = packet.søknadId
