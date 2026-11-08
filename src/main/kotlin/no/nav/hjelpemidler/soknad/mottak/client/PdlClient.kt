@@ -19,10 +19,11 @@ import no.nav.hjelpemidler.soknad.mottak.Configuration
 import no.nav.hjelpemidler.soknad.mottak.httpClient
 import org.intellij.lang.annotations.Language
 import tools.jackson.databind.JsonNode
+import java.io.Closeable
 
 private val log = KotlinLogging.logger {}
 
-class PdlClient(private val baseUrl: String = Configuration.PDL_GRAPHQL_URL) {
+class PdlClient(private val baseUrl: String = Configuration.PDL_GRAPHQL_URL) : Closeable {
     private val httpClient: HttpClient = httpClient {
         entraId(Configuration.PDL_GRAPHQL_SCOPE)
         defaultRequest {
@@ -49,6 +50,10 @@ class PdlClient(private val baseUrl: String = Configuration.PDL_GRAPHQL_URL) {
         }
         return jsonNode["data"].get("hentPerson")?.get("bostedsadresse")?.firstOrNull()?.get("vegadresse")
             ?.get("kommunenummer")?.stringValueOrNull()
+    }
+
+    override fun close() {
+        httpClient.close()
     }
 }
 

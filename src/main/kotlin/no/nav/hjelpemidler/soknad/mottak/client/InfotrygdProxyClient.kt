@@ -55,5 +55,7 @@ class InfotrygdProxyClient(private val baseUrl: String = Configuration.INFOTRYGD
         }
     }
 
-    override fun close() = httpClient.close()
+    override fun close() {
+        httpClient.close()
+    }
 }

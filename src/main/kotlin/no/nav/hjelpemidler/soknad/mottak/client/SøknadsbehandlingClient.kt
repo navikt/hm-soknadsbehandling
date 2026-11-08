@@ -182,5 +182,7 @@ class SøknadsbehandlingClient(private val baseUrl: String = Configuration.SOKNA
             .body<HarOrdre>()
     }
 
-    override fun close() = httpClient.close()
+    override fun close() {
+        httpClient.close()
+    }
 }

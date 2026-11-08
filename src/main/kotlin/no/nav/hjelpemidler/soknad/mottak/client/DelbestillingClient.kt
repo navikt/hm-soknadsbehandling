@@ -56,7 +56,9 @@ class DelbestillingClient(private val baseUrl: String = Configuration.DELBESTILL
         }
     }
 
-    override fun close() = httpClient.close()
+    override fun close() {
+        httpClient.close()
+    }
 }
 
 private data class StatusOppdateringDto(

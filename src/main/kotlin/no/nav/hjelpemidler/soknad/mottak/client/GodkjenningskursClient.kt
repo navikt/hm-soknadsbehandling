@@ -43,7 +43,9 @@ class GodkjenningskursClient(private val baseUrl: String = Configuration.GODKJEN
         }
     }
 
-    override fun close() = httpClient.close()
+    override fun close() {
+        httpClient.close()
+    }
 }
 
 data class Personinfo(

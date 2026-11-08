@@ -32,5 +32,7 @@ class SøknadApiClient(private val baseUrl: String = Configuration.SOKNAD_API_BA
             }
     }
 
-    override fun close() = httpClient.close()
+    override fun close() {
+        httpClient.close()
+    }
 }
