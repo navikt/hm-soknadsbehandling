@@ -84,6 +84,12 @@ class NyHotsakOrdrelinje(
                 return
             }
 
+            val sistOppdatert = packet.sistOppdatert
+            if (!skalVarsleOmOrdrelinje(sistOppdatert)) {
+                log.info { "Sender ikke varsel til Ditt Nav om ordrelinje fordi sistOppdatert er eldre enn syv dager (søknadId=$søknadId, eventId=$eventId, sistOppdatert=$sistOppdatert)" }
+                return
+            }
+
             val ordreSisteDøgn = søknadsbehandlingService.ordreSisteDøgn(søknadId)
             if (!ordreSisteDøgn.harOrdreAvTypeHjelpemidler) {
                 context.publish(fnrBruker, OrdrelinjeLagretMelding(ordrelinje, søknad.behovsmeldingstype))
