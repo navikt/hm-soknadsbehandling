@@ -48,7 +48,7 @@ testing {
     suites {
         @Suppress("UnstableApiUsage")
         val test = named<JvmTestSuite>("test") {
-            useKotlinTest(libs.versions.kotlin.asProvider())
+            useKotlinTest(libs.versions.kotlin)
             dependencies {
                 implementation(libs.handlebars)
                 implementation(libs.hotlibs.test)
