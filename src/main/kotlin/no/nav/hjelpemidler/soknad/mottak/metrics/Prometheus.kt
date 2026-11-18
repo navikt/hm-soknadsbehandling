@@ -19,4 +19,5 @@ object Prometheus {
     val ordrelinjeVideresendtCounter: Counter = registry.counter("hm_oebs_ordrelinje_videresendt")
     val sakstilknytningInfotrygdLagretCounter: Counter = registry.counter("hm_sakstilknytning_infotrygd_lagret")
     val sakstilknytningHotsakLagretCounter: Counter = registry.counter("hm_sakstilknytning_hotsak_lagret")
+    val søknadBrukerEndretEtterOverføringCounter: Counter = registry.counter("hm_soknad_bruker_endret_etter_overforing")
 }

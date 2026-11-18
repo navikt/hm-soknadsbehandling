@@ -1,12 +1,14 @@
 package no.nav.hjelpemidler.soknad.mottak
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.client.engine.apache5.Apache5
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.hjelpemidler.configuration.Environment
 import no.nav.hjelpemidler.domain.person.TILLAT_SYNTETISKE_FØDSELSNUMRE
+import no.nav.hjelpemidler.http.slack.slack
 import no.nav.hjelpemidler.soknad.mottak.client.DelbestillingClient
 import no.nav.hjelpemidler.soknad.mottak.client.GodkjenningskursClient
 import no.nav.hjelpemidler.soknad.mottak.client.InfotrygdProxyClient
@@ -58,6 +60,7 @@ fun main() {
     val søknadsbehandlingService = SøknadsbehandlingService(søknadsbehandlingClient)
     val søknadApiService = SøknadApiService(søknadApiClient)
     val godkjenningskursService = GodkjenningskursService(godkjenningskursClient)
+    val slackClient = slack(engine = Apache5.create())
 
     RapidApplication.create(no.nav.hjelpemidler.configuration.Configuration)
         .apply {
@@ -79,7 +82,7 @@ fun main() {
 
             DigitalSøknadAutomatiskJournalført(this, søknadsbehandlingService)
             DigitalSøknadEndeligJournalført(this, søknadsbehandlingService)
-            DigitalSøknadEndeligJournalførtEtterOverføring(this, søknadsbehandlingService)
+            DigitalSøknadEndeligJournalførtEtterOverføring(this, søknadsbehandlingService, slackClient)
             PapirsøknadEndeligJournalført(this, søknadsbehandlingService, metrics)
 
             GodkjennSøknad(this, søknadsbehandlingService)
